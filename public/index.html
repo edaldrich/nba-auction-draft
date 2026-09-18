@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NBA Draft War Room</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #0b132b;
+      color: #e0e1dd;
+      margin: 0;
+      padding: 1.25rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 360px 1fr 310px;
+      gap: 1.25rem;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #1c2541;
+      border-radius: 8px;
+      padding: 1.25rem;
+      border: 1px solid #3a506b;
+    }
+    h2, h3, h4 { margin-top: 0; color: #48cae4; }
+    
+    .block-center { text-align: center; }
+    .timer {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #ffbe0b;
+      margin: 0.25rem 0;
+    }
+    .timer-paused { color: #ef233c !important; }
+    .current-bid {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #06d6a0;
+    }
+    .btn {
+      background: #0077b6;
+      color: white;
+      border: none;
+      padding: 0.6rem 1rem;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 0.2rem;
+    }
+    .btn:hover { background: #023e8a; }
+    .btn:disabled { background: #4a5568; cursor: not-allowed; }
+    .btn-secondary { background: #3a506b; }
+    .btn-secondary:hover { background: #4f6d7a; }
+    .btn-danger { background: #d90429; }
+    .btn-danger:hover { background: #ef233c; }
+    .btn-warning { background: #f77f00; }
+    .btn-warning:hover { background: #fcbf49; color: black; }
+
+    .selector {
+      width: 100%;
+      padding: 0.5rem;
+      background: #0b132b;
+      color: white;
+      border: 1px solid #3a506b;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+    }
+    .input-inline {
+      width: 75px;
+      padding: 0.35rem;
+      background: #0b132b;
+      color: white;
+      border: 1px solid #3a506b;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    /* Player Pool Column */
+    #playerListContainer {
+      max-height: 75vh;
+      overflow-y: auto;
+      padding-right: 0.3rem;
+    }
+    .player-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid #2a3d5e;
+    }
+    .badge-fppg {
+      display: inline-block;
+      background: #0d3b66;
+      color: #48cae4;
+      font-weight: 700;
+      border-radius: 4px;
+      padding: 0.15rem 0.4rem;
+      font-size: 0.8rem;
+      margin-top: 0.2rem;
+    }
+    .badge-total {
+      color: #8d99ae;
+      font-size: 0.75rem;
+      margin-left: 0.3rem;
+    }
+
+    /* Active Block Stat Strip */
+    .stat-strip {
+      display: flex;
+      justify-content: center;
+      gap: 1.25rem;
+      background: #0b132b;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      margin: 0.75rem auto;
+      max-width: 500px;
+      border: 1px solid #3a506b;
+      font-size: 0.9rem;
+    }
+    .stat-strip span strong {
+      color: #48cae4;
+    }
+
+    .team-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #2a3d5e;
+    }
+    
+    #logBox {
+      background: #0b132b;
+      height: 140px;
+      overflow-y: auto;
+      border: 1px solid #3a506b;
+      border-radius: 6px;
+      padding: 0.5rem;
+      font-family: monospace;
+      font-size: 0.82rem;
+      text-align: left;
+      margin-top: 1rem;
+    }
+    .log-item { margin: 0.2rem 0; }
+    .log-auto { color: #ffbe0b; }
+    .log-sold { color: #06d6a0; font-weight: bold; }
+    .admin-bar {
+      margin-top: 1.25rem;
+      padding: 0.75rem;
+      background: #111d4a;
+      border: 1px dashed #48cae4;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grid">
+    <!-- Left Column: Player Pool with FP/G & FPts -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <h3>Player Pool</h3>
+        <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="toggleCapMode()">
+          Set Max Caps
+        </button>
+      </div>
+      <input type="text" id="playerSearch" class="selector" placeholder="Search player or team..." oninput="renderPlayers()" />
+      <div id="playerListContainer">
+        <div id="playerList"></div>
+      </div>
+    </div>
+
+    <!-- Center Column: Auction Block -->
+    <div class="card block-center">
+      <h2>Live Auction Block</h2>
+
+      <label for="actingTeamSelect"><strong>Select Your Team:</strong></label>
+      <select id="actingTeamSelect" class="selector" onchange="renderAll()"></select>
+
+      <div id="auctionContent">
+        <p style="color: #8d99ae;">No player currently on the block.</p>
+        <p>Select an available player to nominate!</p>
+      </div>
+
+      <h4 style="text-align: left; margin: 1.25rem 0 0.25rem 0; color: #48cae4;">Draft Activity Log</h4>
+      <div id="logBox"></div>
+
+      <div class="admin-bar">
+        <h4 style="margin-bottom: 0.4rem;">🛡️ Commissioner Controls</h4>
+        <button id="pauseBtn" class="btn btn-warning" onclick="adminTogglePause()">Pause Draft</button>
+        <button class="btn btn-secondary" onclick="adminResetBlock()">Cancel Block</button>
+        <button class="btn btn-danger" onclick="adminResetDraft()">Reset Entire Draft</button>
+      </div>
+    </div>
+
+    <!-- Right Column: Teams & Budgets -->
+    <div class="card">
+      <h3>Teams & Budgets</h3>
+      <div id="teamList"></div>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let localData = { teams: [], players: [], draftState: {} };
+    let capEditMode = false;
+
+    const playerListEl = document.getElementById('playerList');
+    const teamListEl = document.getElementById('teamList');
+    const auctionContentEl = document.getElementById('auctionContent');
+    const actingTeamSelect = document.getElementById('actingTeamSelect');
+    const logBox = document.getElementById('logBox');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const playerSearch = document.getElementById('playerSearch');
+
+    socket.on('initData', (data) => {
+      localData = data;
+      renderActingTeamOptions();
+      renderAll();
+      logMessage("Draft room connected. Ready.");
+    });
+
+    socket.on('stateUpdate', (data) => {
+      localData.draftState = data.draftState;
+      localData.teams = data.teams;
+      localData.players = data.players;
+      renderAll();
+    });
+
+    socket.on('adminStateChanged', ({ draftState }) => {
+      localData.draftState = draftState;
+      pauseBtn.textContent = draftState.isPaused ? "Resume Draft" : "Pause Draft";
+      pauseBtn.className = draftState.isPaused ? "btn btn-danger" : "btn btn-warning";
+      renderAuctionBlock();
+      logMessage(draftState.isPaused ? "⏸️ <strong>Draft paused by commissioner.</strong>" : "▶️ <strong>Draft resumed.</strong>");
+    });
+
+    socket.on('playerNominated', ({ draftState }) => {
+      localData.draftState = draftState;
+      logMessage(`📢 <strong>${draftState.highBidder.name}</strong> nominated <strong>${draftState.nominatedPlayer.name}</strong> for $${draftState.currentBid}`);
+      renderAuctionBlock();
+      renderPlayers();
+    });
+
+    socket.on('bidAccepted', ({ draftState, isAutoBid }) => {
+      localData.draftState = draftState;
+      const tag = isAutoBid ? '<span class="log-auto">[AUTO]</span> ' : '';
+      logMessage(`💰 ${tag}<strong>${draftState.highBidder.name}</strong> bids <strong>$${draftState.currentBid}</strong>`);
+      renderAuctionBlock();
+    });
+
+    socket.on('capsUpdated', ({ playerId, autoCaps }) => {
+      const player = localData.players.find(p => p.id === playerId);
+      if (player) {
+        player.autoCaps = autoCaps;
+        renderPlayers();
+      }
+    });
+
+    socket.on('timerTick', ({ seconds }) => {
+      const timerEl = document.getElementById('timerDisplay');
+      if (timerEl) {
+        timerEl.textContent = `${seconds}s`;
+        timerEl.style.color = seconds <= 4 ? '#ef233c' : '#ffbe0b';
+      }
+    });
+
+    socket.on('playerSold', ({ player, winningTeam, price }) => {
+      logMessage(`<span class="log-sold">🔨 SOLD!</span> <strong>${player.name}</strong> to <strong>${winningTeam.name}</strong> for $${price}!`);
+    });
+
+    function logMessage(msg) {
+      const entry = document.createElement('div');
+      entry.className = 'log-item';
+      entry.innerHTML = msg;
+      logBox.appendChild(entry);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function toggleCapMode() {
+      capEditMode = !capEditMode;
+      document.getElementById('toggleCapModeBtn').textContent = capEditMode ? 'Done' : 'Set Max Caps';
+      renderPlayers();
+    }
+
+    function renderActingTeamOptions() {
+      const currentVal = actingTeamSelect.value;
+      actingTeamSelect.innerHTML = localData.teams
+        .map(t => `<option value="${t.id}" ${t.id == currentVal ? 'selected' : ''}>${t.name} ($${t.budget} left)${t.isAuto ? ' [AUTO]' : ''}</option>`)
+        .join('');
+    }
+
+    function renderAll() {
+      renderPlayers();
+      renderTeams();
+      renderAuctionBlock();
+    }
+
+    function renderPlayers() {
+      const selectedTeamId = actingTeamSelect.value;
+      const query = (playerSearch.value || '').toLowerCase();
+      
+      const available = localData.players
+        .filter(p => p.status === 'available')
+        .filter(p => p.name.toLowerCase().includes(query) || p.nbaTeam.toLowerCase().includes(query));
+
+      playerListEl.innerHTML = available.map(p => {
+        const teamCap = (p.autoCaps && p.autoCaps[selectedTeamId]) ? p.autoCaps[selectedTeamId] : '';
+
+        return `
+          <div class="player-row">
+            <div>
+              <strong>${p.name}</strong> <small>(${p.pos} - ${p.nbaTeam})</small>
+              <div>
+                <span class="badge-fppg">${p.fppg.toFixed(1)} FP/G</span>
+                <span class="badge-total">${p.fpts.toFixed(0)} FPts</span>
+              </div>
+              ${teamCap ? `<div style="font-size:0.75rem; color:#ffbe0b;">Max Cap: $${teamCap}</div>` : ''}
+            </div>
+
+            ${capEditMode ? `
+              <div>
+                $<input type="number" class="input-inline" placeholder="Max $" value="${teamCap}" 
+                  onchange="saveCap('${p.id}', this.value)" />
+              </div>
+            ` : `
+              <button class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;" 
+                onclick="nominate('${p.id}')" 
+                ${localData.draftState.nominatedPlayer ? 'disabled' : ''}>
+                Nominate
+              </button>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function saveCap(playerId, maxBid) {
+      const teamId = parseInt(actingTeamSelect.value, 10);
+      socket.emit('updateAutoCap', { teamId, playerId, maxBid });
+    }
+
+    function renderTeams() {
+      teamListEl.innerHTML = localData.teams.map(t => `
+        <div class="team-row">
+          <div>
+            <strong>${t.name}</strong> ${t.isAuto ? '<small style="color:#ffbe0b;">[AUTO]</small>' : ''}
+            <div><small>Roster: ${t.roster.length}/13</small></div>
+          </div>
+          <div style="font-weight: bold; color: #06d6a0;">$${t.budget}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderAuctionBlock() {
+      const state = localData.draftState;
+      if (!state.nominatedPlayer) {
+        auctionContentEl.innerHTML = `
+          <p style="color: #8d99ae;">No player currently on the block.</p>
+          <p>Select an available player to nominate!</p>
+        `;
+        return;
+      }
+
+      const p = state.nominatedPlayer;
+      const pausedClass = state.isPaused ? 'timer-paused' : '';
+
+      auctionContentEl.innerHTML = `
+        <h1 style="color: #fff; margin-bottom: 0;">${p.name}</h1>
+        <p style="color: #8d99ae; margin-top: 0.2rem;">${p.pos} &bull; ${p.nbaTeam}</p>
+        
+        <div class="stat-strip">
+          <span><strong>${p.fppg.toFixed(1)}</strong> FP/G</span>
+          <span><strong>${p.fpts.toFixed(0)}</strong> FPts</span>
+          <span><strong>${p.stats?.pts || 0}</strong> PTS</span>
+          <span><strong>${p.stats?.reb || 0}</strong> REB</span>
+          <span><strong>${p.stats?.ast || 0}</strong> AST</span>
+        </div>
+
+        <div class="timer ${pausedClass}" id="timerDisplay">${state.isPaused ? 'PAUSED' : state.timerSeconds + 's'}</div>
+        <div class="current-bid">$${state.currentBid}</div>
+        <p>High Bidder: <strong>${state.highBidder ? state.highBidder.name : 'None'}</strong></p>
+        
+        <div style="margin-top: 1rem;">
+          <button class="btn" onclick="bidIncrement(1)" ${state.isPaused ? 'disabled' : ''}>+$1 ($${state.currentBid + 1})</button>
+          <button class="btn" onclick="bidIncrement(3)" ${state.isPaused ? 'disabled' : ''}>+$3 ($${state.currentBid + 3})</button>
+          <button class="btn" onclick="bidIncrement(5)" ${state.isPaused ? 'disabled' : ''}>+$5 ($${state.currentBid + 5})</button>
+        </div>
+
+        <div style="margin-top: 0.75rem;">
+          <input type="number" id="customBidInput" class="input-inline" style="width: 100px;" placeholder="$ Amount" min="${state.currentBid + 1}">
+          <button class="btn btn-secondary" onclick="bidCustom()" ${state.isPaused ? 'disabled' : ''}>Custom Bid</button>
+        </div>
+      `;
+    }
+
+    function nominate(playerId) {
+      const teamId = parseInt(actingTeamSelect.value, 10);
+      socket.emit('nominatePlayer', { playerId, teamId, openingBid: 1 });
+    }
+
+    function bidIncrement(increment) {
+      const teamId = parseInt(actingTeamSelect.value, 10);
+      const targetBid = localData.draftState.currentBid + increment;
+      socket.emit('placeBid', { teamId, bidAmount: targetBid });
+    }
+
+    function bidCustom() {
+      const input = document.getElementById('customBidInput');
+      const val = parseInt(input.value, 10);
+      if (!val) return;
+      const teamId = parseInt(actingTeamSelect.value, 10);
+      socket.emit('placeBid', { teamId, bidAmount: val });
+    }
+
+    function adminTogglePause() {
+      socket.emit('adminTogglePause');
+    }
+
+    function adminResetBlock() {
+      if (confirm("Reset current block and return player to pool?")) {
+        socket.emit('adminResetCurrentBlock');
+      }
+    }
+
+    function adminResetDraft() {
+      if (confirm("Are you sure you want to reset all budgets, rosters, and players back to clean state?")) {
+        socket.emit('adminResetAllDraftData');
+      }
+    }
+  </script>
+</body>
+</html>

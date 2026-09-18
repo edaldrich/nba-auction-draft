@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "name": "Team 1",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 2,
+    "name": "Team 2",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 3,
+    "name": "Team 3",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 4,
+    "name": "Team 4",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 5,
+    "name": "Team 5",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 6,
+    "name": "Team 6",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 7,
+    "name": "Team 7",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 8,
+    "name": "Team 8",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 9,
+    "name": "Team 9",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 10,
+    "name": "Team 10",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 11,
+    "name": "Team 11",
+    "budget": 200,
+    "roster": [],
+    "isAuto": false
+  },
+  {
+    "id": 12,
+    "name": "Team 12",
+    "budget": 200,
+    "roster": [],
+    "isAuto": true
+  }
+]

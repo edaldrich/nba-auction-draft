@@ -16,10 +16,11 @@
       "to": 3.1,
       "threes": 1.1
     },
-    "status": "available",
-    "draftedBy": null,
-    "price": 0,
-    "autoCaps": {}
+    "status": "drafted",
+    "draftedBy": "Team 3",
+    "price": 6,
+    "autoCaps": {},
+    "draftedByTeamId": 3
   },
   {
     "id": "04kj6",

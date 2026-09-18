@@ -12,13 +12,76 @@
       background-color: #0b132b;
       color: #e0e1dd;
       margin: 0;
-      padding: 1.25rem;
+      padding: 1rem 1.5rem;
     }
+
+    /* Top Status Banner */
+    .top-banner {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      background: #1c2541;
+      border: 1px solid #3a506b;
+      border-radius: 8px;
+      padding: 0.75rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .nom-indicator {
+      font-size: 1.05rem;
+    }
+    .nom-current {
+      color: #ffbe0b;
+      font-weight: bold;
+    }
+    .nom-ondeck {
+      color: #8d99ae;
+      font-size: 0.9rem;
+      margin-top: 0.2rem;
+    }
+    .tab-nav {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .tab-btn {
+      background: #0b132b;
+      color: #8d99ae;
+      border: 1px solid #3a506b;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: #0077b6;
+      color: white;
+      border-color: #0077b6;
+    }
+
+    /* Total Budget Widget */
+    .pool-stat {
+      text-align: right;
+    }
+    .pool-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8d99ae;
+    }
+    .pool-val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #06d6a0;
+      line-height: 1.1;
+    }
+
+    /* Main Layout */
     .grid {
       display: grid;
-      grid-template-columns: 360px 1fr 310px;
+      grid-template-columns: 370px 1fr 310px;
       gap: 1.25rem;
-      max-width: 1500px;
+      max-width: 1560px;
       margin: 0 auto;
     }
     .card {
@@ -46,12 +109,12 @@
       background: #0077b6;
       color: white;
       border: none;
-      padding: 0.6rem 1rem;
-      font-size: 0.95rem;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.9rem;
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
-      margin: 0.2rem;
+      margin: 0.15rem;
     }
     .btn:hover { background: #023e8a; }
     .btn:disabled { background: #4a5568; cursor: not-allowed; }
@@ -69,7 +132,7 @@
       color: white;
       border: 1px solid #3a506b;
       border-radius: 4px;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
     }
     .input-inline {
       width: 75px;
@@ -83,7 +146,7 @@
 
     /* Player Pool Column */
     #playerListContainer {
-      max-height: 75vh;
+      max-height: 68vh;
       overflow-y: auto;
       padding-right: 0.3rem;
     }
@@ -91,8 +154,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.55rem 0;
+      padding: 0.55rem 0.25rem;
       border-bottom: 1px solid #2a3d5e;
+    }
+    .player-row-drafted {
+      background: rgba(217, 4, 41, 0.12);
+      border-left: 3px solid #ef233c;
+      padding-left: 0.4rem;
     }
     .badge-fppg {
       display: inline-block;
@@ -100,14 +168,19 @@
       color: #48cae4;
       font-weight: 700;
       border-radius: 4px;
-      padding: 0.15rem 0.4rem;
-      font-size: 0.8rem;
-      margin-top: 0.2rem;
+      padding: 0.12rem 0.35rem;
+      font-size: 0.78rem;
     }
     .badge-total {
       color: #8d99ae;
       font-size: 0.75rem;
-      margin-left: 0.3rem;
+      margin-left: 0.25rem;
+    }
+    .drafted-tag {
+      color: #ef476f;
+      font-weight: 700;
+      font-size: 0.8rem;
+      margin-top: 0.2rem;
     }
 
     /* Active Block Stat Strip */
@@ -116,12 +189,12 @@
       justify-content: center;
       gap: 1.25rem;
       background: #0b132b;
-      padding: 0.6rem 1rem;
+      padding: 0.5rem 1rem;
       border-radius: 6px;
-      margin: 0.75rem auto;
+      margin: 0.5rem auto;
       max-width: 500px;
       border: 1px solid #3a506b;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
     }
     .stat-strip span strong {
       color: #48cae4;
@@ -137,7 +210,7 @@
     
     #logBox {
       background: #0b132b;
-      height: 140px;
+      height: 130px;
       overflow-y: auto;
       border: 1px solid #3a506b;
       border-radius: 6px;
@@ -145,38 +218,105 @@
       font-family: monospace;
       font-size: 0.82rem;
       text-align: left;
-      margin-top: 1rem;
+      margin-top: 0.75rem;
     }
     .log-item { margin: 0.2rem 0; }
     .log-auto { color: #ffbe0b; }
     .log-sold { color: #06d6a0; font-weight: bold; }
     .admin-bar {
-      margin-top: 1.25rem;
-      padding: 0.75rem;
+      margin-top: 1rem;
+      padding: 0.65rem;
       background: #111d4a;
       border: 1px dashed #48cae4;
       border-radius: 6px;
+    }
+
+    /* Draft Board Tab View */
+    #draftBoardView {
+      display: none;
+      overflow-x: auto;
+      background: #1c2541;
+      border-radius: 8px;
+      border: 1px solid #3a506b;
+      padding: 1rem;
+    }
+    .board-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(170px, 1fr));
+      gap: 0.75rem;
+    }
+    .board-col {
+      background: #0b132b;
+      border: 1px solid #3a506b;
+      border-radius: 6px;
+      padding: 0.5rem;
+      min-height: 500px;
+    }
+    .board-col-header {
+      border-bottom: 2px solid #0077b6;
+      padding-bottom: 0.4rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .board-pick {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      padding: 0.35rem 0.5rem;
+      margin-bottom: 0.35rem;
+      font-size: 0.8rem;
     }
   </style>
 </head>
 <body>
 
-  <div class="grid">
-    <!-- Left Column: Player Pool with FP/G & FPts -->
+  <!-- Top Status Banner -->
+  <div class="top-banner">
+    <div class="nom-indicator">
+      <div>Nomination Turn: <span id="currentNomDisplay" class="nom-current">Loading...</span></div>
+      <div class="nom-ondeck">On Deck: <span id="onDeckNomDisplay">Loading...</span></div>
+    </div>
+
+    <!-- View Switcher -->
+    <div class="tab-nav">
+      <button id="tabWarRoomBtn" class="tab-btn active" onclick="switchTab('warRoom')">Live War Room</button>
+      <button id="tabBoardBtn" class="tab-btn" onclick="switchTab('board')">Full Draft Board</button>
+    </div>
+
+    <!-- Total Draft Pool Remaining -->
+    <div class="pool-stat">
+      <div class="pool-label">Total Draft Pool Left</div>
+      <div class="pool-val" id="totalPoolDisplay">$2,400</div>
+    </div>
+  </div>
+
+  <!-- VIEW 1: Live War Room -->
+  <div id="warRoomView" class="grid">
+    <!-- Left: Players Pool -->
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <h3>Player Pool</h3>
+        <h3>Players</h3>
         <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="toggleCapMode()">
           Set Max Caps
         </button>
       </div>
-      <input type="text" id="playerSearch" class="selector" placeholder="Search player or team..." oninput="renderPlayers()" />
+
+      <!-- Filter Dropdown & Search -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+        <select id="statusFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
+          <option value="available">Available Only</option>
+          <option value="all">All Players</option>
+          <option value="drafted">Drafted Only</option>
+        </select>
+        <input type="text" id="playerSearch" class="selector" style="margin-bottom: 0;" placeholder="Search..." oninput="renderPlayers()" />
+      </div>
+
       <div id="playerListContainer">
         <div id="playerList"></div>
       </div>
     </div>
 
-    <!-- Center Column: Auction Block -->
+    <!-- Center: Auction Block -->
     <div class="card block-center">
       <h2>Live Auction Block</h2>
 
@@ -185,31 +325,43 @@
 
       <div id="auctionContent">
         <p style="color: #8d99ae;">No player currently on the block.</p>
-        <p>Select an available player to nominate!</p>
+        <p>Waiting for nomination...</p>
       </div>
 
       <h4 style="text-align: left; margin: 1.25rem 0 0.25rem 0; color: #48cae4;">Draft Activity Log</h4>
       <div id="logBox"></div>
 
+      <!-- Commissioner Controls -->
       <div class="admin-bar">
         <h4 style="margin-bottom: 0.4rem;">🛡️ Commissioner Controls</h4>
         <button id="pauseBtn" class="btn btn-warning" onclick="adminTogglePause()">Pause Draft</button>
         <button class="btn btn-secondary" onclick="adminResetBlock()">Cancel Block</button>
+        <button class="btn btn-warning" onclick="adminUndoLastSale()">↩ Undo Last Sale</button>
         <button class="btn btn-danger" onclick="adminResetDraft()">Reset Entire Draft</button>
       </div>
     </div>
 
-    <!-- Right Column: Teams & Budgets -->
+    <!-- Right: Teams & Budgets -->
     <div class="card">
       <h3>Teams & Budgets</h3>
       <div id="teamList"></div>
     </div>
   </div>
 
+  <!-- VIEW 2: Full Draft Board Grid -->
+  <div id="draftBoardView">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h2 style="margin: 0;">League Draft Board</h2>
+      <button class="btn btn-secondary" onclick="switchTab('warRoom')">&larr; Back to War Room</button>
+    </div>
+    <div class="board-grid" id="boardColumns"></div>
+  </div>
+
   <script>
     const socket = io();
     let localData = { teams: [], players: [], draftState: {} };
     let capEditMode = false;
+    let currentTab = 'warRoom';
 
     const playerListEl = document.getElementById('playerList');
     const teamListEl = document.getElementById('teamList');
@@ -218,6 +370,11 @@
     const logBox = document.getElementById('logBox');
     const pauseBtn = document.getElementById('pauseBtn');
     const playerSearch = document.getElementById('playerSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const totalPoolDisplay = document.getElementById('totalPoolDisplay');
+    const currentNomDisplay = document.getElementById('currentNomDisplay');
+    const onDeckNomDisplay = document.getElementById('onDeckNomDisplay');
+    const boardColumnsEl = document.getElementById('boardColumns');
 
     socket.on('initData', (data) => {
       localData = data;
@@ -246,6 +403,7 @@
       logMessage(`📢 <strong>${draftState.highBidder.name}</strong> nominated <strong>${draftState.nominatedPlayer.name}</strong> for $${draftState.currentBid}`);
       renderAuctionBlock();
       renderPlayers();
+      updateTopBanner();
     });
 
     socket.on('bidAccepted', ({ draftState, isAutoBid }) => {
@@ -275,12 +433,51 @@
       logMessage(`<span class="log-sold">🔨 SOLD!</span> <strong>${player.name}</strong> to <strong>${winningTeam.name}</strong> for $${price}!`);
     });
 
+    socket.on('saleUndone', ({ player, team, price }) => {
+      logMessage(`↩️ <strong>COMMISSIONER UNDO:</strong> Returned <strong>${player.name}</strong> to available pool. Refunded $${price} to ${team.name}.`);
+    });
+
     function logMessage(msg) {
       const entry = document.createElement('div');
       entry.className = 'log-item';
       entry.innerHTML = msg;
       logBox.appendChild(entry);
       logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      const warRoom = document.getElementById('warRoomView');
+      const board = document.getElementById('draftBoardView');
+      const tabWarRoomBtn = document.getElementById('tabWarRoomBtn');
+      const tabBoardBtn = document.getElementById('tabBoardBtn');
+
+      if (tab === 'warRoom') {
+        warRoom.style.display = 'grid';
+        board.style.display = 'none';
+        tabWarRoomBtn.classList.add('active');
+        tabBoardBtn.classList.remove('active');
+      } else {
+        warRoom.style.display = 'none';
+        board.style.display = 'block';
+        tabWarRoomBtn.classList.remove('active');
+        tabBoardBtn.classList.add('active');
+        renderDraftBoard();
+      }
+    }
+
+    function updateTopBanner() {
+      const totalBudget = localData.teams.reduce((acc, t) => acc + t.budget, 0);
+      totalPoolDisplay.textContent = `$${totalBudget.toLocaleString()}`;
+
+      const nomId = localData.draftState.nominatingTeamId;
+      const onDeckId = localData.draftState.onDeckTeamId;
+
+      const nomTeam = localData.teams.find(t => t.id === nomId);
+      const onDeckTeam = localData.teams.find(t => t.id === onDeckId);
+
+      currentNomDisplay.textContent = nomTeam ? `${nomTeam.name} ($${nomTeam.budget})` : 'Draft Complete';
+      onDeckNomDisplay.textContent = onDeckTeam ? `${onDeckTeam.name} ($${onDeckTeam.budget})` : 'None';
     }
 
     function toggleCapMode() {
@@ -297,45 +494,61 @@
     }
 
     function renderAll() {
+      updateTopBanner();
       renderPlayers();
       renderTeams();
       renderAuctionBlock();
+      if (currentTab === 'board') renderDraftBoard();
     }
 
     function renderPlayers() {
       const selectedTeamId = actingTeamSelect.value;
       const query = (playerSearch.value || '').toLowerCase();
-      
-      const available = localData.players
-        .filter(p => p.status === 'available')
-        .filter(p => p.name.toLowerCase().includes(query) || p.nbaTeam.toLowerCase().includes(query));
+      const filter = statusFilter.value; // 'available', 'drafted', 'all'
 
-      playerListEl.innerHTML = available.map(p => {
+      const filtered = localData.players.filter(p => {
+        const matchesQuery = p.name.toLowerCase().includes(query) || p.nbaTeam.toLowerCase().includes(query);
+        if (!matchesQuery) return false;
+
+        if (filter === 'available') return p.status === 'available';
+        if (filter === 'drafted') return p.status === 'drafted';
+        return true; // 'all'
+      });
+
+      const isMyTurnToNominate = (parseInt(selectedTeamId, 10) === localData.draftState.nominatingTeamId);
+
+      playerListEl.innerHTML = filtered.map(p => {
         const teamCap = (p.autoCaps && p.autoCaps[selectedTeamId]) ? p.autoCaps[selectedTeamId] : '';
+        const isDrafted = p.status === 'drafted';
 
         return `
-          <div class="player-row">
-            <div>
-              <strong>${p.name}</strong> <small>(${p.pos} - ${p.nbaTeam})</small>
+          <div class="player-row ${isDrafted ? 'player-row-drafted' : ''}">
+            <div style="flex: 1; padding-right: 0.5rem;">
+              <strong style="${isDrafted ? 'color:#ef476f;' : ''}">${p.name}</strong> 
+              <small>(${p.pos} - ${p.nbaTeam})</small>
               <div>
                 <span class="badge-fppg">${p.fppg.toFixed(1)} FP/G</span>
                 <span class="badge-total">${p.fpts.toFixed(0)} FPts</span>
               </div>
-              ${teamCap ? `<div style="font-size:0.75rem; color:#ffbe0b;">Max Cap: $${teamCap}</div>` : ''}
+              ${isDrafted ? `<div class="drafted-tag">Drafted: ${p.draftedBy} ($${p.price})</div>` : ''}
+              ${(!isDrafted && teamCap) ? `<div style="font-size:0.75rem; color:#ffbe0b;">Max Cap: $${teamCap}</div>` : ''}
             </div>
 
-            ${capEditMode ? `
-              <div>
-                $<input type="number" class="input-inline" placeholder="Max $" value="${teamCap}" 
-                  onchange="saveCap('${p.id}', this.value)" />
-              </div>
-            ` : `
-              <button class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;" 
-                onclick="nominate('${p.id}')" 
-                ${localData.draftState.nominatedPlayer ? 'disabled' : ''}>
-                Nominate
-              </button>
-            `}
+            ${!isDrafted ? (
+              capEditMode ? `
+                <div>
+                  $<input type="number" class="input-inline" placeholder="Max $" value="${teamCap}" 
+                    onchange="saveCap('${p.id}', this.value)" />
+                </div>
+              ` : `
+                <button class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;" 
+                  onclick="nominate('${p.id}')" 
+                  ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate) ? 'disabled' : ''}
+                  title="${!isMyTurnToNominate ? 'Not your turn to nominate' : 'Nominate player'}">
+                  Nominate
+                </button>
+              `
+            ) : ''}
           </div>
         `;
       }).join('');
@@ -347,23 +560,31 @@
     }
 
     function renderTeams() {
-      teamListEl.innerHTML = localData.teams.map(t => `
-        <div class="team-row">
-          <div>
-            <strong>${t.name}</strong> ${t.isAuto ? '<small style="color:#ffbe0b;">[AUTO]</small>' : ''}
-            <div><small>Roster: ${t.roster.length}/13</small></div>
+      teamListEl.innerHTML = localData.teams.map(t => {
+        const isFull = t.roster.length >= 13;
+        const isTurn = t.id === localData.draftState.nominatingTeamId;
+
+        return `
+          <div class="team-row" style="${isTurn ? 'border-left: 3px solid #ffbe0b; padding-left: 0.3rem;' : ''}">
+            <div>
+              <strong>${t.name}</strong> 
+              ${t.isAuto ? '<small style="color:#ffbe0b;">[AUTO]</small>' : ''}
+              ${isTurn ? '<small style="color:#ffbe0b; font-weight:bold;"> [NOMINATING]</small>' : ''}
+              <div><small>Roster: ${t.roster.length}/13 ${isFull ? '(FULL)' : ''}</small></div>
+            </div>
+            <div style="font-weight: bold; color: ${t.budget <= 10 ? '#ef233c' : '#06d6a0'};">$${t.budget}</div>
           </div>
-          <div style="font-weight: bold; color: #06d6a0;">$${t.budget}</div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function renderAuctionBlock() {
       const state = localData.draftState;
       if (!state.nominatedPlayer) {
+        const nomTeam = localData.teams.find(t => t.id === state.nominatingTeamId);
         auctionContentEl.innerHTML = `
-          <p style="color: #8d99ae;">No player currently on the block.</p>
-          <p>Select an available player to nominate!</p>
+          <p style="color: #8d99ae; font-size: 1.1rem; margin-top: 1.5rem;">No player currently on the block.</p>
+          <p>Waiting for <strong style="color: #ffbe0b;">${nomTeam ? nomTeam.name : 'Next Team'}</strong> to nominate!</p>
         `;
         return;
       }
@@ -400,6 +621,35 @@
       `;
     }
 
+    function renderDraftBoard() {
+      boardColumnsEl.innerHTML = localData.teams.map(t => {
+        const openSpots = 13 - t.roster.length;
+        return `
+          <div class="board-col">
+            <div class="board-col-header">
+              <strong style="color: #48cae4; font-size: 0.95rem;">${t.name}</strong>
+              <div style="font-size: 0.8rem; color: #06d6a0; font-weight: bold;">$${t.budget} left &bull; ${t.roster.length}/13</div>
+            </div>
+            <div>
+              ${t.roster.map(p => `
+                <div class="board-pick">
+                  <div style="display: flex; justify-content: space-between;">
+                    <strong>${p.name}</strong>                     <span style="color: #06d6a0; font-weight: bold;">$${p.price}</span>
+                  </div>
+                  <div style="color: #8d99ae; font-size: 0.75rem;">${p.pos} -${p.nbaTeam}</div>
+                </div>
+              `).join('')}
+              ${Array.from({ length: openSpots }).map(() => `
+                <div class="board-pick" style="border: 1px dashed #334155; background: transparent; color: #475569; text-align: center;">
+                  Empty Spot
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
     function nominate(playerId) {
       const teamId = parseInt(actingTeamSelect.value, 10);
       socket.emit('nominatePlayer', { playerId, teamId, openingBid: 1 });
@@ -426,6 +676,12 @@
     function adminResetBlock() {
       if (confirm("Reset current block and return player to pool?")) {
         socket.emit('adminResetCurrentBlock');
+      }
+    }
+
+    function adminUndoLastSale() {
+      if (confirm("Undo the most recent player sale? This will refund the team's budget and return the player to the pool.")) {
+        socket.emit('adminUndoLastSale');
       }
     }
 

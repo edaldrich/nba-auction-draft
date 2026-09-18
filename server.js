@@ -19,18 +19,46 @@ let players = JSON.parse(fs.readFileSync(path.join(__dirname, 'players.json'), '
 const MAX_ROSTER_SIZE = 13;
 const RESET_SECONDS_ON_BID = 8;
 
+let draftHistory = []; // Stack of completed sales for commissioner undo
+
+// Helper: Check if a team is eligible to nominate or bid
+function isTeamEligible(team) {
+  return team.roster.length < MAX_ROSTER_SIZE && team.budget > 0;
+}
+
+// Helper: Find next eligible team for nomination
+function getNextNominatorId(currentId) {
+  const total = teams.length;
+  let nextId = (currentId % total) + 1;
+  let attempts = 0;
+
+  while (attempts < total) {
+    const candidate = teams.find(t => t.id === nextId);
+    if (candidate && isTeamEligible(candidate)) {
+      return candidate.id;
+    }
+    nextId = (nextId % total) + 1;
+    attempts++;
+  }
+  return null; // All rosters full
+}
+
+// Helper: Find the team on deck after a given nominator
+function getOnDeckNominatorId(currentNominatorId) {
+  if (!currentNominatorId) return null;
+  return getNextNominatorId(currentNominatorId);
+}
+
 let draftState = {
   isDraftActive: true,
   nominatedPlayer: null,
   currentBid: 0,
   highBidder: null,
   nominatingTeamId: 1,
+  onDeckTeamId: getNextNominatorId(1),
   timerSeconds: 15,
   isPaused: false
 };
-
-let timerInterval = null;
-let autoBidTimeout = null;
 
 function saveStateToDisk() {
   fs.writeFileSync(path.join(__dirname, 'teams.json'), JSON.stringify(teams, null, 2));
@@ -61,6 +89,9 @@ function startAuctionClock() {
   }, 1000);
 }
 
+let timerInterval = null;
+let autoBidTimeout = null;
+
 function finalizeSale() {
   const player = draftState.nominatedPlayer;
   const winner = draftState.highBidder;
@@ -71,10 +102,25 @@ function finalizeSale() {
     const targetPlayer = players.find(p => p.id === player.id);
 
     winningTeam.budget -= price;
-    winningTeam.roster.push({ id: player.id, name: player.name, price: price });
+    winningTeam.roster.push({
+      id: player.id,
+      name: player.name,
+      pos: player.pos,
+      nbaTeam: player.nbaTeam,
+      price: price
+    });
     targetPlayer.status = 'drafted';
     targetPlayer.draftedBy = winningTeam.name;
+    targetPlayer.draftedByTeamId = winningTeam.id;
     targetPlayer.price = price;
+
+    // Push to undo stack
+    draftHistory.push({
+      playerId: targetPlayer.id,
+      teamId: winningTeam.id,
+      price: price,
+      previousNominatorId: draftState.nominatingTeamId
+    });
 
     saveStateToDisk();
 
@@ -85,11 +131,15 @@ function finalizeSale() {
     });
   }
 
+  // Rotate nomination to next eligible team
+  const nextNom = getNextNominatorId(draftState.nominatingTeamId);
+  draftState.nominatingTeamId = nextNom;
+  draftState.onDeckTeamId = getOnDeckNominatorId(nextNom);
+
   draftState.nominatedPlayer = null;
   draftState.currentBid = 0;
   draftState.highBidder = null;
   draftState.timerSeconds = 15;
-  draftState.nominatingTeamId = (draftState.nominatingTeamId % teams.length) + 1;
 
   io.emit('stateUpdate', { draftState, teams, players });
 }
@@ -141,15 +191,20 @@ function triggerAutodraftCheck() {
 }
 
 io.on('connection', (socket) => {
+  // Ensure on deck is initialized
+  draftState.onDeckTeamId = getOnDeckNominatorId(draftState.nominatingTeamId);
   socket.emit('initData', { teams, players, draftState });
 
   socket.on('nominatePlayer', ({ playerId, teamId, openingBid }) => {
     if (draftState.nominatedPlayer || draftState.isPaused) return;
 
+    // Enforce turn order: only current nominating team can nominate
+    if (teamId !== draftState.nominatingTeamId) return;
+
     const player = players.find(p => p.id === playerId && p.status === 'available');
     const team = teams.find(t => t.id === teamId);
 
-    if (!player || !team) return;
+    if (!player || !team || !isTeamEligible(team)) return;
 
     const bid = parseInt(openingBid, 10) || 1;
     const maxAllowed = getMaxAllowedBid(team);
@@ -169,6 +224,8 @@ io.on('connection', (socket) => {
     if (!draftState.nominatedPlayer || draftState.isPaused) return;
 
     const team = teams.find(t => t.id === teamId);
+    if (!team || !isTeamEligible(team)) return;
+
     const bid = parseInt(bidAmount, 10);
     const maxAllowed = getMaxAllowedBid(team);
 
@@ -223,9 +280,40 @@ io.on('connection', (socket) => {
     io.emit('stateUpdate', { draftState, teams, players });
   });
 
+  // Undo Last Sale
+  socket.on('adminUndoLastSale', () => {
+    if (draftHistory.length === 0) return;
+    if (draftState.nominatedPlayer) return; // Don't undo mid-auction
+
+    const lastSale = draftHistory.pop();
+    const team = teams.find(t => t.id === lastSale.teamId);
+    const player = players.find(p => p.id === lastSale.playerId);
+
+    if (team && player) {
+      // Refund budget
+      team.budget += lastSale.price;
+      // Remove from roster
+      team.roster = team.roster.filter(p => p.id !== player.id);
+      // Reset player
+      player.status = 'available';
+      player.draftedBy = null;
+      player.draftedByTeamId = null;
+      player.price = 0;
+
+      // Rewind nominator
+      draftState.nominatingTeamId = lastSale.previousNominatorId;
+      draftState.onDeckTeamId = getOnDeckNominatorId(draftState.nominatingTeamId);
+
+      saveStateToDisk();
+      io.emit('saleUndone', { player, team, price: lastSale.price });
+      io.emit('stateUpdate', { draftState, teams, players });
+    }
+  });
+
   socket.on('adminResetAllDraftData', () => {
     clearInterval(timerInterval);
     clearTimeout(autoBidTimeout);
+    draftHistory = [];
 
     teams.forEach(t => {
       t.budget = 200;
@@ -235,6 +323,7 @@ io.on('connection', (socket) => {
     players.forEach(p => {
       p.status = 'available';
       p.draftedBy = null;
+      p.draftedByTeamId = null;
       p.price = 0;
     });
 
@@ -244,6 +333,7 @@ io.on('connection', (socket) => {
       currentBid: 0,
       highBidder: null,
       nominatingTeamId: 1,
+      onDeckTeamId: getNextNominatorId(1),
       timerSeconds: 15,
       isPaused: false
     };
@@ -254,5 +344,5 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`🚀 NBA Auction Draft Server is running on http://localhost:3000`);
+  console.log(`🚀 NBA Auction Draft Server is running on http://localhost:${PORT}`);
 });

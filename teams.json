@@ -16,8 +16,16 @@
   {
     "id": 3,
     "name": "Team 3",
-    "budget": 200,
-    "roster": [],
+    "budget": 194,
+    "roster": [
+      {
+        "id": "03e75",
+        "name": "Nikola Jokic",
+        "pos": "C",
+        "nbaTeam": "DEN",
+        "price": 6
+      }
+    ],
     "isAuto": false
   },
   {

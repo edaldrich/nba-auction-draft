@@ -17,7 +17,6 @@
       overflow-x: hidden;
     }
 
-    /* Confetti Canvas */
     #confettiCanvas {
       position: fixed;
       top: 0; left: 0;
@@ -26,7 +25,6 @@
       z-index: 9999;
     }
 
-    /* Urgency Flash & 3,2,1 Screen Overlay */
     #urgencyOverlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -50,7 +48,6 @@
       100% { transform: scale(1.0); opacity: 0; }
     }
 
-    /* Top Status Banner */
     .top-banner {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -79,10 +76,9 @@
     .pool-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
     .pool-val { font-size: 1.7rem; font-weight: 800; color: #06d6a0; line-height: 1.1; }
 
-    /* Layout */
     .grid {
       display: grid;
-      grid-template-columns: 370px 1fr 310px;
+      grid-template-columns: 390px 1fr 310px;
       gap: 1rem;
       max-width: 1600px;
       margin: 0 auto;
@@ -106,8 +102,8 @@
       background: #0077b6;
       color: white;
       border: none;
-      padding: 0.55rem 0.9rem;
-      font-size: 0.9rem;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.88rem;
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
@@ -137,16 +133,16 @@
       font-size: 0.85rem;
     }
     .input-inline {
-      width: 70px;
-      padding: 0.3rem;
+      width: 60px;
+      padding: 0.25rem 0.35rem;
       background: #0b132b;
       color: white;
       border: 1px solid #3a506b;
       border-radius: 4px;
       text-align: center;
+      font-size: 0.8rem;
     }
 
-    /* Player Cards & Colors */
     #playerListContainer { max-height: 68vh; overflow-y: auto; padding-right: 0.2rem; }
     .player-row {
       display: flex;
@@ -183,7 +179,6 @@
     .badge-total { color: #cbd5e1; font-size: 0.73rem; margin-left: 0.25rem; }
     .drafted-tag { color: #ef476f; font-weight: 700; font-size: 0.8rem; margin-top: 0.2rem; }
 
-    /* Indicator Dots */
     .status-dot {
       display: inline-block;
       width: 9px;
@@ -246,7 +241,6 @@
     .board-col-header { border-bottom: 2px solid #0077b6; padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: center; }
     .board-pick { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.35rem; font-size: 0.8rem; }
 
-    /* NON-BLOCKING FLOATING PLAYER STATS CARD (INSPECTOR) */
     #floatingPlayerCard {
       position: fixed;
       bottom: 20px;
@@ -301,7 +295,6 @@
     }
     .stats-table-compact th { background: #0b132b; color: #94a3b8; }
 
-    /* Modals */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -333,17 +326,23 @@
       cursor: pointer;
     }
     .modal-close:hover { color: #fff; }
+
+    .cap-controls-bar {
+      display: flex;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.4rem;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Audio & Visual Canvas Layers -->
   <canvas id="confettiCanvas"></canvas>
   <div id="urgencyOverlay">
     <div id="countdownFlashNum" class="countdown-flash-num">3</div>
   </div>
 
-  <!-- Non-Blocking Floating Player Stats Inspector Card -->
+  <!-- Floating Stats Card -->
   <div id="floatingPlayerCard">
     <div class="card-header-bar">
       <div>
@@ -354,45 +353,17 @@
       <button class="modal-close" style="position: static; font-size: 1.2rem;" onclick="closeFloatingPlayerCard()">✕</button>
     </div>
 
-    <!-- Fantasy Headline Pills -->
     <div class="card-stat-pill-grid">
-      <div class="stat-pill">
-        <div class="stat-pill-label">FP/G</div>
-        <div id="pillFPPG" class="stat-pill-val">-</div>
-      </div>
-      <div class="stat-pill">
-        <div class="stat-pill-label">FPTS</div>
-        <div id="pillFPTS" class="stat-pill-val">-</div>
-      </div>
-      <div class="stat-pill">
-        <div class="stat-pill-label">PTS</div>
-        <div id="pillPTS" class="stat-pill-val">-</div>
-      </div>
-      <div class="stat-pill">
-        <div class="stat-pill-label">REB</div>
-        <div id="pillREB" class="stat-pill-val">-</div>
-      </div>
-      <div class="stat-pill">
-        <div class="stat-pill-label">AST</div>
-        <div id="pillAST" class="stat-pill-val">-</div>
-      </div>
-      <div class="stat-pill">
-        <div class="stat-pill-label">ST</div>
-        <div id="pillST" class="stat-pill-val">-</div>
-      </div>
-      <div class="stat-pill">
-        <div class="stat-pill-label">BLK</div>
-        <div id="pillBLK" class="stat-pill-val">-</div>
-      </div>
-      <div class="stat-pill">
-        <div class="stat-pill-label">3PTM</div>
-        <div id="pill3PT" class="stat-pill-val">-</div>
-      </div>
+      <div class="stat-pill"><div class="stat-pill-label">FP/G</div><div id="pillFPPG" class="stat-pill-val">-</div></div>
+      <div class="stat-pill"><div class="stat-pill-label">FPTS</div><div id="pillFPTS" class="stat-pill-val">-</div></div>
+      <div class="stat-pill"><div class="stat-pill-label">PTS</div><div id="pillPTS" class="stat-pill-val">-</div></div>
+      <div class="stat-pill"><div class="stat-pill-label">REB</div><div id="pillREB" class="stat-pill-val">-</div></div>
+      <div class="stat-pill"><div class="stat-pill-label">AST</div><div id="pillAST" class="stat-pill-val">-</div></div>
+      <div class="stat-pill"><div class="stat-pill-label">ST</div><div id="pillST" class="stat-pill-val">-</div></div>
+      <div class="stat-pill"><div class="stat-pill-label">BLK</div><div id="pillBLK" class="stat-pill-val">-</div></div>
+      <div class="stat-pill"><div class="stat-pill-label">3PTM</div><div id="pill3PT" class="stat-pill-val">-</div></div>
     </div>
 
-    <div style="max-height: 180px; overflow-y: auto;">
-      <table class="stats-table-compact" id="floatCardRawStats"></table>
-    </div>
   </div>
 
   <!-- Passcode Login Modal -->
@@ -454,7 +425,10 @@
     </div>
   </div>
 
-  <!-- Settings / Preferences Modal -->
+  <!-- Hidden File Input for Cap Import -->
+  <input type="file" id="capsCsvFileInput" accept=".csv" style="display: none;" onchange="handleCapsCsvUpload(event)" />
+
+  <!-- Preferences Modal -->
   <div id="settingsModal" class="modal-overlay" style="display: none;">
     <div class="modal-box" style="max-width: 400px;">
       <button class="modal-close" onclick="closeSettingsModal()">✕</button>
@@ -463,7 +437,7 @@
       <div style="margin-top: 1rem;">
         <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem;">
           <input type="checkbox" id="prefSoundToggle" checked onchange="savePreferences()" />
-          <strong>Enable Sound Effects (Chimes & Audio Cues)</strong>
+          <strong>Enable Sound Effects</strong>
         </label>
         
         <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem;">
@@ -496,12 +470,23 @@
   <div id="warRoomView" class="grid">
     <!-- Left: Players Pool -->
     <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
         <h3>Players</h3>
         <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="toggleCapMode()">
           Set My Caps
         </button>
       </div>
+
+      <!-- CSV Cap Import & Export Toolbar (shown when in Cap Mode) -->
+      <div id="capToolbar" class="cap-controls-bar" style="display: none;">
+        <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="downloadCapsTemplate()">
+          📥 Download Template
+        </button>
+        <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="document.getElementById('capsCsvFileInput').click()">
+          📤 Import CSV
+        </button>
+      </div>
+
       <small style="color: #8d99ae; display: block; margin-bottom: 0.4rem;">(Double-click player to open floating stats)</small>
 
       <!-- Player Search & Filters (Status + Team) -->
@@ -575,22 +560,17 @@
     let localData = { teams: [], players: [], draftState: {} };
     let myTeam = null;
     let myCaps = {};
+    let myRanks = {};
     let timerConfig = { nominationTime: 45, beginningBidTime: 45, additionalBidTime: 10 };
     let capEditMode = false;
     let currentTab = 'warRoom';
 
-    // Preferences
-    let userPrefs = {
-      sound: true,
-      visual: true
-    };
+    let userPrefs = { sound: true, visual: true };
 
-    // Audio Engine (Web Audio API Synthesizer)
+    // Web Audio Synthesizer
     let audioCtx = null;
     function getAudioContext() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       return audioCtx;
     }
 
@@ -605,10 +585,8 @@
           const gain = ctx.createGain();
           osc.type = type;
           osc.frequency.setValueAtTime(freq, ctx.currentTime);
-
           gain.gain.setValueAtTime(0.12, ctx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start();
@@ -620,14 +598,14 @@
     }
 
     function soundNominationTurn() {
-      playTone(523.25, 'triangle', 0.15, 0);   // C5
-      playTone(659.25, 'triangle', 0.15, 0.1); // E5
-      playTone(783.99, 'triangle', 0.25, 0.2); // G5
+      playTone(523.25, 'triangle', 0.15, 0);
+      playTone(659.25, 'triangle', 0.15, 0.1);
+      playTone(783.99, 'triangle', 0.25, 0.2);
     }
 
     function soundNewPlayerNominated() {
-      playTone(440.00, 'sine', 0.12, 0);     // A4
-      playTone(554.37, 'sine', 0.2, 0.08);   // C#5
+      playTone(440.00, 'sine', 0.12, 0);
+      playTone(554.37, 'sine', 0.2, 0.08);
     }
 
     function soundCountdownTick(num) {
@@ -635,10 +613,10 @@
     }
 
     function soundVictoryWon() {
-      playTone(523.25, 'triangle', 0.15, 0);   // C5
-      playTone(659.25, 'triangle', 0.15, 0.12); // E5
-      playTone(783.99, 'triangle', 0.15, 0.24); // G5
-      playTone(1046.50, 'triangle', 0.45, 0.36); // C6
+      playTone(523.25, 'triangle', 0.15, 0);
+      playTone(659.25, 'triangle', 0.15, 0.12);
+      playTone(783.99, 'triangle', 0.15, 0.24);
+      playTone(1046.50, 'triangle', 0.45, 0.36);
     }
 
     // Confetti Engine
@@ -658,7 +636,6 @@
       if (!userPrefs.visual) return;
       confettiParticles = [];
       const colors = ['#06d6a0', '#38bdf8', '#ffbe0b', '#ef476f', '#c084fc'];
-
       for (let i = 0; i < 150; i++) {
         confettiParticles.push({
           x: canvas.width / 2,
@@ -672,7 +649,6 @@
           alpha: 1
         });
       }
-
       cancelAnimationFrame(confettiAnimation);
       renderConfetti();
     }
@@ -698,13 +674,14 @@
       }
     }
 
-    // DOM References
+    // DOM Elements
     const authOverlay = document.getElementById('authOverlay');
     const passcodeInput = document.getElementById('passcodeInput');
     const authErrorMsg = document.getElementById('authErrorMsg');
     const userTeamBadge = document.getElementById('userTeamBadge');
     const myAutoDraftBtn = document.getElementById('myAutoDraftBtn');
     const openCommishBtn = document.getElementById('openCommishBtn');
+    const capToolbar = document.getElementById('capToolbar');
 
     const playerListEl = document.getElementById('playerList');
     const teamListEl = document.getElementById('teamList');
@@ -720,7 +697,6 @@
     const urgencyOverlay = document.getElementById('urgencyOverlay');
     const countdownFlashNum = document.getElementById('countdownFlashNum');
 
-    // Load Local Preferences
     const savedPrefs = localStorage.getItem('user_draft_prefs');
     if (savedPrefs) {
       try { userPrefs = JSON.parse(savedPrefs); } catch(e) {}
@@ -737,7 +713,6 @@
     function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
     function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
 
-    // Check saved login
     window.addEventListener('DOMContentLoaded', () => {
       const savedPass = localStorage.getItem('draft_passcode');
       if (savedPass) socket.emit('authTeam', { passcode: savedPass });
@@ -762,6 +737,7 @@
     socket.on('authSuccess', (data) => {
       myTeam = data.myTeam;
       myCaps = data.myCaps || {};
+      myRanks = data.myRanks || {};
       timerConfig = data.timerConfig;
       localData.teams = data.teams;
       localData.players = data.players;
@@ -861,13 +837,26 @@
       renderAuctionBlock();
     });
 
-    socket.on('capSavedConfirmation', ({ playerId, maxBid }) => {
+    socket.on('capSavedConfirmation', ({ playerId, maxBid, rank }) => {
       if (maxBid !== null && maxBid !== undefined) {
         myCaps[playerId] = maxBid;
       } else {
         delete myCaps[playerId];
       }
+
+      if (rank !== null && rank !== undefined) {
+        myRanks[playerId] = rank;
+      } else {
+        delete myRanks[playerId];
+      }
       renderPlayers();
+    });
+
+    socket.on('batchImportSuccess', ({ caps, ranks, count }) => {
+      myCaps = caps;
+      myRanks = ranks;
+      renderPlayers();
+      alert(`✅ Successfully imported ${count} player ceilings & priority rankings!`);
     });
 
     let lastSecondFlashed = null;
@@ -882,14 +871,12 @@
         labelEl.textContent = mode === 'nomination' ? 'Nomination Clock' : 'Auction Clock';
       }
 
-      // Check for your turn to nominate audio cue
       if (mode === 'nomination' && seconds === timerConfig.nominationTime) {
         if (myTeam && localData.draftState.nominatingTeamId === myTeam.id) {
           soundNominationTurn();
         }
       }
 
-      // 3, 2, 1 Countdown Flash & Audio
       if (mode === 'auction' && seconds >= 1 && seconds <= 3 && lastSecondFlashed !== seconds) {
         lastSecondFlashed = seconds;
         soundCountdownTick(seconds);
@@ -901,13 +888,13 @@
       }
     });
 
+    // Award player silently without browser alert
     socket.on('playerSold', ({ player, winningTeam, price }) => {
       logMessage(`<span class="log-sold">🔨 SOLD!</span> <strong>${player.name}</strong> to <strong>${winningTeam.name}</strong> for $${price}!`);
       
       if (myTeam && winningTeam.id === myTeam.id) {
         soundVictoryWon();
         triggerConfetti();
-        alert(`🏆 CONGRATULATIONS! You won ${player.name} for $${price}!`);
       }
     });
 
@@ -973,6 +960,7 @@
     function toggleCapMode() {
       capEditMode = !capEditMode;
       document.getElementById('toggleCapModeBtn').textContent = capEditMode ? 'Done' : 'Set My Caps';
+      capToolbar.style.display = capEditMode ? 'flex' : 'none';
       renderPlayers();
     }
 
@@ -1004,14 +992,10 @@
       const teamSelected = teamFilter.value;
 
       const me = localData.teams.find(t => t.id === myTeam.id);
-      const myBudget = me ? me.budget : 0;
 
       const filtered = localData.players.filter(p => {
-        // Text search only searches player name
         if (query && !p.name.toLowerCase().includes(query)) return false;
-        // Team filter
         if (teamSelected !== 'ALL' && (p.nbaTeam || '').toUpperCase() !== teamSelected) return false;
-        // Status filter
         if (filter === 'available') return p.status === 'available';
         if (filter === 'drafted') return p.status === 'drafted';
         return true;
@@ -1021,6 +1005,7 @@
 
       playerListEl.innerHTML = filtered.map(p => {
         const myCap = (myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
+        const myRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
         const isDrafted = p.status === 'drafted';
         const posClass = getPositionClass(p.pos);
 
@@ -1035,20 +1020,28 @@
                 <span class="badge-total">${p.fpts.toFixed(0)} FPts</span>
               </div>
               ${isDrafted ? `<div class="drafted-tag">Drafted: ${p.draftedBy} ($${p.price})</div>` : ''}
-              ${(!isDrafted && myCap !== '') ? `<div style="font-size:0.75rem; color:#ffbe0b;">My Max Cap: $${myCap}</div>` : ''}
+              ${(!isDrafted && (myCap !== '' || myRank !== '')) ? `
+                <div style="font-size:0.75rem; color:#ffbe0b;">
+                  ${myCap !== '' ? `Cap: $${myCap}` : ''} ${myRank !== '' ? `&bull; Priority: #${myRank}` : ''}
+                </div>
+              ` : ''}
             </div>
 
             ${!isDrafted ? (
               capEditMode ? `
-                <div onclick="event.stopPropagation();">
-                  $<input type="number" class="input-inline" placeholder="Max $" value="${myCap}" 
-                    onchange="saveCap('${p.id}', this.value)" />
+                <div style="display: flex; gap: 0.25rem; align-items: center;" onclick="event.stopPropagation();">
+                  <input type="number" class="input-inline" placeholder="Max $" value="${myCap}" 
+                    title="Max Bid ($)"
+                    onchange="saveCap('${p.id}', this.value, document.getElementById('rankInput_${p.id}').value)" />
+                  <input type="number" id="rankInput_${p.id}" class="input-inline" placeholder="Rank" value="${myRank}" 
+                    title="Priority Rank (1 = Top preference)"
+                    onchange="saveCap('${p.id}', this.previousElementSibling.value, this.value)" />
                 </div>
               ` : `
                 <button class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
-                  onclick="event.stopPropagation(); nominatePrompt('${p.id}',${myBudget})" 
+                  onclick="event.stopPropagation(); directNominate('${p.id}')" 
                   ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate || !localData.draftState.isDraftStarted) ? 'disabled' : ''}
-                  title="${!localData.draftState.isDraftStarted ? 'Draft not started' : (!isMyTurnToNominate ? 'Not your turn' : 'Nominate')}">
+                  title="${!localData.draftState.isDraftStarted ? 'Draft not started' : (!isMyTurnToNominate ? 'Not your turn' : 'Nominate for minimum')}">
                   Nominate
                 </button>
               `
@@ -1058,21 +1051,78 @@
       }).join('');
     }
 
-    function nominatePrompt(playerId, myBudget) {
-      let defaultBid = myBudget > 0 ? 1 : 0;
-      let bidStr = prompt(`Nominate player for opening bid amount ($${myBudget > 0 ? '1 - $' + myBudget : '0'}):`, defaultBid);
-      if (bidStr === null) return;
-      let bid = parseInt(bidStr, 10);
-      if (isNaN(bid)) bid = defaultBid;
-      if (myBudget > 0 && bid < 1) bid = 1;
-      if (myBudget === 0) bid = 0;
-      if (bid > myBudget) bid = myBudget;
-
-      socket.emit('nominatePlayer', { playerId, openingBid: bid });
+    // Direct 1-Click Nomination (No popup)
+    function directNominate(playerId) {
+      socket.emit('nominatePlayer', { playerId });
     }
 
-    function saveCap(playerId, maxBid) {
-      socket.emit('updateAutoCap', { playerId, maxBid });
+    function saveCap(playerId, maxBid, rank) {
+      socket.emit('updateAutoCap', { playerId, maxBid, rank });
+    }
+
+    // CSV Template Download
+    function downloadCapsTemplate() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Player ID,Player Name,Team,Position,FP/G,Max Bid ($),Priority Rank (1-300)\n";
+
+      localData.players.forEach(p => {
+        const currentCap = (myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
+        const currentRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
+        const cleanName = `"${p.name.replace(/"/g, '""')}"`;
+        csvContent += `${p.id},${cleanName},${p.nbaTeam},${p.pos},${p.fppg.toFixed(1)},${currentCap},${currentRank}\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `draft-caps-${myTeam.name.toLowerCase().replace(/\s+/g, '-')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // CSV Upload & Parsing
+    function handleCapsCsvUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split(/\r\n|\n/);
+        if (lines.length < 2) return;
+
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        const idIdx = headers.findIndex(h => h.includes('id'));
+        const nameIdx = headers.findIndex(h => h.includes('name') || h.includes('player'));
+        const capIdx = headers.findIndex(h => h.includes('max') || h.includes('bid') || h.includes('cap') || h.includes('dollar'));
+        const rankIdx = headers.findIndex(h => h.includes('priority') || h.includes('rank'));
+
+        const records = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          // Split regex respecting quotes
+          const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"\vert{}"$/g, '').trim());
+
+          const playerId = idIdx !== -1 ? cols[idIdx] : null;
+          const playerName = nameIdx !== -1 ? cols[nameIdx] : null;
+          const maxBid = capIdx !== -1 ? cols[capIdx] : '';
+          const rank = rankIdx !== -1 ? cols[rankIdx] : '';
+
+          if (playerId || playerName) {
+            records.push({ playerId, name: playerName, maxBid, rank });
+          }
+        }
+
+        if (records.length > 0) {
+          socket.emit('batchImportCaps', { records });
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = ''; // Reset input
     }
 
     function renderTeams() {
@@ -1103,7 +1153,7 @@
         auctionContentEl.innerHTML = `
           <div class="timer-label">Draft Status</div>
           <div class="timer">OFFLINE</div>
-          <p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to officially start the draft...</p>
+          <p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to start the draft...</p>
         `;
         return;
       }
@@ -1149,7 +1199,7 @@
         </div>
 
         <div style="margin-top: 0.75rem;">
-          <input type="number" id="customBidInput" class="input-inline" style="width: 100px;" placeholder="$ Amount" min="${state.currentBid + 1}" max="${myBudget}">
+          <input type="number" id="customBidInput" class="input-inline" style="width: 90px;" placeholder="$ Amount" min="${state.currentBid + 1}" max="${myBudget}">
           <button class="btn btn-secondary" onclick="bidCustom()" ${(!isEligibleToBid || state.isPaused) ? 'disabled' : ''}>Custom Bid</button>
         </div>
       `;
@@ -1197,31 +1247,22 @@
       socket.emit('placeBid', { bidAmount: val });
     }
 
-    // NON-BLOCKING FLOATING PLAYER INSPECTOR CARD
-    function openFloatingPlayerCard(playerId) {
+function openFloatingPlayerCard(playerId) {
       const p = localData.players.find(x => x.id === playerId);
-      if (!p || !p.fullStats) return;
+      if (!p) return;
 
       document.getElementById('floatCardName').textContent = p.name;
-      document.getElementById('floatCardTeamPos').textContent = `${p.pos} &bull; ${p.nbaTeam}`;
+      document.getElementById('floatCardTeamPos').textContent = `${p.pos} • ${p.nbaTeam}`;
       document.getElementById('floatCardRank').textContent = p.rank ? `Rank #${p.rank}` : '';
 
       document.getElementById('pillFPPG').textContent = p.fppg ? p.fppg.toFixed(1) : '-';
       document.getElementById('pillFPTS').textContent = p.fpts ? p.fpts.toFixed(0) : '-';
-      document.getElementById('pillPTS').textContent = p.fullStats.PTS ?? '-';
-      document.getElementById('pillREB').textContent = p.fullStats.REB ?? '-';
-      document.getElementById('pillAST').textContent = p.fullStats.AST ?? '-';
-      document.getElementById('pillST').textContent = p.fullStats.ST ?? '-';
-      document.getElementById('pillBLK').textContent = p.fullStats.BLK ?? '-';
-      document.getElementById('pill3PT').textContent = p.fullStats['3PTM'] ?? '-';
-
-      const table = document.getElementById('floatCardRawStats');
-      table.innerHTML = Object.entries(p.fullStats).map(([k, v]) => `
-        <tr>
-          <th>${k}</th>
-          <td>${v !== undefined && v !== null ? v : '-'}</td>
-        </tr>
-      `).join('');
+      document.getElementById('pillPTS').textContent = p.fullStats?.PTS ?? (p.stats?.pts ?? '-');
+      document.getElementById('pillREB').textContent = p.fullStats?.REB ?? (p.stats?.reb ?? '-');
+      document.getElementById('pillAST').textContent = p.fullStats?.AST ?? (p.stats?.ast ?? '-');
+      document.getElementById('pillST').textContent = p.fullStats?.ST ?? (p.stats?.stl ?? '-');
+      document.getElementById('pillBLK').textContent = p.fullStats?.BLK ?? (p.stats?.blk ?? '-');
+      document.getElementById('pill3PT').textContent = p.fullStats?.['3PTM'] ?? (p.stats?.threes ?? '-');
 
       document.getElementById('floatingPlayerCard').style.display = 'block';
     }
@@ -1230,7 +1271,6 @@
       document.getElementById('floatingPlayerCard').style.display = 'none';
     }
 
-    // Commissioner Modal Operations
     function openCommishModal() {
       document.getElementById('inputNomTime').value = timerConfig.nominationTime;
       document.getElementById('inputBidTime').value = timerConfig.beginningBidTime;
@@ -1262,7 +1302,7 @@
     }
 
     function adminStartDraft() {
-      if (confirm("Officially start the draft? The nomination timer will begin immediately!")) {
+      if (confirm("Officially start the draft? Nomination clock starts immediately!")) {
         socket.emit('adminStartDraft');
         closeCommishModal();
       }

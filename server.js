@@ -55,22 +55,26 @@ function getPublicTeams() {
 
 function getPublicPlayers() {
   return players.map(p => {
-    const { autoCaps, ...publicFields } = p;
+    const { autoCaps, autoRanks, ...publicFields } = p;
     return publicFields;
   });
 }
 
-function getTeamCaps(teamId) {
+// Extract a single team's private caps and priorities
+function getTeamCapsAndRanks(teamId) {
   const caps = {};
+  const ranks = {};
   players.forEach(p => {
     if (p.autoCaps && p.autoCaps[teamId] !== undefined) {
       caps[p.id] = p.autoCaps[teamId];
     }
+    if (p.autoRanks && p.autoRanks[teamId] !== undefined) {
+      ranks[p.id] = p.autoRanks[teamId];
+    }
   });
-  return caps;
+  return { caps, ranks };
 }
 
-// Roster has open spot (budget can be 0 to fill with $0 picks)
 function isTeamEligible(team) {
   return team.roster.length < MAX_ROSTER_SIZE;
 }
@@ -96,7 +100,6 @@ function getOnDeckNominatorId(currentNominatorId) {
   return getNextNominatorId(currentNominatorId);
 }
 
-// Global Draft State
 let draftState = {
   isDraftStarted: false,
   isDraftActive: true,
@@ -113,12 +116,6 @@ let draftState = {
 function saveStateToDisk() {
   fs.writeFileSync(path.join(__dirname, 'teams.json'), JSON.stringify(teams, null, 2));
   fs.writeFileSync(path.join(__dirname, 'players.json'), JSON.stringify(players, null, 2));
-}
-
-// $0 rule: team can spend up to their entire budget without mandatory $1 reserve per open spot
-function getMaxAllowedBid(team) {
-  if (!isTeamEligible(team)) return -1;
-  return team.budget;
 }
 
 let timerInterval = null;
@@ -150,10 +147,18 @@ function startTimer(mode, duration) {
   }, 1000);
 }
 
+// Auto-nominate priority target if time expires
 function autoNominateCurrentTeam() {
   const team = teams.find(t => t.id === draftState.nominatingTeamId);
   const available = players.filter(p => p.status === 'available');
   if (!available.length || !team) return;
+
+  // Sort available by manager's custom priority ranking (ascending: 1 = top priority)
+  available.sort((a, b) => {
+    const rankA = (a.autoRanks && a.autoRanks[team.id] !== undefined) ? a.autoRanks[team.id] : 9999;
+    const rankB = (b.autoRanks && b.autoRanks[team.id] !== undefined) ? b.autoRanks[team.id] : 9999;
+    return rankA - rankB;
+  });
 
   const player = available[0];
   const openingBid = team.budget > 0 ? 1 : 0;
@@ -169,10 +174,8 @@ function executeNomination(playerId, teamId, openingBid) {
   let bid = parseInt(openingBid, 10);
   if (isNaN(bid)) bid = (team.budget > 0 ? 1 : 0);
 
-  // If team has budget > 0, minimum nomination is $1. If $0 budget, nomination is $0.
   if (team.budget > 0 && bid < 1) bid = 1;
   if (team.budget === 0) bid = 0;
-
   if (bid > team.budget) bid = team.budget;
 
   draftState.nominatedPlayer = player;
@@ -247,16 +250,12 @@ function triggerAutodraftCheck() {
 
     const player = draftState.nominatedPlayer;
     const currentBid = draftState.currentBid;
-    
-    // If current bid is 0, next bid is 1. Otherwise current + 1.
     const nextBidRequired = currentBid === 0 ? 1 : currentBid + 1;
 
     const eligibleBots = teams.filter(t => {
       if (!t.isAuto) return false;
       if (draftState.highBidder && draftState.highBidder.id === t.id) return false;
       if (!isTeamEligible(t)) return false;
-
-      // Bot cannot bid if it doesn't have the budget
       if (t.budget < nextBidRequired) return false;
 
       const playerCap = player.autoCaps ? player.autoCaps[t.id] : null;
@@ -268,9 +267,23 @@ function triggerAutodraftCheck() {
 
     if (eligibleBots.length === 0) return;
 
-    // Pick random winner among matching bots
-    const randomIndex = Math.floor(Math.random() * eligibleBots.length);
-    const winningBot = eligibleBots[randomIndex];
+    // Tie-breaker hierarchy:
+    // 1. Higher ceiling wins
+    // 2. If ceilings equal, lower Priority Rank number wins (Rank 1 beats Rank 5)
+    // 3. If priorities equal, random coin-flip
+    eligibleBots.sort((a, b) => {
+      const capA = player.autoCaps[a.id];
+      const capB = player.autoCaps[b.id];
+      if (capB !== capA) return capB - capA;
+
+      const rankA = (player.autoRanks && player.autoRanks[a.id] !== undefined) ? player.autoRanks[a.id] : 9999;
+      const rankB = (player.autoRanks && player.autoRanks[b.id] !== undefined) ? player.autoRanks[b.id] : 9999;
+      if (rankA !== rankB) return rankA - rankB;
+
+      return Math.random() - 0.5;
+    });
+
+    const winningBot = eligibleBots[0];
 
     draftState.currentBid = nextBidRequired;
     draftState.highBidder = { id: winningBot.id, name: winningBot.name };
@@ -296,6 +309,8 @@ io.on('connection', (socket) => {
 
     socketSessions.set(socket.id, team.id);
 
+    const { caps, ranks } = getTeamCapsAndRanks(team.id);
+
     socket.emit('authSuccess', {
       myTeam: {
         id: team.id,
@@ -303,7 +318,8 @@ io.on('connection', (socket) => {
         isCommish: !!team.isCommish,
         isAuto: team.isAuto
       },
-      myCaps: getTeamCaps(team.id),
+      myCaps: caps,
+      myRanks: ranks,
       timerConfig,
       teams: getPublicTeams(),
       players: getPublicPlayers(),
@@ -329,12 +345,15 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('nominatePlayer', ({ playerId, openingBid }) => {
+  // Direct nomination at minimum ($1 or $0)
+  socket.on('nominatePlayer', ({ playerId }) => {
     if (!draftState.isDraftStarted) return;
     const teamId = socketSessions.get(socket.id);
     if (!teamId || draftState.nominatedPlayer || draftState.isPaused) return;
     if (teamId !== draftState.nominatingTeamId) return;
 
+    const team = teams.find(t => t.id === teamId);
+    const openingBid = (team && team.budget > 0) ? 1 : 0;
     executeNomination(playerId, teamId, openingBid);
   });
 
@@ -349,11 +368,8 @@ io.on('connection', (socket) => {
     const bid = parseInt(bidAmount, 10);
     if (isNaN(bid)) return;
 
-    // Minimum check: must be strictly greater than currentBid (or 1 if current is 0)
     if (draftState.currentBid === 0 && bid < 1) return;
     if (draftState.currentBid > 0 && bid <= draftState.currentBid) return;
-
-    // Budget check
     if (bid > team.budget) return;
     if (draftState.highBidder && draftState.highBidder.id === team.id) return;
 
@@ -368,7 +384,8 @@ io.on('connection', (socket) => {
     triggerAutodraftCheck();
   });
 
-  socket.on('updateAutoCap', ({ playerId, maxBid }) => {
+  // Update single player cap & optional rank
+  socket.on('updateAutoCap', ({ playerId, maxBid, rank }) => {
     const teamId = socketSessions.get(socket.id);
     if (!teamId) return;
 
@@ -376,6 +393,7 @@ io.on('connection', (socket) => {
     if (!player) return;
 
     if (!player.autoCaps) player.autoCaps = {};
+    if (!player.autoRanks) player.autoRanks = {};
 
     const cleanBid = parseInt(maxBid, 10);
     if (isNaN(cleanBid) || cleanBid < 0) {
@@ -384,11 +402,49 @@ io.on('connection', (socket) => {
       player.autoCaps[teamId] = cleanBid;
     }
 
+    const cleanRank = parseInt(rank, 10);
+    if (isNaN(cleanRank) || cleanRank <= 0) {
+      delete player.autoRanks[teamId];
+    } else {
+      player.autoRanks[teamId] = cleanRank;
+    }
+
     saveStateToDisk();
     socket.emit('capSavedConfirmation', {
       playerId,
-      maxBid: cleanBid >= 0 ? cleanBid : null
+      maxBid: cleanBid >= 0 ? cleanBid : null,
+      rank: cleanRank > 0 ? cleanRank : null
     });
+  });
+
+  // Batch import caps + ranks from CSV
+  socket.on('batchImportCaps', ({ records }) => {
+    const teamId = socketSessions.get(socket.id);
+    if (!teamId || !Array.isArray(records)) return;
+
+    let updatedCount = 0;
+    records.forEach(r => {
+      const player = players.find(p => p.id === r.playerId || p.name.toLowerCase() === (r.name || '').toLowerCase());
+      if (player) {
+        if (!player.autoCaps) player.autoCaps = {};
+        if (!player.autoRanks) player.autoRanks = {};
+
+        if (r.maxBid !== undefined && r.maxBid !== null && r.maxBid !== '') {
+          const val = parseInt(r.maxBid, 10);
+          if (!isNaN(val) && val >= 0) player.autoCaps[teamId] = val;
+        }
+
+        if (r.rank !== undefined && r.rank !== null && r.rank !== '') {
+          const val = parseInt(r.rank, 10);
+          if (!isNaN(val) && val > 0) player.autoRanks[teamId] = val;
+        }
+        updatedCount++;
+      }
+    });
+
+    saveStateToDisk();
+    const { caps, ranks } = getTeamCapsAndRanks(teamId);
+    socket.emit('batchImportSuccess', { caps, ranks, count: updatedCount });
   });
 
   function isCommishSocket() {
@@ -397,7 +453,6 @@ io.on('connection', (socket) => {
     return team && team.isCommish;
   }
 
-  // Commissioner Start Draft Action
   socket.on('adminStartDraft', () => {
     if (!isCommishSocket()) return;
     draftState.isDraftStarted = true;

@@ -2,93 +2,141 @@
   {
     "id": 1,
     "name": "Team 1",
-    "budget": 200,
-    "roster": [],
-    "isAuto": false
-  },
-  {
-    "id": 2,
-    "name": "Team 2",
-    "budget": 200,
-    "roster": [],
-    "isAuto": false
-  },
-  {
-    "id": 3,
-    "name": "Team 3",
-    "budget": 194,
+    "budget": 199,
     "roster": [
       {
         "id": "03e75",
         "name": "Nikola Jokic",
         "pos": "C",
         "nbaTeam": "DEN",
-        "price": 6
+        "price": 1
       }
     ],
-    "isAuto": false
+    "isAuto": false,
+    "passcode": "commish1",
+    "isCommish": true
+  },
+  {
+    "id": 2,
+    "name": "Team 2",
+    "budget": 199,
+    "roster": [
+      {
+        "id": "04kj6",
+        "name": "Luka Doncic",
+        "pos": "PG,SG,G",
+        "nbaTeam": "LAL",
+        "price": 1
+      }
+    ],
+    "isAuto": false,
+    "passcode": "commish2",
+    "isCommish": true
+  },
+  {
+    "id": 3,
+    "name": "Team 3",
+    "budget": 199,
+    "roster": [
+      {
+        "id": "031m2",
+        "name": "Giannis Antetokounmpo",
+        "pos": "PF,F,C",
+        "nbaTeam": "MIA",
+        "price": 1
+      }
+    ],
+    "isAuto": false,
+    "passcode": "team3pass",
+    "isCommish": false
   },
   {
     "id": 4,
     "name": "Team 4",
-    "budget": 200,
-    "roster": [],
-    "isAuto": false
+    "budget": 199,
+    "roster": [
+      {
+        "id": "04qro",
+        "name": "Shai Gilgeous-Alexander",
+        "pos": "PG,G",
+        "nbaTeam": "OKC",
+        "price": 1
+      }
+    ],
+    "isAuto": false,
+    "passcode": "team4pass",
+    "isCommish": false
   },
   {
     "id": 5,
     "name": "Team 5",
     "budget": 200,
     "roster": [],
-    "isAuto": false
+    "isAuto": false,
+    "passcode": "team5pass",
+    "isCommish": false
   },
   {
     "id": 6,
     "name": "Team 6",
     "budget": 200,
     "roster": [],
-    "isAuto": false
+    "isAuto": false,
+    "passcode": "team6pass",
+    "isCommish": false
   },
   {
     "id": 7,
     "name": "Team 7",
     "budget": 200,
     "roster": [],
-    "isAuto": false
+    "isAuto": false,
+    "passcode": "team7pass",
+    "isCommish": false
   },
   {
     "id": 8,
     "name": "Team 8",
     "budget": 200,
     "roster": [],
-    "isAuto": false
+    "isAuto": false,
+    "passcode": "team8pass",
+    "isCommish": false
   },
   {
     "id": 9,
     "name": "Team 9",
     "budget": 200,
     "roster": [],
-    "isAuto": false
+    "isAuto": false,
+    "passcode": "team9pass",
+    "isCommish": false
   },
   {
     "id": 10,
     "name": "Team 10",
     "budget": 200,
     "roster": [],
-    "isAuto": false
+    "isAuto": false,
+    "passcode": "team10pass",
+    "isCommish": false
   },
   {
     "id": 11,
     "name": "Team 11",
     "budget": 200,
     "roster": [],
-    "isAuto": false
+    "isAuto": false,
+    "passcode": "team11pass",
+    "isCommish": false
   },
   {
     "id": 12,
     "name": "Team 12",
     "budget": 200,
     "roster": [],
-    "isAuto": true
+    "isAuto": true,
+    "passcode": "team12pass",
+    "isCommish": false
   }
 ]

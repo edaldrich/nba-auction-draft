@@ -23,24 +23,17 @@ fs.createReadStream(csvFilePath)
       rank: parseInt(row['RkOv'], 10) || null,
       fpts: parseFloat(row['FPts']) || 0,
       fppg: parseFloat(row['FP/G']) || 0,
-      stats: {
-        pts: parseFloat(row['PTS']) || 0,
-        reb: parseFloat(row['REB']) || 0,
-        ast: parseFloat(row['AST']) || 0,
-        stl: parseFloat(row['ST']) || 0,
-        blk: parseFloat(row['BLK']) || 0,
-        to: parseFloat(row['TO']) || 0,
-        threes: parseFloat(row['3PTM']) || 0
-      },
+      fullStats: row, // Stores all raw columns for modal display
       status: 'available',
       draftedBy: null,
+      draftedByTeamId: null,
       price: 0,
       autoCaps: {}
     });
   })
   .on('end', () => {
     fs.writeFileSync(jsonFilePath, JSON.stringify(parsedPlayers, null, 2));
-    console.log(`✅ Success! Imported ${parsedPlayers.length} players from Fantrax into players.json.`);
+    console.log(`✅ Success! Imported ${parsedPlayers.length} players with full stat sheets.`);
   })
   .on('error', (err) => {
     console.error('❌ Error reading CSV file:', err.message);

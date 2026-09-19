@@ -15,6 +15,39 @@
       padding: 1rem 1.5rem;
     }
 
+    /* Modals & Overlays */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(11, 19, 43, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: #1c2541;
+      padding: 1.75rem;
+      border-radius: 8px;
+      border: 1px solid #3a506b;
+      max-width: 650px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1.25rem;
+      background: none;
+      border: none;
+      color: #8d99ae;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+
     /* Top Status Banner */
     .top-banner {
       display: grid;
@@ -26,23 +59,9 @@
       padding: 0.75rem 1.5rem;
       margin-bottom: 1rem;
     }
-    .nom-indicator {
-      font-size: 1.05rem;
-    }
-    .nom-current {
-      color: #ffbe0b;
-      font-weight: bold;
-    }
-    .nom-ondeck {
-      color: #8d99ae;
-      font-size: 0.9rem;
-      margin-top: 0.2rem;
-    }
-    .tab-nav {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-    }
+    .nom-current { color: #ffbe0b; font-weight: bold; }
+    .nom-ondeck { color: #8d99ae; font-size: 0.9rem; margin-top: 0.2rem; }
+    .tab-nav { display: flex; gap: 0.5rem; justify-content: center; }
     .tab-btn {
       background: #0b132b;
       color: #8d99ae;
@@ -53,35 +72,17 @@
       font-weight: bold;
       cursor: pointer;
     }
-    .tab-btn.active {
-      background: #0077b6;
-      color: white;
-      border-color: #0077b6;
-    }
+    .tab-btn.active { background: #0077b6; color: white; border-color: #0077b6; }
+    .pool-stat { text-align: right; }
+    .pool-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
+    .pool-val { font-size: 1.8rem; font-weight: 800; color: #06d6a0; line-height: 1.1; }
 
-    /* Total Budget Widget */
-    .pool-stat {
-      text-align: right;
-    }
-    .pool-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #8d99ae;
-    }
-    .pool-val {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: #06d6a0;
-      line-height: 1.1;
-    }
-
-    /* Main Layout */
+    /* Layout */
     .grid {
       display: grid;
-      grid-template-columns: 370px 1fr 310px;
+      grid-template-columns: 380px 1fr 320px;
       gap: 1.25rem;
-      max-width: 1560px;
+      max-width: 1600px;
       margin: 0 auto;
     }
     .card {
@@ -93,18 +94,11 @@
     h2, h3, h4 { margin-top: 0; color: #48cae4; }
     
     .block-center { text-align: center; }
-    .timer {
-      font-size: 3.5rem;
-      font-weight: 800;
-      color: #ffbe0b;
-      margin: 0.25rem 0;
-    }
+    .timer { font-size: 3.5rem; font-weight: 800; color: #ffbe0b; margin: 0.25rem 0; }
     .timer-paused { color: #ef233c !important; }
-    .current-bid {
-      font-size: 2.5rem;
-      font-weight: bold;
-      color: #06d6a0;
-    }
+    .timer-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
+    .current-bid { font-size: 2.5rem; font-weight: bold; color: #06d6a0; }
+    
     .btn {
       background: #0077b6;
       color: white;
@@ -124,6 +118,8 @@
     .btn-danger:hover { background: #ef233c; }
     .btn-warning { background: #f77f00; }
     .btn-warning:hover { background: #fcbf49; color: black; }
+    .btn-toggle-auto { background: #5a189a; border: 1px solid #9d4edd; }
+    .btn-toggle-auto.active { background: #ffbe0b; color: #000; border-color: #ffd166; }
 
     .selector {
       width: 100%;
@@ -144,46 +140,65 @@
       text-align: center;
     }
 
-    /* Player Pool Column */
-    #playerListContainer {
-      max-height: 68vh;
-      overflow-y: auto;
-      padding-right: 0.3rem;
-    }
+    /* Player Cards & Colors */
+    #playerListContainer { max-height: 68vh; overflow-y: auto; padding-right: 0.3rem; }
     .player-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.55rem 0.25rem;
-      border-bottom: 1px solid #2a3d5e;
+      padding: 0.55rem 0.5rem;
+      border-radius: 6px;
+      margin-bottom: 0.35rem;
+      user-select: none;
+      cursor: pointer;
+      border-left: 4px solid transparent;
+      background: #111d4a;
+    }
+    /* Guards */
+    .pos-guard {
+      background: #102a43;
+      border-left-color: #48cae4;
+    }
+    /* Forwards */
+    .pos-forward {
+      background: #064e3b;
+      border-left-color: #10b981;
+    }
+    /* Centers */
+    .pos-center {
+      background: #2e1065;
+      border-left-color: #c084fc;
     }
     .player-row-drafted {
-      background: rgba(217, 4, 41, 0.12);
-      border-left: 3px solid #ef233c;
-      padding-left: 0.4rem;
+      background: rgba(217, 4, 41, 0.12) !important;
+      border-left-color: #ef233c !important;
+      opacity: 0.7;
     }
+
     .badge-fppg {
       display: inline-block;
-      background: #0d3b66;
+      background: rgba(0, 0, 0, 0.3);
       color: #48cae4;
       font-weight: 700;
       border-radius: 4px;
       padding: 0.12rem 0.35rem;
       font-size: 0.78rem;
     }
-    .badge-total {
-      color: #8d99ae;
-      font-size: 0.75rem;
-      margin-left: 0.25rem;
-    }
-    .drafted-tag {
-      color: #ef476f;
-      font-weight: 700;
-      font-size: 0.8rem;
-      margin-top: 0.2rem;
-    }
+    .badge-total { color: #cbd5e1; font-size: 0.75rem; margin-left: 0.25rem; }
+    .drafted-tag { color: #ef476f; font-weight: 700; font-size: 0.8rem; margin-top: 0.2rem; }
 
-    /* Active Block Stat Strip */
+    /* Indicator Dots */
+    .status-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+    .status-online { background-color: #10b981; box-shadow: 0 0 6px #10b981; }
+    .status-auto { background-color: #ffbe0b; box-shadow: 0 0 6px #ffbe0b; }
+    .status-offline { background-color: #ef233c; }
+
     .stat-strip {
       display: flex;
       justify-content: center;
@@ -196,9 +211,7 @@
       border: 1px solid #3a506b;
       font-size: 0.88rem;
     }
-    .stat-strip span strong {
-      color: #48cae4;
-    }
+    .stat-strip span strong { color: #48cae4; }
 
     .team-row {
       display: flex;
@@ -210,7 +223,7 @@
     
     #logBox {
       background: #0b132b;
-      height: 130px;
+      height: 140px;
       overflow-y: auto;
       border: 1px solid #3a506b;
       border-radius: 6px;
@@ -223,15 +236,7 @@
     .log-item { margin: 0.2rem 0; }
     .log-auto { color: #ffbe0b; }
     .log-sold { color: #06d6a0; font-weight: bold; }
-    .admin-bar {
-      margin-top: 1rem;
-      padding: 0.65rem;
-      background: #111d4a;
-      border: 1px dashed #48cae4;
-      border-radius: 6px;
-    }
 
-    /* Draft Board Tab View */
     #draftBoardView {
       display: none;
       overflow-x: auto;
@@ -240,35 +245,89 @@
       border: 1px solid #3a506b;
       padding: 1rem;
     }
-    .board-grid {
-      display: grid;
-      grid-template-columns: repeat(12, minmax(170px, 1fr));
-      gap: 0.75rem;
+    .board-grid { display: grid; grid-template-columns: repeat(12, minmax(170px, 1fr)); gap: 0.75rem; }
+    .board-col { background: #0b132b; border: 1px solid #3a506b; border-radius: 6px; padding: 0.5rem; min-height: 500px; }
+    .board-col-header { border-bottom: 2px solid #0077b6; padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: center; }
+    .board-pick { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.35rem; font-size: 0.8rem; }
+    
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 1rem;
     }
-    .board-col {
-      background: #0b132b;
+    .stats-table th, .stats-table td {
+      padding: 0.4rem 0.6rem;
       border: 1px solid #3a506b;
-      border-radius: 6px;
-      padding: 0.5rem;
-      min-height: 500px;
+      text-align: left;
     }
-    .board-col-header {
-      border-bottom: 2px solid #0077b6;
-      padding-bottom: 0.4rem;
-      margin-bottom: 0.5rem;
-      text-align: center;
-    }
-    .board-pick {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 4px;
-      padding: 0.35rem 0.5rem;
-      margin-bottom: 0.35rem;
-      font-size: 0.8rem;
-    }
+    .stats-table th { background: #0b132b; color: #48cae4; }
   </style>
 </head>
 <body>
+
+  <!-- Passcode Login Modal -->
+  <div id="authOverlay" class="modal-overlay">
+    <div class="modal-box" style="max-width: 360px; text-align: center;">
+      <h2 style="margin-bottom: 0.5rem;">League Draft Sign-In</h2>
+      <p style="color: #8d99ae; font-size: 0.85rem; margin-top: 0;">Enter your team passcode</p>
+      <input type="password" id="passcodeInput" class="selector" placeholder="Team Passcode" style="text-align: center; font-size: 1rem; margin-bottom: 1rem;" />
+      <button class="btn" style="width: 100%; padding: 0.6rem;" onclick="submitAuth()">Enter Draft Room</button>
+      <p id="authErrorMsg" style="color: #ef233c; font-size: 0.85rem; margin-top: 0.75rem; display: none;"></p>
+    </div>
+  </div>
+
+  <!-- Player Stats Double-Click Modal -->
+  <div id="playerStatsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closePlayerModal()">✕</button>
+      <h2 id="modalPlayerName" style="margin-bottom: 0.25rem;"></h2>
+      <p id="modalPlayerMeta" style="color: #8d99ae; margin-top: 0;"></p>
+      <table class="stats-table" id="modalStatsTable"></table>
+    </div>
+  </div>
+
+  <!-- Commissioner Modal -->
+  <div id="commishModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeCommishModal()">✕</button>
+      <h2>🛡️ Commissioner Command Center</h2>
+      
+      <div style="margin-bottom: 1.5rem;">
+        <h4>Timer Configuration (Seconds)</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+          <div>
+            <label style="font-size: 0.8rem; color: #8d99ae;">Nomination Time</label>
+            <input type="number" id="inputNomTime" class="selector" />
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; color: #8d99ae;">Initial Bid Time</label>
+            <input type="number" id="inputBidTime" class="selector" />
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; color: #8d99ae;">Late Bid Reset</label>
+            <input type="number" id="inputResetTime" class="selector" />
+          </div>
+        </div>
+        <button class="btn" onclick="saveTimerSettings()">Update Timers</button>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <h4>Draft Room Controls</h4>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button id="pauseBtnModal" class="btn btn-warning" onclick="adminTogglePause()">Pause Draft</button>
+          <button class="btn btn-secondary" onclick="adminResetBlock()">Cancel Block</button>
+          <button class="btn btn-warning" onclick="adminUndoLastSale()">↩ Undo Last Sale</button>
+          <button class="btn btn-danger" onclick="adminResetDraft()">Reset Entire Draft</button>
+        </div>
+      </div>
+
+      <div>
+        <h4>Force Team Auto-Draft Mode</h4>
+        <div id="commishAutoTogglesList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Top Status Banner -->
   <div class="top-banner">
@@ -277,13 +336,11 @@
       <div class="nom-ondeck">On Deck: <span id="onDeckNomDisplay">Loading...</span></div>
     </div>
 
-    <!-- View Switcher -->
     <div class="tab-nav">
       <button id="tabWarRoomBtn" class="tab-btn active" onclick="switchTab('warRoom')">Live War Room</button>
       <button id="tabBoardBtn" class="tab-btn" onclick="switchTab('board')">Full Draft Board</button>
     </div>
 
-    <!-- Total Draft Pool Remaining -->
     <div class="pool-stat">
       <div class="pool-label">Total Draft Pool Left</div>
       <div class="pool-val" id="totalPoolDisplay">$2,400</div>
@@ -297,11 +354,11 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
         <h3>Players</h3>
         <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="toggleCapMode()">
-          Set Max Caps
+          Set My Caps
         </button>
       </div>
+      <small style="color: #8d99ae; display: block; margin-bottom: 0.5rem;">(Double-click any player to view full stats)</small>
 
-      <!-- Filter Dropdown & Search -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
         <select id="statusFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
           <option value="available">Available Only</option>
@@ -320,25 +377,31 @@
     <div class="card block-center">
       <h2>Live Auction Block</h2>
 
-      <label for="actingTeamSelect"><strong>Select Your Team:</strong></label>
-      <select id="actingTeamSelect" class="selector" onchange="renderAll()"></select>
+      <!-- Authenticated Team Badge & Auto-Draft Toggle -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; background: #0b132b; padding: 0.4rem 0.75rem; border-radius: 6px; border: 1px solid #3a506b;">
+        <div>
+          <span id="userTeamBadge" style="font-weight: bold; color: #48cae4;"></span>
+          <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; margin-left: 0.3rem;" onclick="logout()">Logout</button>
+        </div>
+        
+        <div>
+          <button id="myAutoDraftBtn" class="btn btn-toggle-auto" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;" onclick="toggleMyAutoDraft()">
+            Auto-Draft: OFF
+          </button>
+          <button id="openCommishBtn" class="btn btn-warning" style="display: none; font-size: 0.75rem; padding: 0.25rem 0.6rem; margin-left: 0.3rem;" onclick="openCommishModal()">
+            🛡️ Commish Panel
+          </button>
+        </div>
+      </div>
 
       <div id="auctionContent">
-        <p style="color: #8d99ae;">No player currently on the block.</p>
-        <p>Waiting for nomination...</p>
+        <div class="timer-label" id="timerLabel">Nomination Clock</div>
+        <div class="timer" id="timerDisplay">45s</div>
+        <p style="color: #8d99ae; font-size: 1.05rem;">Waiting for nomination...</p>
       </div>
 
       <h4 style="text-align: left; margin: 1.25rem 0 0.25rem 0; color: #48cae4;">Draft Activity Log</h4>
       <div id="logBox"></div>
-
-      <!-- Commissioner Controls -->
-      <div class="admin-bar">
-        <h4 style="margin-bottom: 0.4rem;">🛡️ Commissioner Controls</h4>
-        <button id="pauseBtn" class="btn btn-warning" onclick="adminTogglePause()">Pause Draft</button>
-        <button class="btn btn-secondary" onclick="adminResetBlock()">Cancel Block</button>
-        <button class="btn btn-warning" onclick="adminUndoLastSale()">↩ Undo Last Sale</button>
-        <button class="btn btn-danger" onclick="adminResetDraft()">Reset Entire Draft</button>
-      </div>
     </div>
 
     <!-- Right: Teams & Budgets -->
@@ -360,15 +423,23 @@
   <script>
     const socket = io();
     let localData = { teams: [], players: [], draftState: {} };
+    let myTeam = null;
+    let myCaps = {};
+    let timerConfig = { nominationTime: 45, beginningBidTime: 45, additionalBidTime: 10 };
     let capEditMode = false;
     let currentTab = 'warRoom';
+
+    const authOverlay = document.getElementById('authOverlay');
+    const passcodeInput = document.getElementById('passcodeInput');
+    const authErrorMsg = document.getElementById('authErrorMsg');
+    const userTeamBadge = document.getElementById('userTeamBadge');
+    const myAutoDraftBtn = document.getElementById('myAutoDraftBtn');
+    const openCommishBtn = document.getElementById('openCommishBtn');
 
     const playerListEl = document.getElementById('playerList');
     const teamListEl = document.getElementById('teamList');
     const auctionContentEl = document.getElementById('auctionContent');
-    const actingTeamSelect = document.getElementById('actingTeamSelect');
     const logBox = document.getElementById('logBox');
-    const pauseBtn = document.getElementById('pauseBtn');
     const playerSearch = document.getElementById('playerSearch');
     const statusFilter = document.getElementById('statusFilter');
     const totalPoolDisplay = document.getElementById('totalPoolDisplay');
@@ -376,12 +447,72 @@
     const onDeckNomDisplay = document.getElementById('onDeckNomDisplay');
     const boardColumnsEl = document.getElementById('boardColumns');
 
-    socket.on('initData', (data) => {
-      localData = data;
-      renderActingTeamOptions();
-      renderAll();
-      logMessage("Draft room connected. Ready.");
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedPass = localStorage.getItem('draft_passcode');
+      if (savedPass) socket.emit('authTeam', { passcode: savedPass });
     });
+
+    passcodeInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') submitAuth();
+    });
+
+    function submitAuth() {
+      const pass = passcodeInput.value.trim();
+      if (!pass) return;
+      socket.emit('authTeam', { passcode: pass });
+    }
+
+    socket.on('authError', ({ message }) => {
+      authErrorMsg.textContent = message;
+      authErrorMsg.style.display = 'block';
+      localStorage.removeItem('draft_passcode');
+    });
+
+    socket.on('authSuccess', (data) => {
+      myTeam = data.myTeam;
+      myCaps = data.myCaps || {};
+      timerConfig = data.timerConfig;
+      localData.teams = data.teams;
+      localData.players = data.players;
+      localData.draftState = data.draftState;
+
+      localStorage.setItem('draft_passcode', passcodeInput.value.trim() || localStorage.getItem('draft_passcode'));
+      authOverlay.style.display = 'none';
+
+      userTeamBadge.textContent = `${myTeam.name} ${myTeam.isCommish ? '🛡️' : ''}`;
+      if (myTeam.isCommish) openCommishBtn.style.display = 'inline-block';
+
+      updateMyAutoBtn(myTeam.isAuto);
+      renderAll();
+      logMessage(`Welcome, <strong>${myTeam.name}</strong>! Ready.`);
+    });
+
+    socket.on('presenceUpdate', ({ teams }) => {
+      localData.teams = teams;
+      const me = teams.find(t => t.id === myTeam?.id);
+      if (me) updateMyAutoBtn(me.isAuto);
+      renderTeams();
+      if (myTeam?.isCommish) renderCommishAutoList();
+    });
+
+    socket.on('myAutoDraftChanged', ({ isAuto }) => {
+      if (myTeam) myTeam.isAuto = isAuto;
+      updateMyAutoBtn(isAuto);
+    });
+
+    function updateMyAutoBtn(isAuto) {
+      if (isAuto) {
+        myAutoDraftBtn.textContent = 'Auto-Draft: ON';
+        myAutoDraftBtn.className = 'btn btn-toggle-auto active';
+      } else {
+        myAutoDraftBtn.textContent = 'Auto-Draft: OFF';
+        myAutoDraftBtn.className = 'btn btn-toggle-auto';
+      }
+    }
+
+    function toggleMyAutoDraft() {
+      socket.emit('toggleMyAutoDraft');
+    }
 
     socket.on('stateUpdate', (data) => {
       localData.draftState = data.draftState;
@@ -390,10 +521,18 @@
       renderAll();
     });
 
+    socket.on('timersUpdated', ({ timerConfig: tc }) => {
+      timerConfig = tc;
+      logMessage("⏱️ Commissioner updated draft timer durations.");
+    });
+
     socket.on('adminStateChanged', ({ draftState }) => {
       localData.draftState = draftState;
-      pauseBtn.textContent = draftState.isPaused ? "Resume Draft" : "Pause Draft";
-      pauseBtn.className = draftState.isPaused ? "btn btn-danger" : "btn btn-warning";
+      const pauseBtn = document.getElementById('pauseBtnModal');
+      if (pauseBtn) {
+        pauseBtn.textContent = draftState.isPaused ? "Resume Draft" : "Pause Draft";
+        pauseBtn.className = draftState.isPaused ? "btn btn-danger" : "btn btn-warning";
+      }
       renderAuctionBlock();
       logMessage(draftState.isPaused ? "⏸️ <strong>Draft paused by commissioner.</strong>" : "▶️ <strong>Draft resumed.</strong>");
     });
@@ -413,19 +552,24 @@
       renderAuctionBlock();
     });
 
-    socket.on('capsUpdated', ({ playerId, autoCaps }) => {
-      const player = localData.players.find(p => p.id === playerId);
-      if (player) {
-        player.autoCaps = autoCaps;
-        renderPlayers();
+    socket.on('capSavedConfirmation', ({ playerId, maxBid }) => {
+      if (maxBid) {
+        myCaps[playerId] = maxBid;
+      } else {
+        delete myCaps[playerId];
       }
+      renderPlayers();
     });
 
-    socket.on('timerTick', ({ seconds }) => {
+    socket.on('timerTick', ({ seconds, mode }) => {
       const timerEl = document.getElementById('timerDisplay');
+      const labelEl = document.getElementById('timerLabel');
       if (timerEl) {
         timerEl.textContent = `${seconds}s`;
-        timerEl.style.color = seconds <= 4 ? '#ef233c' : '#ffbe0b';
+        timerEl.style.color = seconds <= 5 ? '#ef233c' : '#ffbe0b';
+      }
+      if (labelEl) {
+        labelEl.textContent = mode === 'nomination' ? 'Nomination Clock' : 'Auction Clock';
       }
     });
 
@@ -434,8 +578,13 @@
     });
 
     socket.on('saleUndone', ({ player, team, price }) => {
-      logMessage(`↩️ <strong>COMMISSIONER UNDO:</strong> Returned <strong>${player.name}</strong> to available pool. Refunded $${price} to ${team.name}.`);
+      logMessage(`↩️ <strong>COMMISSIONER UNDO:</strong> Returned <strong>${player.name}</strong> to pool. Refunded $${price} to ${team.name}.`);
     });
+
+    function logout() {
+      localStorage.removeItem('draft_passcode');
+      location.reload();
+    }
 
     function logMessage(msg) {
       const entry = document.createElement('div');
@@ -482,18 +631,12 @@
 
     function toggleCapMode() {
       capEditMode = !capEditMode;
-      document.getElementById('toggleCapModeBtn').textContent = capEditMode ? 'Done' : 'Set Max Caps';
+      document.getElementById('toggleCapModeBtn').textContent = capEditMode ? 'Done' : 'Set My Caps';
       renderPlayers();
     }
 
-    function renderActingTeamOptions() {
-      const currentVal = actingTeamSelect.value;
-      actingTeamSelect.innerHTML = localData.teams
-        .map(t => `<option value="${t.id}" ${t.id == currentVal ? 'selected' : ''}>${t.name} ($${t.budget} left)${t.isAuto ? ' [AUTO]' : ''}</option>`)
-        .join('');
-    }
-
     function renderAll() {
+      if (!myTeam) return;
       updateTopBanner();
       renderPlayers();
       renderTeams();
@@ -501,10 +644,22 @@
       if (currentTab === 'board') renderDraftBoard();
     }
 
+    // Determine card color class based on first matching position
+    function getPositionClass(posStr) {
+      if (!posStr) return '';
+      const tokens = posStr.toUpperCase().split(/[,/ ]+/);
+      for (let t of tokens) {
+        if (t === 'PG' || t === 'SG') return 'pos-guard';
+        if (t === 'SF' || t === 'PF') return 'pos-forward';
+        if (t === 'C') return 'pos-center';
+      }
+      return '';
+    }
+
     function renderPlayers() {
-      const selectedTeamId = actingTeamSelect.value;
+      if (!myTeam) return;
       const query = (playerSearch.value || '').toLowerCase();
-      const filter = statusFilter.value; // 'available', 'drafted', 'all'
+      const filter = statusFilter.value;
 
       const filtered = localData.players.filter(p => {
         const matchesQuery = p.name.toLowerCase().includes(query) || p.nbaTeam.toLowerCase().includes(query);
@@ -512,17 +667,19 @@
 
         if (filter === 'available') return p.status === 'available';
         if (filter === 'drafted') return p.status === 'drafted';
-        return true; // 'all'
+        return true;
       });
 
-      const isMyTurnToNominate = (parseInt(selectedTeamId, 10) === localData.draftState.nominatingTeamId);
+      const isMyTurnToNominate = (myTeam.id === localData.draftState.nominatingTeamId);
 
       playerListEl.innerHTML = filtered.map(p => {
-        const teamCap = (p.autoCaps && p.autoCaps[selectedTeamId]) ? p.autoCaps[selectedTeamId] : '';
+        const myCap = myCaps[p.id] || '';
         const isDrafted = p.status === 'drafted';
+        const posClass = getPositionClass(p.pos);
 
         return `
-          <div class="player-row ${isDrafted ? 'player-row-drafted' : ''}">
+          <div class="player-row ${posClass} ${isDrafted ? 'player-row-drafted' : ''}" 
+               ondblclick="openPlayerModal('${p.id}')">
             <div style="flex: 1; padding-right: 0.5rem;">
               <strong style="${isDrafted ? 'color:#ef476f;' : ''}">${p.name}</strong> 
               <small>(${p.pos} - ${p.nbaTeam})</small>
@@ -531,18 +688,18 @@
                 <span class="badge-total">${p.fpts.toFixed(0)} FPts</span>
               </div>
               ${isDrafted ? `<div class="drafted-tag">Drafted: ${p.draftedBy} ($${p.price})</div>` : ''}
-              ${(!isDrafted && teamCap) ? `<div style="font-size:0.75rem; color:#ffbe0b;">Max Cap: $${teamCap}</div>` : ''}
+              ${(!isDrafted && myCap) ? `<div style="font-size:0.75rem; color:#ffbe0b;">My Max Cap: $${myCap}</div>` : ''}
             </div>
 
             ${!isDrafted ? (
               capEditMode ? `
-                <div>
-                  $<input type="number" class="input-inline" placeholder="Max $" value="${teamCap}" 
+                <div onclick="event.stopPropagation();">
+                  $<input type="number" class="input-inline" placeholder="Max $" value="${myCap}" 
                     onchange="saveCap('${p.id}', this.value)" />
                 </div>
               ` : `
                 <button class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;" 
-                  onclick="nominate('${p.id}')" 
+                  onclick="event.stopPropagation(); nominate('${p.id}')" 
                   ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate) ? 'disabled' : ''}
                   title="${!isMyTurnToNominate ? 'Not your turn to nominate' : 'Nominate player'}">
                   Nominate
@@ -555,22 +712,24 @@
     }
 
     function saveCap(playerId, maxBid) {
-      const teamId = parseInt(actingTeamSelect.value, 10);
-      socket.emit('updateAutoCap', { teamId, playerId, maxBid });
+      socket.emit('updateAutoCap', { playerId, maxBid });
     }
 
     function renderTeams() {
       teamListEl.innerHTML = localData.teams.map(t => {
         const isFull = t.roster.length >= 13;
         const isTurn = t.id === localData.draftState.nominatingTeamId;
+        const isMe = myTeam && t.id === myTeam.id;
 
         return `
-          <div class="team-row" style="${isTurn ? 'border-left: 3px solid #ffbe0b; padding-left: 0.3rem;' : ''}">
-            <div>
-              <strong>${t.name}</strong> 
-              ${t.isAuto ? '<small style="color:#ffbe0b;">[AUTO]</small>' : ''}
-              ${isTurn ? '<small style="color:#ffbe0b; font-weight:bold;"> [NOMINATING]</small>' : ''}
-              <div><small>Roster: ${t.roster.length}/13 ${isFull ? '(FULL)' : ''}</small></div>
+          <div class="team-row" style="${isTurn ? 'border-left: 3px solid #ffbe0b; padding-left: 0.4rem;' : ''} ${isMe ? 'background: rgba(56, 189, 248, 0.1);' : ''}">
+            <div style="display: flex; align-items: center;">
+              <span class="status-dot status-${t.status}"></span>
+              <div>
+                <strong>${t.name}</strong> ${isMe ? '<small style="color:#38bdf8;">(YOU)</small>' : ''}
+                ${isTurn ? '<small style="color:#ffbe0b; font-weight:bold;"> [NOMINATING]</small>' : ''}
+                <div><small>Roster: ${t.roster.length}/13 ${isFull ? '(FULL)' : ''}</small></div>
+              </div>
             </div>
             <div style="font-weight: bold; color: ${t.budget <= 10 ? '#ef233c' : '#06d6a0'};">$${t.budget}</div>
           </div>
@@ -583,8 +742,9 @@
       if (!state.nominatedPlayer) {
         const nomTeam = localData.teams.find(t => t.id === state.nominatingTeamId);
         auctionContentEl.innerHTML = `
-          <p style="color: #8d99ae; font-size: 1.1rem; margin-top: 1.5rem;">No player currently on the block.</p>
-          <p>Waiting for <strong style="color: #ffbe0b;">${nomTeam ? nomTeam.name : 'Next Team'}</strong> to nominate!</p>
+          <div class="timer-label" id="timerLabel">Nomination Clock</div>
+          <div class="timer ${state.isPaused ? 'timer-paused' : ''}" id="timerDisplay">${state.isPaused ? 'PAUSED' : state.timerSeconds + 's'}</div>
+          <p style="color: #8d99ae; font-size: 1.05rem;">Waiting for <strong style="color: #ffbe0b;">${nomTeam ? nomTeam.name : 'Next Team'}</strong> to nominate...</p>
         `;
         return;
       }
@@ -599,11 +759,12 @@
         <div class="stat-strip">
           <span><strong>${p.fppg.toFixed(1)}</strong> FP/G</span>
           <span><strong>${p.fpts.toFixed(0)}</strong> FPts</span>
-          <span><strong>${p.stats?.pts || 0}</strong> PTS</span>
-          <span><strong>${p.stats?.reb || 0}</strong> REB</span>
-          <span><strong>${p.stats?.ast || 0}</strong> AST</span>
+          <span><strong>${p.fullStats?.PTS || 0}</strong> PTS</span>
+          <span><strong>${p.fullStats?.REB || 0}</strong> REB</span>
+          <span><strong>${p.fullStats?.AST || 0}</strong> AST</span>
         </div>
 
+        <div class="timer-label" id="timerLabel">Auction Clock</div>
         <div class="timer ${pausedClass}" id="timerDisplay">${state.isPaused ? 'PAUSED' : state.timerSeconds + 's'}</div>
         <div class="current-bid">$${state.currentBid}</div>
         <p>High Bidder: <strong>${state.highBidder ? state.highBidder.name : 'None'}</strong></p>
@@ -624,10 +785,11 @@
     function renderDraftBoard() {
       boardColumnsEl.innerHTML = localData.teams.map(t => {
         const openSpots = 13 - t.roster.length;
+        const isMe = myTeam && t.id === myTeam.id;
         return `
-          <div class="board-col">
+          <div class="board-col" style="${isMe ? 'border: 1px solid #38bdf8;' : ''}">
             <div class="board-col-header">
-              <strong style="color: #48cae4; font-size: 0.95rem;">${t.name}</strong>
+              <strong style="color: #48cae4; font-size: 0.95rem;">${t.name}</strong> ${isMe ? '<small style="color:#38bdf8;">(YOU)</small>' : ''}
               <div style="font-size: 0.8rem; color: #06d6a0; font-weight: bold;">$${t.budget} left &bull; ${t.roster.length}/13</div>
             </div>
             <div>
@@ -651,42 +813,93 @@
     }
 
     function nominate(playerId) {
-      const teamId = parseInt(actingTeamSelect.value, 10);
-      socket.emit('nominatePlayer', { playerId, teamId, openingBid: 1 });
+      socket.emit('nominatePlayer', { playerId, openingBid: 1 });
     }
 
     function bidIncrement(increment) {
-      const teamId = parseInt(actingTeamSelect.value, 10);
       const targetBid = localData.draftState.currentBid + increment;
-      socket.emit('placeBid', { teamId, bidAmount: targetBid });
+      socket.emit('placeBid', { bidAmount: targetBid });
     }
 
     function bidCustom() {
       const input = document.getElementById('customBidInput');
       const val = parseInt(input.value, 10);
       if (!val) return;
-      const teamId = parseInt(actingTeamSelect.value, 10);
-      socket.emit('placeBid', { teamId, bidAmount: val });
+      socket.emit('placeBid', { bidAmount: val });
     }
 
-    function adminTogglePause() {
-      socket.emit('adminTogglePause');
+    // Modal Operations
+    function openPlayerModal(playerId) {
+      const p = localData.players.find(x => x.id === playerId);
+      if (!p || !p.fullStats) return;
+
+      document.getElementById('modalPlayerName').textContent = p.name;
+      document.getElementById('modalPlayerMeta').textContent = `${p.pos} - ${p.nbaTeam} | Rank: ${p.rank || 'N/A'}`;
+
+      const statsTable = document.getElementById('modalStatsTable');
+      statsTable.innerHTML = Object.entries(p.fullStats).map(([key, val]) => `
+        <tr>
+          <th>${key}</th>
+          <td>${val !== undefined && val !== null ? val : '-'}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('playerStatsModal').style.display = 'flex';
     }
 
+    function closePlayerModal() {
+      document.getElementById('playerStatsModal').style.display = 'none';
+    }
+
+    function openCommishModal() {
+      document.getElementById('inputNomTime').value = timerConfig.nominationTime;
+      document.getElementById('inputBidTime').value = timerConfig.beginningBidTime;
+      document.getElementById('inputResetTime').value = timerConfig.additionalBidTime;
+
+      renderCommishAutoList();
+      document.getElementById('commishModal').style.display = 'flex';
+    }
+
+    function closeCommishModal() {
+      document.getElementById('commishModal').style.display = 'none';
+    }
+
+    function renderCommishAutoList() {
+      const container = document.getElementById('commishAutoTogglesList');
+      if (!container) return;
+
+      container.innerHTML = localData.teams.map(t => `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #0b132b; padding: 0.4rem 0.6rem; border-radius: 4px;">
+          <span>${t.name}</span>
+          <button class="btn ${t.isAuto ? 'btn-danger' : 'btn-secondary'}" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;" onclick="adminToggleTeamAuto(${t.id})">
+            ${t.isAuto ? 'Disable Auto' : 'Set Auto'}
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function saveTimerSettings() {
+      const nominationTime = document.getElementById('inputNomTime').value;
+      const beginningBidTime = document.getElementById('inputBidTime').value;
+      const additionalBidTime = document.getElementById('inputResetTime').value;
+
+      socket.emit('adminUpdateTimers', { nominationTime, beginningBidTime, additionalBidTime });
+      alert("Timers updated!");
+    }
+
+    function adminToggleTeamAuto(targetTeamId) {
+      socket.emit('adminToggleTeamAuto', { targetTeamId });
+    }
+
+    function adminTogglePause() { socket.emit('adminTogglePause'); }
     function adminResetBlock() {
-      if (confirm("Reset current block and return player to pool?")) {
-        socket.emit('adminResetCurrentBlock');
-      }
+      if (confirm("Reset current block and return player to pool?")) socket.emit('adminResetCurrentBlock');
     }
-
     function adminUndoLastSale() {
-      if (confirm("Undo the most recent player sale? This will refund the team's budget and return the player to the pool.")) {
-        socket.emit('adminUndoLastSale');
-      }
+      if (confirm("Undo the most recent player sale?")) socket.emit('adminUndoLastSale');
     }
-
     function adminResetDraft() {
-      if (confirm("Are you sure you want to reset all budgets, rosters, and players back to clean state?")) {
+      if (confirm("Reset all budgets, rosters, and players back to clean state?")) {
         socket.emit('adminResetAllDraftData');
       }
     }

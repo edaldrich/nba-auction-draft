@@ -12,41 +12,43 @@
       background-color: #0b132b;
       color: #e0e1dd;
       margin: 0;
-      padding: 1rem 1.5rem;
+      padding: 1rem 1.25rem;
+      position: relative;
+      overflow-x: hidden;
     }
 
-    /* Modals & Overlays */
-    .modal-overlay {
+    /* Confetti Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Urgency Flash & 3,2,1 Screen Overlay */
+    #urgencyOverlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(11, 19, 43, 0.9);
-      display: flex;
-      align-items: center;
+      background: radial-gradient(circle, rgba(239,35,60,0.15) 0%, rgba(239,35,60,0.45) 100%);
+      pointer-events: none;
+      z-index: 5000;
+      display: none;
       justify-content: center;
-      z-index: 1000;
+      align-items: center;
     }
-    .modal-box {
-      background: #1c2541;
-      padding: 1.75rem;
-      border-radius: 8px;
-      border: 1px solid #3a506b;
-      max-width: 650px;
-      width: 90%;
-      max-height: 85vh;
-      overflow-y: auto;
-      position: relative;
+    .countdown-flash-num {
+      font-size: 16rem;
+      font-weight: 900;
+      color: #ffbe0b;
+      text-shadow: 0 0 40px rgba(255, 190, 11, 0.8), 0 0 80px rgba(239, 35, 60, 0.9);
+      animation: pulsePop 0.8s ease-out;
     }
-    .modal-close {
-      position: absolute;
-      top: 1rem;
-      right: 1.25rem;
-      background: none;
-      border: none;
-      color: #8d99ae;
-      font-size: 1.5rem;
-      cursor: pointer;
+    @keyframes pulsePop {
+      0% { transform: scale(0.4); opacity: 0; }
+      50% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1.0); opacity: 0; }
     }
-    .modal-close:hover { color: #fff; }
 
     /* Top Status Banner */
     .top-banner {
@@ -56,47 +58,48 @@
       background: #1c2541;
       border: 1px solid #3a506b;
       border-radius: 8px;
-      padding: 0.75rem 1.5rem;
-      margin-bottom: 1rem;
+      padding: 0.65rem 1.25rem;
+      margin-bottom: 0.75rem;
     }
     .nom-current { color: #ffbe0b; font-weight: bold; }
-    .nom-ondeck { color: #8d99ae; font-size: 0.9rem; margin-top: 0.2rem; }
+    .nom-ondeck { color: #8d99ae; font-size: 0.85rem; margin-top: 0.2rem; }
     .tab-nav { display: flex; gap: 0.5rem; justify-content: center; }
     .tab-btn {
       background: #0b132b;
       color: #8d99ae;
       border: 1px solid #3a506b;
-      padding: 0.5rem 1.25rem;
+      padding: 0.5rem 1.15rem;
       border-radius: 6px;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: bold;
       cursor: pointer;
     }
     .tab-btn.active { background: #0077b6; color: white; border-color: #0077b6; }
     .pool-stat { text-align: right; }
-    .pool-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
-    .pool-val { font-size: 1.8rem; font-weight: 800; color: #06d6a0; line-height: 1.1; }
+    .pool-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
+    .pool-val { font-size: 1.7rem; font-weight: 800; color: #06d6a0; line-height: 1.1; }
 
     /* Layout */
     .grid {
       display: grid;
-      grid-template-columns: 380px 1fr 320px;
-      gap: 1.25rem;
+      grid-template-columns: 370px 1fr 310px;
+      gap: 1rem;
       max-width: 1600px;
       margin: 0 auto;
     }
     .card {
       background: #1c2541;
       border-radius: 8px;
-      padding: 1.25rem;
+      padding: 1.1rem;
       border: 1px solid #3a506b;
+      position: relative;
     }
     h2, h3, h4 { margin-top: 0; color: #48cae4; }
     
     .block-center { text-align: center; }
-    .timer { font-size: 3.5rem; font-weight: 800; color: #ffbe0b; margin: 0.25rem 0; }
+    .timer { font-size: 3.4rem; font-weight: 800; color: #ffbe0b; margin: 0.2rem 0; }
     .timer-paused { color: #ef233c !important; }
-    .timer-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
+    .timer-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
     .current-bid { font-size: 2.5rem; font-weight: bold; color: #06d6a0; }
     
     .btn {
@@ -112,6 +115,8 @@
     }
     .btn:hover { background: #023e8a; }
     .btn:disabled { background: #4a5568; cursor: not-allowed; }
+    .btn-success { background: #06d6a0; color: #0b132b; }
+    .btn-success:hover { background: #05b386; }
     .btn-secondary { background: #3a506b; }
     .btn-secondary:hover { background: #4f6d7a; }
     .btn-danger { background: #d90429; }
@@ -123,16 +128,17 @@
 
     .selector {
       width: 100%;
-      padding: 0.5rem;
+      padding: 0.45rem;
       background: #0b132b;
       color: white;
       border: 1px solid #3a506b;
       border-radius: 4px;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
+      font-size: 0.85rem;
     }
     .input-inline {
-      width: 75px;
-      padding: 0.35rem;
+      width: 70px;
+      padding: 0.3rem;
       background: #0b132b;
       color: white;
       border: 1px solid #3a506b;
@@ -141,59 +147,49 @@
     }
 
     /* Player Cards & Colors */
-    #playerListContainer { max-height: 68vh; overflow-y: auto; padding-right: 0.3rem; }
+    #playerListContainer { max-height: 68vh; overflow-y: auto; padding-right: 0.2rem; }
     .player-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.55rem 0.5rem;
+      padding: 0.5rem 0.6rem;
       border-radius: 6px;
       margin-bottom: 0.35rem;
       user-select: none;
       cursor: pointer;
-      border-left: 4px solid transparent;
+      border-left: 5px solid transparent;
       background: #111d4a;
+      transition: transform 0.05s ease;
     }
-    /* Guards */
-    .pos-guard {
-      background: #102a43;
-      border-left-color: #48cae4;
-    }
-    /* Forwards */
-    .pos-forward {
-      background: #064e3b;
-      border-left-color: #10b981;
-    }
-    /* Centers */
-    .pos-center {
-      background: #2e1065;
-      border-left-color: #c084fc;
-    }
+    .player-row:hover { transform: translateX(2px); }
+    .pos-guard { background: #0f2b48; border-left-color: #38bdf8; }
+    .pos-forward { background: #064e3b; border-left-color: #10b981; }
+    .pos-center { background: #3b0764; border-left-color: #c084fc; }
     .player-row-drafted {
       background: rgba(217, 4, 41, 0.12) !important;
       border-left-color: #ef233c !important;
-      opacity: 0.7;
+      opacity: 0.65;
     }
 
     .badge-fppg {
       display: inline-block;
-      background: rgba(0, 0, 0, 0.3);
-      color: #48cae4;
+      background: rgba(0, 0, 0, 0.35);
+      color: #38bdf8;
       font-weight: 700;
       border-radius: 4px;
       padding: 0.12rem 0.35rem;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
     }
-    .badge-total { color: #cbd5e1; font-size: 0.75rem; margin-left: 0.25rem; }
+    .badge-total { color: #cbd5e1; font-size: 0.73rem; margin-left: 0.25rem; }
     .drafted-tag { color: #ef476f; font-weight: 700; font-size: 0.8rem; margin-top: 0.2rem; }
 
     /* Indicator Dots */
     .status-dot {
       display: inline-block;
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
-      margin-right: 0.5rem;
+      margin-right: 0.4rem;
     }
     .status-online { background-color: #10b981; box-shadow: 0 0 6px #10b981; }
     .status-auto { background-color: #ffbe0b; box-shadow: 0 0 6px #ffbe0b; }
@@ -202,9 +198,9 @@
     .stat-strip {
       display: flex;
       justify-content: center;
-      gap: 1.25rem;
+      gap: 1.1rem;
       background: #0b132b;
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 0.8rem;
       border-radius: 6px;
       margin: 0.5rem auto;
       max-width: 500px;
@@ -217,13 +213,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 0;
+      padding: 0.45rem 0;
       border-bottom: 1px solid #2a3d5e;
     }
     
     #logBox {
       background: #0b132b;
-      height: 140px;
+      height: 130px;
       overflow-y: auto;
       border: 1px solid #3a506b;
       border-radius: 6px;
@@ -249,22 +245,155 @@
     .board-col { background: #0b132b; border: 1px solid #3a506b; border-radius: 6px; padding: 0.5rem; min-height: 500px; }
     .board-col-header { border-bottom: 2px solid #0077b6; padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: center; }
     .board-pick { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.35rem; font-size: 0.8rem; }
+
+    /* NON-BLOCKING FLOATING PLAYER STATS CARD (INSPECTOR) */
+    #floatingPlayerCard {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 380px;
+      background: #162032;
+      border: 2px solid #0284c7;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(2, 132, 199, 0.3);
+      padding: 1rem;
+      z-index: 4000;
+      display: none;
+      animation: slideUpCard 0.25s ease-out;
+    }
+    @keyframes slideUpCard {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .card-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .card-stat-pill-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4rem;
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+    .stat-pill {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 0.35rem 0.2rem;
+    }
+    .stat-pill-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
+    .stat-pill-val { font-size: 1.05rem; font-weight: 800; color: #38bdf8; }
     
-    .stats-table {
+    .stats-table-compact {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.9rem;
-      margin-top: 1rem;
+      font-size: 0.78rem;
     }
-    .stats-table th, .stats-table td {
-      padding: 0.4rem 0.6rem;
-      border: 1px solid #3a506b;
+    .stats-table-compact th, .stats-table-compact td {
+      padding: 0.25rem 0.4rem;
+      border: 1px solid #334155;
       text-align: left;
     }
-    .stats-table th { background: #0b132b; color: #48cae4; }
+    .stats-table-compact th { background: #0b132b; color: #94a3b8; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(11, 19, 43, 0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 6000;
+    }
+    .modal-box {
+      background: #1c2541;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #3a506b;
+      max-width: 600px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 0.75rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: #8d99ae;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
   </style>
 </head>
 <body>
+
+  <!-- Audio & Visual Canvas Layers -->
+  <canvas id="confettiCanvas"></canvas>
+  <div id="urgencyOverlay">
+    <div id="countdownFlashNum" class="countdown-flash-num">3</div>
+  </div>
+
+  <!-- Non-Blocking Floating Player Stats Inspector Card -->
+  <div id="floatingPlayerCard">
+    <div class="card-header-bar">
+      <div>
+        <h3 id="floatCardName" style="margin: 0; color: #fff; font-size: 1.25rem;"></h3>
+        <span id="floatCardTeamPos" style="color: #38bdf8; font-size: 0.85rem; font-weight: bold;"></span>
+        <span id="floatCardRank" style="color: #94a3b8; font-size: 0.8rem; margin-left: 0.4rem;"></span>
+      </div>
+      <button class="modal-close" style="position: static; font-size: 1.2rem;" onclick="closeFloatingPlayerCard()">✕</button>
+    </div>
+
+    <!-- Fantasy Headline Pills -->
+    <div class="card-stat-pill-grid">
+      <div class="stat-pill">
+        <div class="stat-pill-label">FP/G</div>
+        <div id="pillFPPG" class="stat-pill-val">-</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-label">FPTS</div>
+        <div id="pillFPTS" class="stat-pill-val">-</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-label">PTS</div>
+        <div id="pillPTS" class="stat-pill-val">-</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-label">REB</div>
+        <div id="pillREB" class="stat-pill-val">-</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-label">AST</div>
+        <div id="pillAST" class="stat-pill-val">-</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-label">ST</div>
+        <div id="pillST" class="stat-pill-val">-</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-label">BLK</div>
+        <div id="pillBLK" class="stat-pill-val">-</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-label">3PTM</div>
+        <div id="pill3PT" class="stat-pill-val">-</div>
+      </div>
+    </div>
+
+    <div style="max-height: 180px; overflow-y: auto;">
+      <table class="stats-table-compact" id="floatCardRawStats"></table>
+    </div>
+  </div>
 
   <!-- Passcode Login Modal -->
   <div id="authOverlay" class="modal-overlay">
@@ -277,44 +406,40 @@
     </div>
   </div>
 
-  <!-- Player Stats Double-Click Modal -->
-  <div id="playerStatsModal" class="modal-overlay" style="display: none;">
-    <div class="modal-box">
-      <button class="modal-close" onclick="closePlayerModal()">✕</button>
-      <h2 id="modalPlayerName" style="margin-bottom: 0.25rem;"></h2>
-      <p id="modalPlayerMeta" style="color: #8d99ae; margin-top: 0;"></p>
-      <table class="stats-table" id="modalStatsTable"></table>
-    </div>
-  </div>
-
-  <!-- Commissioner Modal -->
+  <!-- Commissioner Command Modal -->
   <div id="commishModal" class="modal-overlay" style="display: none;">
     <div class="modal-box">
       <button class="modal-close" onclick="closeCommishModal()">✕</button>
       <h2>🛡️ Commissioner Command Center</h2>
       
-      <div style="margin-bottom: 1.5rem;">
+      <div style="background: #0b132b; padding: 0.75rem; border-radius: 6px; border: 1px solid #3a506b; margin-bottom: 1.25rem;">
+        <h4 style="margin: 0 0 0.4rem 0;">Draft Status</h4>
+        <div id="commishDraftStatusText" style="color: #ffbe0b; font-weight: bold; margin-bottom: 0.5rem;">Draft Not Started</div>
+        <button id="commishStartDraftBtn" class="btn btn-success" onclick="adminStartDraft()">▶️ Start Draft Officially</button>
+      </div>
+
+      <div style="margin-bottom: 1.25rem;">
         <h4>Timer Configuration (Seconds)</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem;">
           <div>
-            <label style="font-size: 0.8rem; color: #8d99ae;">Nomination Time</label>
+            <label style="font-size: 0.75rem; color: #8d99ae;">Nomination Time</label>
             <input type="number" id="inputNomTime" class="selector" />
           </div>
           <div>
-            <label style="font-size: 0.8rem; color: #8d99ae;">Initial Bid Time</label>
+            <label style="font-size: 0.75rem; color: #8d99ae;">Initial Bid Time</label>
             <input type="number" id="inputBidTime" class="selector" />
           </div>
           <div>
-            <label style="font-size: 0.8rem; color: #8d99ae;">Late Bid Reset</label>
+            <label style="font-size: 0.75rem; color: #8d99ae;">Late Bid Reset</label>
             <input type="number" id="inputResetTime" class="selector" />
           </div>
         </div>
-        <button class="btn" onclick="saveTimerSettings()">Update Timers</button>
+        <button class="btn" onclick="saveTimerSettings()">Save Timers</button>
       </div>
 
-      <div style="margin-bottom: 1.5rem;">
+      <div style="margin-bottom: 1.25rem;">
         <h4>Draft Room Controls</h4>
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
           <button id="pauseBtnModal" class="btn btn-warning" onclick="adminTogglePause()">Pause Draft</button>
           <button class="btn btn-secondary" onclick="adminResetBlock()">Cancel Block</button>
           <button class="btn btn-warning" onclick="adminUndoLastSale()">↩ Undo Last Sale</button>
@@ -324,7 +449,27 @@
 
       <div>
         <h4>Force Team Auto-Draft Mode</h4>
-        <div id="commishAutoTogglesList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;"></div>
+        <div id="commishAutoTogglesList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings / Preferences Modal -->
+  <div id="settingsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: 400px;">
+      <button class="modal-close" onclick="closeSettingsModal()">✕</button>
+      <h2>⚙️ Experience Preferences</h2>
+      
+      <div style="margin-top: 1rem;">
+        <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem;">
+          <input type="checkbox" id="prefSoundToggle" checked onchange="savePreferences()" />
+          <strong>Enable Sound Effects (Chimes & Audio Cues)</strong>
+        </label>
+        
+        <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem;">
+          <input type="checkbox" id="prefVisualToggle" checked onchange="savePreferences()" />
+          <strong>Enable Visual Urgency (3-2-1 Screen Flash & Confetti)</strong>
+        </label>
       </div>
     </div>
   </div>
@@ -332,8 +477,8 @@
   <!-- Top Status Banner -->
   <div class="top-banner">
     <div class="nom-indicator">
-      <div>Nomination Turn: <span id="currentNomDisplay" class="nom-current">Loading...</span></div>
-      <div class="nom-ondeck">On Deck: <span id="onDeckNomDisplay">Loading...</span></div>
+      <div>Nomination Turn: <span id="currentNomDisplay" class="nom-current">Waiting to Start...</span></div>
+      <div class="nom-ondeck">On Deck: <span id="onDeckNomDisplay">-</span></div>
     </div>
 
     <div class="tab-nav">
@@ -351,53 +496,58 @@
   <div id="warRoomView" class="grid">
     <!-- Left: Players Pool -->
     <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
         <h3>Players</h3>
         <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="toggleCapMode()">
           Set My Caps
         </button>
       </div>
-      <small style="color: #8d99ae; display: block; margin-bottom: 0.5rem;">(Double-click any player to view full stats)</small>
+      <small style="color: #8d99ae; display: block; margin-bottom: 0.4rem;">(Double-click player to open floating stats)</small>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+      <!-- Player Search & Filters (Status + Team) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.3rem;">
         <select id="statusFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
           <option value="available">Available Only</option>
           <option value="all">All Players</option>
           <option value="drafted">Drafted Only</option>
         </select>
-        <input type="text" id="playerSearch" class="selector" style="margin-bottom: 0;" placeholder="Search..." oninput="renderPlayers()" />
+        <select id="teamFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
+          <option value="ALL">All NBA Teams</option>
+        </select>
       </div>
+
+      <input type="text" id="playerSearch" class="selector" placeholder="Search player name..." oninput="renderPlayers()" />
 
       <div id="playerListContainer">
         <div id="playerList"></div>
       </div>
     </div>
 
-    <!-- Center: Auction Block -->
+    <!-- Center: Live Auction Block -->
     <div class="card block-center">
       <h2>Live Auction Block</h2>
 
-      <!-- Authenticated Team Badge & Auto-Draft Toggle -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; background: #0b132b; padding: 0.4rem 0.75rem; border-radius: 6px; border: 1px solid #3a506b;">
         <div>
           <span id="userTeamBadge" style="font-weight: bold; color: #48cae4;"></span>
-          <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; margin-left: 0.3rem;" onclick="logout()">Logout</button>
+          <button class="btn btn-secondary" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; margin-left: 0.25rem;" onclick="logout()">Logout</button>
         </div>
         
-        <div>
+        <div style="display: flex; align-items: center; gap: 0.3rem;">
           <button id="myAutoDraftBtn" class="btn btn-toggle-auto" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;" onclick="toggleMyAutoDraft()">
             Auto-Draft: OFF
           </button>
-          <button id="openCommishBtn" class="btn btn-warning" style="display: none; font-size: 0.75rem; padding: 0.25rem 0.6rem; margin-left: 0.3rem;" onclick="openCommishModal()">
-            🛡️ Commish Panel
+          <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="openSettingsModal()">⚙️</button>
+          <button id="openCommishBtn" class="btn btn-warning" style="display: none; font-size: 0.75rem; padding: 0.25rem 0.6rem;" onclick="openCommishModal()">
+            🛡️ Commish
           </button>
         </div>
       </div>
 
       <div id="auctionContent">
-        <div class="timer-label" id="timerLabel">Nomination Clock</div>
-        <div class="timer" id="timerDisplay">45s</div>
-        <p style="color: #8d99ae; font-size: 1.05rem;">Waiting for nomination...</p>
+        <div class="timer-label" id="timerLabel">Draft Status</div>
+        <div class="timer" id="timerDisplay">--</div>
+        <p id="waitingMessage" style="color: #8d99ae; font-size: 1.05rem;">Draft waiting for commissioner to start...</p>
       </div>
 
       <h4 style="text-align: left; margin: 1.25rem 0 0.25rem 0; color: #48cae4;">Draft Activity Log</h4>
@@ -429,6 +579,126 @@
     let capEditMode = false;
     let currentTab = 'warRoom';
 
+    // Preferences
+    let userPrefs = {
+      sound: true,
+      visual: true
+    };
+
+    // Audio Engine (Web Audio API Synthesizer)
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type, duration, delay = 0) {
+      if (!userPrefs.sound) return;
+      try {
+        const ctx = getAudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        setTimeout(() => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+          gain.gain.setValueAtTime(0.12, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + duration);
+        }, delay * 1000);
+      } catch (e) {
+        console.warn('Audio play error', e);
+      }
+    }
+
+    function soundNominationTurn() {
+      playTone(523.25, 'triangle', 0.15, 0);   // C5
+      playTone(659.25, 'triangle', 0.15, 0.1); // E5
+      playTone(783.99, 'triangle', 0.25, 0.2); // G5
+    }
+
+    function soundNewPlayerNominated() {
+      playTone(440.00, 'sine', 0.12, 0);     // A4
+      playTone(554.37, 'sine', 0.2, 0.08);   // C#5
+    }
+
+    function soundCountdownTick(num) {
+      playTone(num === 1 ? 880 : 587.33, 'square', 0.12, 0);
+    }
+
+    function soundVictoryWon() {
+      playTone(523.25, 'triangle', 0.15, 0);   // C5
+      playTone(659.25, 'triangle', 0.15, 0.12); // E5
+      playTone(783.99, 'triangle', 0.15, 0.24); // G5
+      playTone(1046.50, 'triangle', 0.45, 0.36); // C6
+    }
+
+    // Confetti Engine
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    let confettiParticles = [];
+    let confettiAnimation = null;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function triggerConfetti() {
+      if (!userPrefs.visual) return;
+      confettiParticles = [];
+      const colors = ['#06d6a0', '#38bdf8', '#ffbe0b', '#ef476f', '#c084fc'];
+
+      for (let i = 0; i < 150; i++) {
+        confettiParticles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          w: Math.random() * 8 + 4,
+          h: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 22,
+          vy: (Math.random() - 0.5) * 22 - 6,
+          gravity: 0.35,
+          alpha: 1
+        });
+      }
+
+      cancelAnimationFrame(confettiAnimation);
+      renderConfetti();
+    }
+
+    function renderConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiParticles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.alpha -= 0.008;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.restore();
+      });
+
+      confettiParticles = confettiParticles.filter(p => p.alpha > 0);
+      if (confettiParticles.length > 0) {
+        confettiAnimation = requestAnimationFrame(renderConfetti);
+      }
+    }
+
+    // DOM References
     const authOverlay = document.getElementById('authOverlay');
     const passcodeInput = document.getElementById('passcodeInput');
     const authErrorMsg = document.getElementById('authErrorMsg');
@@ -442,11 +712,32 @@
     const logBox = document.getElementById('logBox');
     const playerSearch = document.getElementById('playerSearch');
     const statusFilter = document.getElementById('statusFilter');
+    const teamFilter = document.getElementById('teamFilter');
     const totalPoolDisplay = document.getElementById('totalPoolDisplay');
     const currentNomDisplay = document.getElementById('currentNomDisplay');
     const onDeckNomDisplay = document.getElementById('onDeckNomDisplay');
     const boardColumnsEl = document.getElementById('boardColumns');
+    const urgencyOverlay = document.getElementById('urgencyOverlay');
+    const countdownFlashNum = document.getElementById('countdownFlashNum');
 
+    // Load Local Preferences
+    const savedPrefs = localStorage.getItem('user_draft_prefs');
+    if (savedPrefs) {
+      try { userPrefs = JSON.parse(savedPrefs); } catch(e) {}
+    }
+    document.getElementById('prefSoundToggle').checked = userPrefs.sound;
+    document.getElementById('prefVisualToggle').checked = userPrefs.visual;
+
+    function savePreferences() {
+      userPrefs.sound = document.getElementById('prefSoundToggle').checked;
+      userPrefs.visual = document.getElementById('prefVisualToggle').checked;
+      localStorage.setItem('user_draft_prefs', JSON.stringify(userPrefs));
+    }
+
+    function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
+    function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
+
+    // Check saved login
     window.addEventListener('DOMContentLoaded', () => {
       const savedPass = localStorage.getItem('draft_passcode');
       if (savedPass) socket.emit('authTeam', { passcode: savedPass });
@@ -483,9 +774,20 @@
       if (myTeam.isCommish) openCommishBtn.style.display = 'inline-block';
 
       updateMyAutoBtn(myTeam.isAuto);
+      populateTeamFilterOptions();
       renderAll();
       logMessage(`Welcome, <strong>${myTeam.name}</strong>! Ready.`);
     });
+
+    function populateTeamFilterOptions() {
+      const teamsSet = new Set();
+      localData.players.forEach(p => {
+        if (p.nbaTeam) teamsSet.add(p.nbaTeam.trim().toUpperCase());
+      });
+      const sortedTeams = Array.from(teamsSet).sort();
+      teamFilter.innerHTML = '<option value="ALL">All NBA Teams</option>' + 
+        sortedTeams.map(t => `<option value="${t}">${t}</option>`).join('');
+    }
 
     socket.on('presenceUpdate', ({ teams }) => {
       localData.teams = teams;
@@ -514,6 +816,12 @@
       socket.emit('toggleMyAutoDraft');
     }
 
+    socket.on('draftStartedNotice', ({ draftState }) => {
+      localData.draftState = draftState;
+      logMessage("🏁 <strong>THE DRAFT HAS OFFICIALLY STARTED!</strong>");
+      renderAll();
+    });
+
     socket.on('stateUpdate', (data) => {
       localData.draftState = data.draftState;
       localData.teams = data.teams;
@@ -523,7 +831,7 @@
 
     socket.on('timersUpdated', ({ timerConfig: tc }) => {
       timerConfig = tc;
-      logMessage("⏱️ Commissioner updated draft timer durations.");
+      logMessage("⏱️ Commissioner updated draft timers.");
     });
 
     socket.on('adminStateChanged', ({ draftState }) => {
@@ -539,6 +847,7 @@
 
     socket.on('playerNominated', ({ draftState }) => {
       localData.draftState = draftState;
+      soundNewPlayerNominated();
       logMessage(`📢 <strong>${draftState.highBidder.name}</strong> nominated <strong>${draftState.nominatedPlayer.name}</strong> for $${draftState.currentBid}`);
       renderAuctionBlock();
       renderPlayers();
@@ -553,7 +862,7 @@
     });
 
     socket.on('capSavedConfirmation', ({ playerId, maxBid }) => {
-      if (maxBid) {
+      if (maxBid !== null && maxBid !== undefined) {
         myCaps[playerId] = maxBid;
       } else {
         delete myCaps[playerId];
@@ -561,6 +870,7 @@
       renderPlayers();
     });
 
+    let lastSecondFlashed = null;
     socket.on('timerTick', ({ seconds, mode }) => {
       const timerEl = document.getElementById('timerDisplay');
       const labelEl = document.getElementById('timerLabel');
@@ -571,10 +881,34 @@
       if (labelEl) {
         labelEl.textContent = mode === 'nomination' ? 'Nomination Clock' : 'Auction Clock';
       }
+
+      // Check for your turn to nominate audio cue
+      if (mode === 'nomination' && seconds === timerConfig.nominationTime) {
+        if (myTeam && localData.draftState.nominatingTeamId === myTeam.id) {
+          soundNominationTurn();
+        }
+      }
+
+      // 3, 2, 1 Countdown Flash & Audio
+      if (mode === 'auction' && seconds >= 1 && seconds <= 3 && lastSecondFlashed !== seconds) {
+        lastSecondFlashed = seconds;
+        soundCountdownTick(seconds);
+        if (userPrefs.visual) {
+          countdownFlashNum.textContent = seconds;
+          urgencyOverlay.style.display = 'flex';
+          setTimeout(() => { urgencyOverlay.style.display = 'none'; }, 700);
+        }
+      }
     });
 
     socket.on('playerSold', ({ player, winningTeam, price }) => {
       logMessage(`<span class="log-sold">🔨 SOLD!</span> <strong>${player.name}</strong> to <strong>${winningTeam.name}</strong> for $${price}!`);
+      
+      if (myTeam && winningTeam.id === myTeam.id) {
+        soundVictoryWon();
+        triggerConfetti();
+        alert(`🏆 CONGRATULATIONS! You won ${player.name} for $${price}!`);
+      }
     });
 
     socket.on('saleUndone', ({ player, team, price }) => {
@@ -619,8 +953,15 @@
       const totalBudget = localData.teams.reduce((acc, t) => acc + t.budget, 0);
       totalPoolDisplay.textContent = `$${totalBudget.toLocaleString()}`;
 
-      const nomId = localData.draftState.nominatingTeamId;
-      const onDeckId = localData.draftState.onDeckTeamId;
+      const state = localData.draftState;
+      if (!state.isDraftStarted) {
+        currentNomDisplay.textContent = "Waiting to Start";
+        onDeckNomDisplay.textContent = "-";
+        return;
+      }
+
+      const nomId = state.nominatingTeamId;
+      const onDeckId = state.onDeckTeamId;
 
       const nomTeam = localData.teams.find(t => t.id === nomId);
       const onDeckTeam = localData.teams.find(t => t.id === onDeckId);
@@ -642,9 +983,9 @@
       renderTeams();
       renderAuctionBlock();
       if (currentTab === 'board') renderDraftBoard();
+      if (myTeam.isCommish) updateCommishModalUI();
     }
 
-    // Determine card color class based on first matching position
     function getPositionClass(posStr) {
       if (!posStr) return '';
       const tokens = posStr.toUpperCase().split(/[,/ ]+/);
@@ -658,29 +999,35 @@
 
     function renderPlayers() {
       if (!myTeam) return;
-      const query = (playerSearch.value || '').toLowerCase();
+      const query = (playerSearch.value || '').toLowerCase().trim();
       const filter = statusFilter.value;
+      const teamSelected = teamFilter.value;
+
+      const me = localData.teams.find(t => t.id === myTeam.id);
+      const myBudget = me ? me.budget : 0;
 
       const filtered = localData.players.filter(p => {
-        const matchesQuery = p.name.toLowerCase().includes(query) || p.nbaTeam.toLowerCase().includes(query);
-        if (!matchesQuery) return false;
-
+        // Text search only searches player name
+        if (query && !p.name.toLowerCase().includes(query)) return false;
+        // Team filter
+        if (teamSelected !== 'ALL' && (p.nbaTeam || '').toUpperCase() !== teamSelected) return false;
+        // Status filter
         if (filter === 'available') return p.status === 'available';
         if (filter === 'drafted') return p.status === 'drafted';
         return true;
       });
 
-      const isMyTurnToNominate = (myTeam.id === localData.draftState.nominatingTeamId);
+      const isMyTurnToNominate = localData.draftState.isDraftStarted && (myTeam.id === localData.draftState.nominatingTeamId);
 
       playerListEl.innerHTML = filtered.map(p => {
-        const myCap = myCaps[p.id] || '';
+        const myCap = (myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
         const isDrafted = p.status === 'drafted';
         const posClass = getPositionClass(p.pos);
 
         return `
           <div class="player-row ${posClass} ${isDrafted ? 'player-row-drafted' : ''}" 
-               ondblclick="openPlayerModal('${p.id}')">
-            <div style="flex: 1; padding-right: 0.5rem;">
+               ondblclick="openFloatingPlayerCard('${p.id}')">
+            <div style="flex: 1; padding-right: 0.4rem;">
               <strong style="${isDrafted ? 'color:#ef476f;' : ''}">${p.name}</strong> 
               <small>(${p.pos} - ${p.nbaTeam})</small>
               <div>
@@ -688,7 +1035,7 @@
                 <span class="badge-total">${p.fpts.toFixed(0)} FPts</span>
               </div>
               ${isDrafted ? `<div class="drafted-tag">Drafted: ${p.draftedBy} ($${p.price})</div>` : ''}
-              ${(!isDrafted && myCap) ? `<div style="font-size:0.75rem; color:#ffbe0b;">My Max Cap: $${myCap}</div>` : ''}
+              ${(!isDrafted && myCap !== '') ? `<div style="font-size:0.75rem; color:#ffbe0b;">My Max Cap: $${myCap}</div>` : ''}
             </div>
 
             ${!isDrafted ? (
@@ -698,10 +1045,10 @@
                     onchange="saveCap('${p.id}', this.value)" />
                 </div>
               ` : `
-                <button class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;" 
-                  onclick="event.stopPropagation(); nominate('${p.id}')" 
-                  ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate) ? 'disabled' : ''}
-                  title="${!isMyTurnToNominate ? 'Not your turn to nominate' : 'Nominate player'}">
+                <button class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                  onclick="event.stopPropagation(); nominatePrompt('${p.id}',${myBudget})" 
+                  ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate || !localData.draftState.isDraftStarted) ? 'disabled' : ''}
+                  title="${!localData.draftState.isDraftStarted ? 'Draft not started' : (!isMyTurnToNominate ? 'Not your turn' : 'Nominate')}">
                   Nominate
                 </button>
               `
@@ -711,6 +1058,19 @@
       }).join('');
     }
 
+    function nominatePrompt(playerId, myBudget) {
+      let defaultBid = myBudget > 0 ? 1 : 0;
+      let bidStr = prompt(`Nominate player for opening bid amount ($${myBudget > 0 ? '1 - $' + myBudget : '0'}):`, defaultBid);
+      if (bidStr === null) return;
+      let bid = parseInt(bidStr, 10);
+      if (isNaN(bid)) bid = defaultBid;
+      if (myBudget > 0 && bid < 1) bid = 1;
+      if (myBudget === 0) bid = 0;
+      if (bid > myBudget) bid = myBudget;
+
+      socket.emit('nominatePlayer', { playerId, openingBid: bid });
+    }
+
     function saveCap(playerId, maxBid) {
       socket.emit('updateAutoCap', { playerId, maxBid });
     }
@@ -718,7 +1078,7 @@
     function renderTeams() {
       teamListEl.innerHTML = localData.teams.map(t => {
         const isFull = t.roster.length >= 13;
-        const isTurn = t.id === localData.draftState.nominatingTeamId;
+        const isTurn = localData.draftState.isDraftStarted && (t.id === localData.draftState.nominatingTeamId);
         const isMe = myTeam && t.id === myTeam.id;
 
         return `
@@ -731,7 +1091,7 @@
                 <div><small>Roster: ${t.roster.length}/13 ${isFull ? '(FULL)' : ''}</small></div>
               </div>
             </div>
-            <div style="font-weight: bold; color: ${t.budget <= 10 ? '#ef233c' : '#06d6a0'};">$${t.budget}</div>
+            <div style="font-weight: bold; color: ${t.budget <= 0 ? '#ef233c' : '#06d6a0'};">$${t.budget}</div>
           </div>
         `;
       }).join('');
@@ -739,6 +1099,15 @@
 
     function renderAuctionBlock() {
       const state = localData.draftState;
+      if (!state.isDraftStarted) {
+        auctionContentEl.innerHTML = `
+          <div class="timer-label">Draft Status</div>
+          <div class="timer">OFFLINE</div>
+          <p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to officially start the draft...</p>
+        `;
+        return;
+      }
+
       if (!state.nominatedPlayer) {
         const nomTeam = localData.teams.find(t => t.id === state.nominatingTeamId);
         auctionContentEl.innerHTML = `
@@ -751,6 +1120,10 @@
 
       const p = state.nominatedPlayer;
       const pausedClass = state.isPaused ? 'timer-paused' : '';
+
+      const me = localData.teams.find(t => t.id === myTeam?.id);
+      const myBudget = me ? me.budget : 0;
+      const isEligibleToBid = myBudget > state.currentBid;
 
       auctionContentEl.innerHTML = `
         <h1 style="color: #fff; margin-bottom: 0;">${p.name}</h1>
@@ -770,14 +1143,14 @@
         <p>High Bidder: <strong>${state.highBidder ? state.highBidder.name : 'None'}</strong></p>
         
         <div style="margin-top: 1rem;">
-          <button class="btn" onclick="bidIncrement(1)" ${state.isPaused ? 'disabled' : ''}>+$1 ($${state.currentBid + 1})</button>
-          <button class="btn" onclick="bidIncrement(3)" ${state.isPaused ? 'disabled' : ''}>+$3 ($${state.currentBid + 3})</button>
-          <button class="btn" onclick="bidIncrement(5)" ${state.isPaused ? 'disabled' : ''}>+$5 ($${state.currentBid + 5})</button>
+          <button class="btn" onclick="bidIncrement(1)" ${(!isEligibleToBid || state.isPaused) ? 'disabled' : ''}>+$1 ($${state.currentBid + 1})</button>
+          <button class="btn" onclick="bidIncrement(3)" ${(!isEligibleToBid || myBudget < state.currentBid + 3 || state.isPaused) ? 'disabled' : ''}>+$3 ($${state.currentBid + 3})</button>
+          <button class="btn" onclick="bidIncrement(5)" ${(!isEligibleToBid || myBudget < state.currentBid + 5 || state.isPaused) ? 'disabled' : ''}>+$5 ($${state.currentBid + 5})</button>
         </div>
 
         <div style="margin-top: 0.75rem;">
-          <input type="number" id="customBidInput" class="input-inline" style="width: 100px;" placeholder="$ Amount" min="${state.currentBid + 1}">
-          <button class="btn btn-secondary" onclick="bidCustom()" ${state.isPaused ? 'disabled' : ''}>Custom Bid</button>
+          <input type="number" id="customBidInput" class="input-inline" style="width: 100px;" placeholder="$ Amount" min="${state.currentBid + 1}" max="${myBudget}">
+          <button class="btn btn-secondary" onclick="bidCustom()" ${(!isEligibleToBid || state.isPaused) ? 'disabled' : ''}>Custom Bid</button>
         </div>
       `;
     }
@@ -812,10 +1185,6 @@
       }).join('');
     }
 
-    function nominate(playerId) {
-      socket.emit('nominatePlayer', { playerId, openingBid: 1 });
-    }
-
     function bidIncrement(increment) {
       const targetBid = localData.draftState.currentBid + increment;
       socket.emit('placeBid', { bidAmount: targetBid });
@@ -824,44 +1193,79 @@
     function bidCustom() {
       const input = document.getElementById('customBidInput');
       const val = parseInt(input.value, 10);
-      if (!val) return;
+      if (isNaN(val)) return;
       socket.emit('placeBid', { bidAmount: val });
     }
 
-    // Modal Operations
-    function openPlayerModal(playerId) {
+    // NON-BLOCKING FLOATING PLAYER INSPECTOR CARD
+    function openFloatingPlayerCard(playerId) {
       const p = localData.players.find(x => x.id === playerId);
       if (!p || !p.fullStats) return;
 
-      document.getElementById('modalPlayerName').textContent = p.name;
-      document.getElementById('modalPlayerMeta').textContent = `${p.pos} - ${p.nbaTeam} | Rank: ${p.rank || 'N/A'}`;
+      document.getElementById('floatCardName').textContent = p.name;
+      document.getElementById('floatCardTeamPos').textContent = `${p.pos} &bull; ${p.nbaTeam}`;
+      document.getElementById('floatCardRank').textContent = p.rank ? `Rank #${p.rank}` : '';
 
-      const statsTable = document.getElementById('modalStatsTable');
-      statsTable.innerHTML = Object.entries(p.fullStats).map(([key, val]) => `
+      document.getElementById('pillFPPG').textContent = p.fppg ? p.fppg.toFixed(1) : '-';
+      document.getElementById('pillFPTS').textContent = p.fpts ? p.fpts.toFixed(0) : '-';
+      document.getElementById('pillPTS').textContent = p.fullStats.PTS ?? '-';
+      document.getElementById('pillREB').textContent = p.fullStats.REB ?? '-';
+      document.getElementById('pillAST').textContent = p.fullStats.AST ?? '-';
+      document.getElementById('pillST').textContent = p.fullStats.ST ?? '-';
+      document.getElementById('pillBLK').textContent = p.fullStats.BLK ?? '-';
+      document.getElementById('pill3PT').textContent = p.fullStats['3PTM'] ?? '-';
+
+      const table = document.getElementById('floatCardRawStats');
+      table.innerHTML = Object.entries(p.fullStats).map(([k, v]) => `
         <tr>
-          <th>${key}</th>
-          <td>${val !== undefined && val !== null ? val : '-'}</td>
+          <th>${k}</th>
+          <td>${v !== undefined && v !== null ? v : '-'}</td>
         </tr>
       `).join('');
 
-      document.getElementById('playerStatsModal').style.display = 'flex';
+      document.getElementById('floatingPlayerCard').style.display = 'block';
     }
 
-    function closePlayerModal() {
-      document.getElementById('playerStatsModal').style.display = 'none';
+    function closeFloatingPlayerCard() {
+      document.getElementById('floatingPlayerCard').style.display = 'none';
     }
 
+    // Commissioner Modal Operations
     function openCommishModal() {
       document.getElementById('inputNomTime').value = timerConfig.nominationTime;
       document.getElementById('inputBidTime').value = timerConfig.beginningBidTime;
       document.getElementById('inputResetTime').value = timerConfig.additionalBidTime;
 
+      updateCommishModalUI();
       renderCommishAutoList();
       document.getElementById('commishModal').style.display = 'flex';
     }
 
     function closeCommishModal() {
       document.getElementById('commishModal').style.display = 'none';
+    }
+
+    function updateCommishModalUI() {
+      const statusText = document.getElementById('commishDraftStatusText');
+      const startBtn = document.getElementById('commishStartDraftBtn');
+      if (statusText && startBtn) {
+        if (localData.draftState.isDraftStarted) {
+          statusText.textContent = "Draft is LIVE and RUNNING";
+          statusText.style.color = "#06d6a0";
+          startBtn.style.display = "none";
+        } else {
+          statusText.textContent = "Draft Not Started";
+          statusText.style.color = "#ffbe0b";
+          startBtn.style.display = "inline-block";
+        }
+      }
+    }
+
+    function adminStartDraft() {
+      if (confirm("Officially start the draft? The nomination timer will begin immediately!")) {
+        socket.emit('adminStartDraft');
+        closeCommishModal();
+      }
     }
 
     function renderCommishAutoList() {

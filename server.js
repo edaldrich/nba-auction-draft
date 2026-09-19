@@ -19,14 +19,12 @@ let players = JSON.parse(fs.readFileSync(path.join(__dirname, 'players.json'), '
 const MAX_ROSTER_SIZE = 13;
 let draftHistory = [];
 
-// Dynamic Timer Configuration
 let timerConfig = {
   nominationTime: 45,
   beginningBidTime: 45,
   additionalBidTime: 10
 };
 
-// Map socket id to authenticated team id
 const socketSessions = new Map();
 
 function getOnlineTeamIds() {
@@ -65,15 +63,16 @@ function getPublicPlayers() {
 function getTeamCaps(teamId) {
   const caps = {};
   players.forEach(p => {
-    if (p.autoCaps && p.autoCaps[teamId]) {
+    if (p.autoCaps && p.autoCaps[teamId] !== undefined) {
       caps[p.id] = p.autoCaps[teamId];
     }
   });
   return caps;
 }
 
+// Roster has open spot (budget can be 0 to fill with $0 picks)
 function isTeamEligible(team) {
-  return team.roster.length < MAX_ROSTER_SIZE && team.budget > 0;
+  return team.roster.length < MAX_ROSTER_SIZE;
 }
 
 function getNextNominatorId(currentId) {
@@ -97,7 +96,9 @@ function getOnDeckNominatorId(currentNominatorId) {
   return getNextNominatorId(currentNominatorId);
 }
 
+// Global Draft State
 let draftState = {
+  isDraftStarted: false,
   isDraftActive: true,
   nominatedPlayer: null,
   currentBid: 0,
@@ -105,7 +106,7 @@ let draftState = {
   nominatingTeamId: 1,
   onDeckTeamId: getNextNominatorId(1),
   timerSeconds: timerConfig.nominationTime,
-  timerMode: 'nomination', // 'nomination' or 'auction'
+  timerMode: 'nomination',
   isPaused: false
 };
 
@@ -114,10 +115,10 @@ function saveStateToDisk() {
   fs.writeFileSync(path.join(__dirname, 'players.json'), JSON.stringify(players, null, 2));
 }
 
+// $0 rule: team can spend up to their entire budget without mandatory $1 reserve per open spot
 function getMaxAllowedBid(team) {
-  const openSpots = MAX_ROSTER_SIZE - team.roster.length;
-  if (openSpots <= 0) return 0;
-  return team.budget - (openSpots - 1);
+  if (!isTeamEligible(team)) return -1;
+  return team.budget;
 }
 
 let timerInterval = null;
@@ -125,11 +126,13 @@ let autoBidTimeout = null;
 
 function startTimer(mode, duration) {
   clearInterval(timerInterval);
+  if (!draftState.isDraftStarted) return;
+
   draftState.timerMode = mode;
   draftState.timerSeconds = duration;
 
   timerInterval = setInterval(() => {
-    if (draftState.isPaused) return;
+    if (draftState.isPaused || !draftState.isDraftStarted) return;
 
     draftState.timerSeconds -= 1;
     io.emit('timerTick', { seconds: draftState.timerSeconds, mode: draftState.timerMode });
@@ -147,15 +150,14 @@ function startTimer(mode, duration) {
   }, 1000);
 }
 
-// Auto-nominate if team lets nomination clock hit zero
 function autoNominateCurrentTeam() {
   const team = teams.find(t => t.id === draftState.nominatingTeamId);
   const available = players.filter(p => p.status === 'available');
   if (!available.length || !team) return;
 
-  // Pick top available player
   const player = available[0];
-  executeNomination(player.id, team.id, 1);
+  const openingBid = team.budget > 0 ? 1 : 0;
+  executeNomination(player.id, team.id, openingBid);
 }
 
 function executeNomination(playerId, teamId, openingBid) {
@@ -164,9 +166,14 @@ function executeNomination(playerId, teamId, openingBid) {
 
   if (!player || !team || !isTeamEligible(team)) return;
 
-  const bid = parseInt(openingBid, 10) || 1;
-  const maxAllowed = getMaxAllowedBid(team);
-  if (bid > maxAllowed) return;
+  let bid = parseInt(openingBid, 10);
+  if (isNaN(bid)) bid = (team.budget > 0 ? 1 : 0);
+
+  // If team has budget > 0, minimum nomination is $1. If $0 budget, nomination is $0.
+  if (team.budget > 0 && bid < 1) bid = 1;
+  if (team.budget === 0) bid = 0;
+
+  if (bid > team.budget) bid = team.budget;
 
   draftState.nominatedPlayer = player;
   draftState.currentBid = bid;
@@ -235,48 +242,44 @@ function finalizeSale() {
 function triggerAutodraftCheck() {
   clearTimeout(autoBidTimeout);
 
-  // Exact 3-second pause before autodraft bot bid executes
   autoBidTimeout = setTimeout(() => {
-    if (!draftState.nominatedPlayer || draftState.isPaused || draftState.timerMode !== 'auction') return;
+    if (!draftState.nominatedPlayer || draftState.isPaused || draftState.timerMode !== 'auction' || !draftState.isDraftStarted) return;
 
     const player = draftState.nominatedPlayer;
     const currentBid = draftState.currentBid;
-    const nextBidRequired = currentBid + 1;
+    
+    // If current bid is 0, next bid is 1. Otherwise current + 1.
+    const nextBidRequired = currentBid === 0 ? 1 : currentBid + 1;
 
-    // Filter eligible autodraft bots:
-    // 1. isAuto = true
-    // 2. Not already high bidder
-    // 3. autoCap >= nextBidRequired
-    // 4. Budget & roster space checks pass
     const eligibleBots = teams.filter(t => {
       if (!t.isAuto) return false;
       if (draftState.highBidder && draftState.highBidder.id === t.id) return false;
+      if (!isTeamEligible(t)) return false;
+
+      // Bot cannot bid if it doesn't have the budget
+      if (t.budget < nextBidRequired) return false;
 
       const playerCap = player.autoCaps ? player.autoCaps[t.id] : null;
-      if (!playerCap || playerCap < nextBidRequired) return false;
-
-      const maxAllowed = getMaxAllowedBid(t);
-      if (nextBidRequired > maxAllowed) return false;
+      if (playerCap === undefined || playerCap === null) return false;
+      if (playerCap < nextBidRequired) return false;
 
       return true;
     });
 
     if (eligibleBots.length === 0) return;
 
-    // Pick randomly if multiple bots qualify
+    // Pick random winner among matching bots
     const randomIndex = Math.floor(Math.random() * eligibleBots.length);
     const winningBot = eligibleBots[randomIndex];
 
     draftState.currentBid = nextBidRequired;
     draftState.highBidder = { id: winningBot.id, name: winningBot.name };
 
-    // Additional bid time logic: only bump up to minimum if currently below it
     if (draftState.timerSeconds < timerConfig.additionalBidTime) {
       draftState.timerSeconds = timerConfig.additionalBidTime;
     }
 
     io.emit('bidAccepted', { draftState, isAutoBid: true });
-
     triggerAutodraftCheck();
   }, 3000);
 }
@@ -307,7 +310,6 @@ io.on('connection', (socket) => {
       draftState
     });
 
-    // Notify all rooms of updated presence
     io.emit('presenceUpdate', { teams: getPublicTeams() });
   });
 
@@ -328,6 +330,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('nominatePlayer', ({ playerId, openingBid }) => {
+    if (!draftState.isDraftStarted) return;
     const teamId = socketSessions.get(socket.id);
     if (!teamId || draftState.nominatedPlayer || draftState.isPaused) return;
     if (teamId !== draftState.nominatingTeamId) return;
@@ -336,6 +339,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('placeBid', ({ bidAmount }) => {
+    if (!draftState.isDraftStarted) return;
     const teamId = socketSessions.get(socket.id);
     if (!teamId || !draftState.nominatedPlayer || draftState.isPaused || draftState.timerMode !== 'auction') return;
 
@@ -343,16 +347,19 @@ io.on('connection', (socket) => {
     if (!team || !isTeamEligible(team)) return;
 
     const bid = parseInt(bidAmount, 10);
-    const maxAllowed = getMaxAllowedBid(team);
+    if (isNaN(bid)) return;
 
-    if (bid <= draftState.currentBid) return;
-    if (bid > maxAllowed) return;
+    // Minimum check: must be strictly greater than currentBid (or 1 if current is 0)
+    if (draftState.currentBid === 0 && bid < 1) return;
+    if (draftState.currentBid > 0 && bid <= draftState.currentBid) return;
+
+    // Budget check
+    if (bid > team.budget) return;
     if (draftState.highBidder && draftState.highBidder.id === team.id) return;
 
     draftState.currentBid = bid;
     draftState.highBidder = { id: team.id, name: team.name };
 
-    // Anti-snipe clock extension
     if (draftState.timerSeconds < timerConfig.additionalBidTime) {
       draftState.timerSeconds = timerConfig.additionalBidTime;
     }
@@ -371,7 +378,7 @@ io.on('connection', (socket) => {
     if (!player.autoCaps) player.autoCaps = {};
 
     const cleanBid = parseInt(maxBid, 10);
-    if (isNaN(cleanBid) || cleanBid <= 0) {
+    if (isNaN(cleanBid) || cleanBid < 0) {
       delete player.autoCaps[teamId];
     } else {
       player.autoCaps[teamId] = cleanBid;
@@ -380,16 +387,28 @@ io.on('connection', (socket) => {
     saveStateToDisk();
     socket.emit('capSavedConfirmation', {
       playerId,
-      maxBid: cleanBid > 0 ? cleanBid : null
+      maxBid: cleanBid >= 0 ? cleanBid : null
     });
   });
 
-  // Commissioner Guard
   function isCommishSocket() {
     const teamId = socketSessions.get(socket.id);
     const team = teams.find(t => t.id === teamId);
     return team && team.isCommish;
   }
+
+  // Commissioner Start Draft Action
+  socket.on('adminStartDraft', () => {
+    if (!isCommishSocket()) return;
+    draftState.isDraftStarted = true;
+    startTimer('nomination', timerConfig.nominationTime);
+    io.emit('draftStartedNotice', { draftState });
+    io.emit('stateUpdate', {
+      draftState,
+      teams: getPublicTeams(),
+      players: getPublicPlayers()
+    });
+  });
 
   socket.on('adminUpdateTimers', ({ nominationTime, beginningBidTime, additionalBidTime }) => {
     if (!isCommishSocket()) return;
@@ -484,6 +503,7 @@ io.on('connection', (socket) => {
     });
 
     draftState = {
+      isDraftStarted: false,
       isDraftActive: true,
       nominatedPlayer: null,
       currentBid: 0,
@@ -496,7 +516,6 @@ io.on('connection', (socket) => {
     };
 
     saveStateToDisk();
-    startTimer('nomination', timerConfig.nominationTime);
     io.emit('stateUpdate', {
       draftState,
       teams: getPublicTeams(),
@@ -509,9 +528,6 @@ io.on('connection', (socket) => {
     io.emit('presenceUpdate', { teams: getPublicTeams() });
   });
 });
-
-// Start with initial nomination clock
-startTimer('nomination', timerConfig.nominationTime);
 
 server.listen(PORT, () => {
   console.log(`🚀 NBA Auction Draft Server running on http://localhost:${PORT}`);

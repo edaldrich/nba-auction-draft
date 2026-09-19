@@ -33,7 +33,7 @@
     "status": "drafted",
     "draftedBy": "Team 1",
     "draftedByTeamId": 1,
-    "price": 1,
+    "price": 12,
     "autoCaps": {}
   },
   {
@@ -67,10 +67,10 @@
       "3D": "0.0",
       "2D": "0"
     },
-    "status": "drafted",
-    "draftedBy": "Team 2",
-    "draftedByTeamId": 2,
-    "price": 1,
+    "status": "available",
+    "draftedBy": null,
+    "draftedByTeamId": null,
+    "price": 0,
     "autoCaps": {}
   },
   {
@@ -104,10 +104,10 @@
       "3D": "0.0",
       "2D": "0"
     },
-    "status": "drafted",
-    "draftedBy": "Team 3",
-    "draftedByTeamId": 3,
-    "price": 1,
+    "status": "available",
+    "draftedBy": null,
+    "draftedByTeamId": null,
+    "price": 0,
     "autoCaps": {}
   },
   {
@@ -141,10 +141,10 @@
       "3D": "0.0",
       "2D": "0"
     },
-    "status": "drafted",
-    "draftedBy": "Team 4",
-    "draftedByTeamId": 4,
-    "price": 1,
+    "status": "available",
+    "draftedBy": null,
+    "draftedByTeamId": null,
+    "price": 0,
     "autoCaps": {}
   },
   {

@@ -78,9 +78,9 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 390px 1fr 310px;
+      grid-template-columns: 410px 1fr 310px;
       gap: 1rem;
-      max-width: 1600px;
+      max-width: 1620px;
       margin: 0 auto;
     }
     .card {
@@ -102,8 +102,8 @@
       background: #0077b6;
       color: white;
       border: none;
-      padding: 0.5rem 0.85rem;
-      font-size: 0.88rem;
+      padding: 0.45rem 0.8rem;
+      font-size: 0.85rem;
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
@@ -133,8 +133,8 @@
       font-size: 0.85rem;
     }
     .input-inline {
-      width: 60px;
-      padding: 0.25rem 0.35rem;
+      width: 58px;
+      padding: 0.22rem 0.3rem;
       background: #0b132b;
       color: white;
       border: 1px solid #3a506b;
@@ -143,12 +143,12 @@
       font-size: 0.8rem;
     }
 
-    #playerListContainer { max-height: 68vh; overflow-y: auto; padding-right: 0.2rem; }
+    #playerListContainer { max-height: 64vh; overflow-y: auto; padding-right: 0.2rem; }
     .player-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 0.6rem;
+      padding: 0.45rem 0.55rem;
       border-radius: 6px;
       margin-bottom: 0.35rem;
       user-select: none;
@@ -174,9 +174,9 @@
       font-weight: 700;
       border-radius: 4px;
       padding: 0.12rem 0.35rem;
-      font-size: 0.76rem;
+      font-size: 0.74rem;
     }
-    .badge-total { color: #cbd5e1; font-size: 0.73rem; margin-left: 0.25rem; }
+    .badge-total { color: #cbd5e1; font-size: 0.72rem; margin-left: 0.2rem; }
     .drafted-tag { color: #ef476f; font-weight: 700; font-size: 0.8rem; margin-top: 0.2rem; }
     
     .badge-injury {
@@ -185,9 +185,19 @@
       color: #ffffff;
       font-weight: 800;
       border-radius: 4px;
-      padding: 0.1rem 0.35rem;
-      font-size: 0.7rem;
+      padding: 0.1rem 0.3rem;
+      font-size: 0.68rem;
       margin-left: 0.3rem;
+    }
+
+    .badge-demo {
+      background: #ffbe0b;
+      color: #000;
+      font-weight: 900;
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
     }
 
     .status-dot {
@@ -248,9 +258,41 @@
       padding: 1rem;
     }
     .board-grid { display: grid; grid-template-columns: repeat(12, minmax(170px, 1fr)); gap: 0.75rem; }
-    .board-col { background: #0b132b; border: 1px solid #3a506b; border-radius: 6px; padding: 0.5rem; min-height: 500px; }
+    .board-col { background: #0b132b; border: 1px solid #3a506b; border-radius: 6px; padding: 0.5rem; min-height: 480px; }
     .board-col-header { border-bottom: 2px solid #0077b6; padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: center; }
     .board-pick { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.35rem; font-size: 0.8rem; }
+
+    /* NOMINATION QUEUE DRAWER */
+    #nominationQueuePanel {
+      background: #101c3d;
+      border: 1px solid #0284c7;
+      border-radius: 6px;
+      padding: 0.6rem;
+      margin-bottom: 0.6rem;
+      display: none;
+    }
+    .queue-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0b132b;
+      border: 1px solid #1e293b;
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      margin-bottom: 0.25rem;
+      font-size: 0.82rem;
+    }
+    .queue-btn-group { display: flex; gap: 0.2rem; }
+    .queue-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      border-radius: 3px;
+      padding: 0.1rem 0.35rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .queue-btn:hover { background: #334155; color: #fff; }
 
     /* FLOATING COMPACT PLAYER CARD */
     #floatingPlayerCard {
@@ -295,7 +337,6 @@
     .stat-pill-label { font-size: 0.62rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
     .stat-pill-val { font-size: 1rem; font-weight: 800; color: #38bdf8; }
     
-    /* Player News / Injury Snippet Box */
     .player-news-box {
       background: #0f172a;
       border: 1px solid #334155;
@@ -327,7 +368,7 @@
       padding: 1.5rem;
       border-radius: 8px;
       border: 1px solid #3a506b;
-      max-width: 600px;
+      max-width: 620px;
       width: 90%;
       max-height: 85vh;
       overflow-y: auto;
@@ -360,7 +401,7 @@
     <div id="countdownFlashNum" class="countdown-flash-num">3</div>
   </div>
 
-  <!-- Non-Blocking Floating Player Card (8 Stat Boxes + Latest News) -->
+  <!-- Non-Blocking Floating Player Card -->
   <div id="floatingPlayerCard">
     <div class="card-header-bar">
       <div>
@@ -382,7 +423,12 @@
       <div class="stat-pill"><div class="stat-pill-label">3PTM</div><div id="pill3PT" class="stat-pill-val">-</div></div>
     </div>
 
-    <!-- Latest News & Injury Report Section -->
+    <div style="margin-top: 0.4rem;">
+      <button id="floatCardAddToQueueBtn" class="btn btn-secondary" style="width: 100%; font-size: 0.8rem; padding: 0.35rem;" onclick="addCurrentPlayerToQueue()">
+        + Add To My Nomination Queue
+      </button>
+    </div>
+
     <div id="floatCardNewsBox" class="player-news-box">
       <div style="font-weight: bold; color: #94a3b8; margin-bottom: 0.2rem; font-size: 0.7rem; text-transform: uppercase;">
         Latest Injury / News Update (<span id="floatCardNewsDate">-</span>)
@@ -410,6 +456,15 @@
     <div class="modal-box">
       <button class="modal-close" onclick="closeCommishModal()">✕</button>
       <h2>🛡️ Commissioner Command Center</h2>
+
+      <!-- Mode Switcher (Demo vs Prod) -->
+      <div style="background: #0f172a; padding: 0.75rem; border-radius: 6px; border: 1px solid #f77f00; margin-bottom: 1.2rem;">
+        <h4 style="margin: 0 0 0.35rem 0; color: #fcbf49;">Draft Mode Configuration</h4>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button id="btnSwitchProd" class="btn" style="flex: 1;" onclick="adminSwitchMode('prod')">Production (12 Teams / $200 / 13 Roster)</button>
+          <button id="btnSwitchDemo" class="btn btn-warning" style="flex: 1;" onclick="adminSwitchMode('demo')">Demo Mode (6 Teams / $50 / 4 Roster)</button>
+        </div>
+      </div>
       
       <div style="background: #0b132b; padding: 0.75rem; border-radius: 6px; border: 1px solid #3a506b; margin-bottom: 1.25rem;">
         <h4 style="margin: 0 0 0.4rem 0;">Draft Status</h4>
@@ -442,7 +497,7 @@
           <button id="pauseBtnModal" class="btn btn-warning" onclick="adminTogglePause()">Pause Draft</button>
           <button class="btn btn-secondary" onclick="adminResetBlock()">Cancel Block</button>
           <button class="btn btn-warning" onclick="adminUndoLastSale()">↩ Undo Last Sale</button>
-          <button class="btn btn-danger" onclick="adminResetDraft()">Reset Entire Draft</button>
+          <button class="btn btn-danger" onclick="adminResetDraft()">Reset Current Draft</button>
         </div>
       </div>
 
@@ -478,7 +533,10 @@
   <!-- Top Status Banner -->
   <div class="top-banner">
     <div class="nom-indicator">
-      <div>Nomination Turn: <span id="currentNomDisplay" class="nom-current">Waiting to Start...</span></div>
+      <div>
+        Nomination Turn: <span id="currentNomDisplay" class="nom-current">Waiting to Start...</span>
+        <span id="demoModeBadge" class="badge-demo" style="display: none;">DEMO MODE (4 ROSTER / $50)</span>
+      </div>
       <div class="nom-ondeck">On Deck: <span id="onDeckNomDisplay">-</span></div>
     </div>
 
@@ -498,9 +556,23 @@
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
         <h3>Players</h3>
-        <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="toggleCapMode()">
-          Set My Caps
-        </button>
+        <div style="display: flex; gap: 0.3rem;">
+          <button id="toggleQueueBtn" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="toggleQueuePanel()">
+            My Queue (<span id="queueCountBadge">0</span>)
+          </button>
+          <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="toggleCapMode()">
+            Set My Caps
+          </button>
+        </div>
+      </div>
+
+      <!-- Private Nomination Queue Drawer -->
+      <div id="nominationQueuePanel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <strong style="color: #48cae4; font-size: 0.85rem;">Private Nomination Queue</strong>
+          <small style="color: #8d99ae;">Auto-nominates top available player</small>
+        </div>
+        <div id="queueListContainer" style="max-height: 140px; overflow-y: auto;"></div>
       </div>
 
       <div id="capToolbar" class="cap-controls-bar" style="display: none;">
@@ -585,6 +657,8 @@
     let myTeam = null;
     let myCaps = {};
     let myRanks = {};
+    let myQueue = []; // Private nomination queue array of player IDs
+    let maxRosterSize = 13;
     let timerConfig = { nominationTime: 45, beginningBidTime: 45, additionalBidTime: 10 };
     let capEditMode = false;
     let currentTab = 'warRoom';
@@ -615,9 +689,7 @@
           osc.start();
           osc.stop(ctx.currentTime + duration);
         }, delay * 1000);
-      } catch (e) {
-        console.warn('Audio play error', e);
-      }
+      } catch (e) {}
     }
 
     function soundNominationTurn() {
@@ -703,6 +775,9 @@
     const myAutoDraftBtn = document.getElementById('myAutoDraftBtn');
     const openCommishBtn = document.getElementById('openCommishBtn');
     const capToolbar = document.getElementById('capToolbar');
+    const nominationQueuePanel = document.getElementById('nominationQueuePanel');
+    const queueListContainer = document.getElementById('queueListContainer');
+    const queueCountBadge = document.getElementById('queueCountBadge');
 
     const playerListEl = document.getElementById('playerList');
     const teamListEl = document.getElementById('teamList');
@@ -717,6 +792,7 @@
     const boardColumnsEl = document.getElementById('boardColumns');
     const urgencyOverlay = document.getElementById('urgencyOverlay');
     const countdownFlashNum = document.getElementById('countdownFlashNum');
+    const demoModeBadge = document.getElementById('demoModeBadge');
 
     const savedPrefs = localStorage.getItem('user_draft_prefs');
     if (savedPrefs) {
@@ -759,6 +835,8 @@
       myTeam = data.myTeam;
       myCaps = data.myCaps || {};
       myRanks = data.myRanks || {};
+      myQueue = data.myQueue || [];
+      maxRosterSize = data.maxRosterSize || 13;
       timerConfig = data.timerConfig;
       localData.teams = data.teams;
       localData.players = data.players;
@@ -773,6 +851,7 @@
       updateMyAutoBtn(myTeam.isAuto);
       populateTeamFilterOptions();
       renderAll();
+      renderQueue();
       logMessage(`Welcome, <strong>${myTeam.name}</strong>! Ready.`);
     });
 
@@ -824,6 +903,18 @@
       localData.teams = data.teams;
       localData.players = data.players;
       renderAll();
+      renderQueue();
+    });
+
+    socket.on('modeSwitched', (data) => {
+      localData.draftState = data.draftState;
+      localData.teams = data.teams;
+      localData.players = data.players;
+      maxRosterSize = data.maxRosterSize;
+      myQueue = [];
+      renderAll();
+      renderQueue();
+      logMessage(data.isDemoMode ? "🟡 <strong>COMMISSIONER SWITCHED TO DEMO MODE (6 Teams / $50 / 4 Roster)</strong>" : "🔵 <strong>COMMISSIONER SWITCHED TO PRODUCTION MODE (12 Teams / $200 / 13 Roster)</strong>");
     });
 
     socket.on('timersUpdated', ({ timerConfig: tc }) => {
@@ -880,6 +971,11 @@
       alert(`✅ Successfully imported ${count} player ceilings & priority rankings!`);
     });
 
+    socket.on('queueUpdatedConfirmation', ({ myQueue: q }) => {
+      myQueue = q;
+      renderQueue();
+    });
+
     let lastSecondFlashed = null;
     socket.on('timerTick', ({ seconds, mode }) => {
       const timerEl = document.getElementById('timerDisplay');
@@ -912,6 +1008,10 @@
     socket.on('playerSold', ({ player, winningTeam, price }) => {
       logMessage(`<span class="log-sold">🔨 SOLD!</span> <strong>${player.name}</strong> to <strong>${winningTeam.name}</strong> for $${price}!`);
       
+      // Clean up queue if sold player was in queue
+      myQueue = myQueue.filter(id => String(id) !== String(player.id));
+      renderQueue();
+
       if (myTeam && winningTeam.id === myTeam.id) {
         soundVictoryWon();
         triggerConfetti();
@@ -961,6 +1061,8 @@
       totalPoolDisplay.textContent = `$${totalBudget.toLocaleString()}`;
 
       const state = localData.draftState;
+      demoModeBadge.style.display = state.isDemoMode ? 'inline-block' : 'none';
+
       if (!state.isDraftStarted) {
         currentNomDisplay.textContent = "Waiting to Start";
         onDeckNomDisplay.textContent = "-";
@@ -984,6 +1086,12 @@
       renderPlayers();
     }
 
+    function toggleQueuePanel() {
+      const isVisible = nominationQueuePanel.style.display === 'block';
+      nominationQueuePanel.style.display = isVisible ? 'none' : 'block';
+      document.getElementById('toggleQueueBtn').className = isVisible ? 'btn btn-secondary' : 'btn btn-warning';
+    }
+
     function renderAll() {
       if (!myTeam) return;
       updateTopBanner();
@@ -1003,6 +1111,62 @@
         if (t === 'C') return 'pos-center';
       }
       return '';
+    }
+
+    // Queue Operations
+    function addPlayerToQueue(playerId) {
+      if (!myQueue.includes(playerId)) {
+        myQueue.push(playerId);
+        socket.emit('updateMyQueue', { queue: myQueue });
+      }
+    }
+
+    function removePlayerFromQueue(playerId) {
+      myQueue = myQueue.filter(id => String(id) !== String(playerId));
+      socket.emit('updateMyQueue', { queue: myQueue });
+    }
+
+    function moveQueueItem(index, direction) {
+      const newIdx = index + direction;
+      if (newIdx < 0 || newIdx >= myQueue.length) return;
+      const temp = myQueue[index];
+      myQueue[index] = myQueue[newIdx];
+      myQueue[newIdx] = temp;
+      socket.emit('updateMyQueue', { queue: myQueue });
+    }
+
+    function renderQueue() {
+      queueCountBadge.textContent = myQueue.length;
+      if (myQueue.length === 0) {
+        queueListContainer.innerHTML = `<small style="color: #64748b;">Your queue is empty. Add players via the player list or double-click inspector.</small>`;
+        return;
+      }
+
+      queueListContainer.innerHTML = myQueue.map((pid, idx) => {
+        const p = localData.players.find(x => String(x.id) === String(pid));
+        if (!p) return '';
+        const isDrafted = p.status === 'drafted';
+
+        return `
+          <div class="queue-item" style="${isDrafted ? 'opacity: 0.5; text-decoration: line-through;' : ''}">
+            <div>
+              <strong>#${idx + 1}</strong> ${p.name} <small>(${p.pos} • ${p.nbaTeam})</small>
+            </div>
+            <div class="queue-btn-group">
+              <button class="queue-btn" onclick="moveQueueItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>▲</button>
+              <button class="queue-btn" onclick="moveQueueItem(${idx}, 1)" ${idx === myQueue.length - 1 ? 'disabled' : ''}>▼</button>
+              <button class="queue-btn" style="color: #ef476f;" onclick="removePlayerFromQueue('${p.id}')">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addCurrentPlayerToQueue() {
+      if (currentInspectedPlayerId) {
+        addPlayerToQueue(currentInspectedPlayerId);
+        alert("Player added to your nomination queue!");
+      }
     }
 
     function renderPlayers() {
@@ -1027,14 +1191,16 @@
         const isDrafted = p.status === 'drafted';
         const posClass = getPositionClass(p.pos);
         const hasInjury = p.news && (p.news.tag === 'OUT' || p.news.tag === 'INJURY');
+        const inQueue = myQueue.includes(p.id);
 
         return `
           <div class="player-row ${posClass} ${isDrafted ? 'player-row-drafted' : ''}" 
                ondblclick="openFloatingPlayerCard('${p.id}')">
-            <div style="flex: 1; padding-right: 0.4rem;">
+            <div style="flex: 1; padding-right: 0.3rem;">
               <strong style="${isDrafted ? 'color:#ef476f;' : ''}">${p.name}</strong> 
               <small>(${p.pos} • ${p.nbaTeam})</small>
               ${hasInjury ? `<span class="badge-injury">${p.news.tag}</span>` : ''}
+              ${inQueue ? `<span style="color:#06d6a0; font-size:0.75rem; font-weight:bold; margin-left:0.25rem;">[QUEUED]</span>` : ''}
               <div>
                 <span class="badge-fppg">${p.fppg.toFixed(1)} FP/G</span>
                 <span class="badge-total">${p.fpts.toFixed(0)} FPts</span>
@@ -1058,12 +1224,19 @@
                     onchange="saveCap('${p.id}', this.previousElementSibling.value, this.value)" />
                 </div>
               ` : `
-                <button class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
-                  onclick="event.stopPropagation(); directNominate('${p.id}')" 
-                  ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate || !localData.draftState.isDraftStarted) ? 'disabled' : ''}
-                  title="${!localData.draftState.isDraftStarted ? 'Draft not started' : (!isMyTurnToNominate ? 'Not your turn' : 'Nominate for minimum')}">
-                  Nominate
-                </button>
+                <div style="display: flex; gap: 0.2rem; align-items: center;">
+                  <button class="btn btn-secondary" style="padding: 0.22rem 0.4rem; font-size: 0.75rem;" 
+                    onclick="event.stopPropagation(); addPlayerToQueue('${p.id}')"
+                    title="Add to Nomination Queue">
+                    +Q
+                  </button>
+                  <button class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                    onclick="event.stopPropagation(); directNominate('${p.id}')" 
+                    ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate || !localData.draftState.isDraftStarted) ? 'disabled' : ''}
+                    title="${!localData.draftState.isDraftStarted ? 'Draft not started' : (!isMyTurnToNominate ? 'Not your turn' : 'Nominate for minimum')}">
+                    Nominate
+                  </button>
+                </div>
               `
             ) : ''}
           </div>
@@ -1079,19 +1252,15 @@
       socket.emit('updateAutoCap', { playerId, maxBid, rank });
     }
 
-// Position-free, comma-safe template download
     function downloadCapsTemplate() {
       let csvContent = "data:text/csv;charset=utf-8,";
-      // Header has no position column
       csvContent += "Player ID,Player Name,Team,FP/G,Max Bid ($),Priority Rank (1-300)\n";
 
       localData.players.forEach(p => {
         const currentCap = (myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
         const currentRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
-        // Sanitize any accidental commas or quotes in names
         const cleanName = (p.name || '').replace(/[,"]/g, '').trim();
         const cleanTeam = (p.nbaTeam || '').replace(/[,"]/g, '').trim();
-        
         csvContent += `${p.id},${cleanName},${cleanTeam},${p.fppg.toFixed(1)},${currentCap},${currentRank}\n`;
       });
 
@@ -1104,7 +1273,6 @@
       document.body.removeChild(link);
     }
 
-    // Direct, resilient CSV upload parser
     function handleCapsCsvUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1127,9 +1295,7 @@
           const line = lines[i].trim();
           if (!line) continue;
 
-          // Simple direct split since columns contain no internal commas
           const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-
           const playerId = idIdx !== -1 ? cols[idIdx] : null;
           const playerName = nameIdx !== -1 ? cols[nameIdx] : null;
           const maxBid = capIdx !== -1 ? cols[capIdx] : '';
@@ -1150,7 +1316,7 @@
 
     function renderTeams() {
       teamListEl.innerHTML = localData.teams.map(t => {
-        const isFull = t.roster.length >= 13;
+        const isFull = t.roster.length >= maxRosterSize;
         const isTurn = localData.draftState.isDraftStarted && (t.id === localData.draftState.nominatingTeamId);
         const isMe = myTeam && t.id === myTeam.id;
 
@@ -1161,7 +1327,7 @@
               <div>
                 <strong>${t.name}</strong> ${isMe ? '<small style="color:#38bdf8;">(YOU)</small>' : ''}
                 ${isTurn ? '<small style="color:#ffbe0b; font-weight:bold;"> [NOMINATING]</small>' : ''}
-                <div><small>Roster: ${t.roster.length}/13 ${isFull ? '(FULL)' : ''}</small></div>
+                <div><small>Roster: ${t.roster.length}/${maxRosterSize} ${isFull ? '(FULL)' : ''}</small></div>
               </div>
             </div>
             <div style="font-weight: bold; color: ${t.budget <= 0 ? '#ef233c' : '#06d6a0'};">$${t.budget}</div>
@@ -1234,13 +1400,13 @@
 
     function renderDraftBoard() {
       boardColumnsEl.innerHTML = localData.teams.map(t => {
-        const openSpots = 13 - t.roster.length;
+        const openSpots = maxRosterSize - t.roster.length;
         const isMe = myTeam && t.id === myTeam.id;
         return `
           <div class="board-col" style="${isMe ? 'border: 1px solid #38bdf8;' : ''}">
             <div class="board-col-header">
               <strong style="color: #48cae4; font-size: 0.95rem;">${t.name}</strong> ${isMe ? '<small style="color:#38bdf8;">(YOU)</small>' : ''}
-              <div style="font-size: 0.8rem; color: #06d6a0; font-weight: bold;">$${t.budget} left • ${t.roster.length}/13</div>
+              <div style="font-size: 0.8rem; color: #06d6a0; font-weight: bold;">$${t.budget} left • ${t.roster.length}/${maxRosterSize}</div>
             </div>
             <div>
               ${t.roster.map(p => `
@@ -1274,10 +1440,11 @@
       socket.emit('placeBid', { bidAmount: val });
     }
 
-    // Cleaned up Floating Card: 8 stats + latest news note
+    let currentInspectedPlayerId = null;
     function openFloatingPlayerCard(playerId) {
       const p = localData.players.find(x => x.id === playerId);
       if (!p) return;
+      currentInspectedPlayerId = playerId;
 
       document.getElementById('floatCardName').textContent = p.name;
       document.getElementById('floatCardTeamPos').textContent = `${p.pos} • ${p.nbaTeam}`;
@@ -1328,14 +1495,21 @@
       const startBtn = document.getElementById('commishStartDraftBtn');
       if (statusText && startBtn) {
         if (localData.draftState.isDraftStarted) {
-          statusText.textContent = "Draft is LIVE and RUNNING";
+          statusText.textContent = `Draft is LIVE and RUNNING (${localData.draftState.isDemoMode ? 'DEMO' : 'PROD'})`;
           statusText.style.color = "#06d6a0";
           startBtn.style.display = "none";
         } else {
-          statusText.textContent = "Draft Not Started";
+          statusText.textContent = `Draft Not Started (${localData.draftState.isDemoMode ? 'DEMO' : 'PROD'})`;
           statusText.style.color = "#ffbe0b";
           startBtn.style.display = "inline-block";
         }
+      }
+    }
+
+    function adminSwitchMode(targetMode) {
+      if (confirm(`Switch draft to ${targetMode.toUpperCase()} mode? This will reset rosters and budgets to match the mode parameters.`)) {
+        socket.emit('adminSwitchMode', { targetMode });
+        closeCommishModal();
       }
     }
 

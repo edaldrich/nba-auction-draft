@@ -9,9 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const rssParser = new Parser({
-  headers: {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-  }
+  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
 });
 
 const PORT = process.env.PORT || 3000;
@@ -19,10 +17,21 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-let teams = JSON.parse(fs.readFileSync(path.join(__dirname, 'teams.json'), 'utf8'));
-let players = JSON.parse(fs.readFileSync(path.join(__dirname, 'players.json'), 'utf8'));
+const PROD_ROSTER_SIZE = 13;
+const DEMO_ROSTER_SIZE = 4;
 
-const MAX_ROSTER_SIZE = 13;
+let isDemoMode = false;
+let maxRosterSize = PROD_ROSTER_SIZE;
+
+let prodTeams = JSON.parse(fs.readFileSync(path.join(__dirname, 'teams.json'), 'utf8'));
+let prodPlayers = JSON.parse(fs.readFileSync(path.join(__dirname, 'players.json'), 'utf8'));
+
+let teams = JSON.parse(JSON.stringify(prodTeams));
+let players = JSON.parse(JSON.stringify(prodPlayers));
+
+// Private nomination queues map: teamId -> [playerId1, playerId2, ...]
+let nominationQueues = {};
+
 let draftHistory = [];
 
 let timerConfig = {
@@ -31,7 +40,7 @@ let timerConfig = {
   additionalBidTime: 10
 };
 
-// Reliable News & Injury Ingestor
+// RSS News and Injury Ingestion
 async function fetchPlayerNews() {
   const feedUrls = [
     'https://www.espn.com/espn/rss/nba/news',
@@ -56,7 +65,6 @@ async function fetchPlayerNews() {
           if (!p.name) continue;
           const nameLower = p.name.toLowerCase();
 
-          // Match player name as a full word/phrase
           if (title.toLowerCase().includes(nameLower) || snippet.toLowerCase().includes(nameLower)) {
             let tag = 'UPDATE';
             if (combinedText.includes('out') || combinedText.includes('surgery') || combinedText.includes('tear') || combinedText.includes('fracture') || combinedText.includes('achilles') || combinedText.includes('sidelined')) {
@@ -77,7 +85,7 @@ async function fetchPlayerNews() {
       });
 
       if (matchesFound > 0) {
-        console.log(`[News Feed] Updated ${matchesFound} player notes from ${url}`);
+        console.log(`[News Feed] Updated ${matchesFound} player notes.`);
         io.emit('stateUpdate', {
           draftState,
           teams: getPublicTeams(),
@@ -85,9 +93,7 @@ async function fetchPlayerNews() {
         });
         break;
       }
-    } catch (err) {
-      // Continue to next feed url if blocked
-    }
+    } catch (err) {}
   }
 }
 
@@ -144,7 +150,7 @@ function getTeamCapsAndRanks(teamId) {
 }
 
 function isTeamEligible(team) {
-  return team.roster.length < MAX_ROSTER_SIZE;
+  return team.roster.length < maxRosterSize;
 }
 
 function getNextNominatorId(currentId) {
@@ -178,12 +184,15 @@ let draftState = {
   onDeckTeamId: getNextNominatorId(1),
   timerSeconds: timerConfig.nominationTime,
   timerMode: 'nomination',
-  isPaused: false
+  isPaused: false,
+  isDemoMode: false
 };
 
 function saveStateToDisk() {
-  fs.writeFileSync(path.join(__dirname, 'teams.json'), JSON.stringify(teams, null, 2));
-  fs.writeFileSync(path.join(__dirname, 'players.json'), JSON.stringify(players, null, 2));
+  if (!isDemoMode) {
+    fs.writeFileSync(path.join(__dirname, 'teams.json'), JSON.stringify(teams, null, 2));
+    fs.writeFileSync(path.join(__dirname, 'players.json'), JSON.stringify(players, null, 2));
+  }
 }
 
 let timerInterval = null;
@@ -207,7 +216,7 @@ function startTimer(mode, duration) {
       clearTimeout(autoBidTimeout);
 
       if (draftState.timerMode === 'nomination') {
-        autoNominateCurrentTeam();
+        resolveAutoNomination();
       } else {
         finalizeSale();
       }
@@ -215,20 +224,58 @@ function startTimer(mode, duration) {
   }, 1000);
 }
 
-function autoNominateCurrentTeam() {
-  const team = teams.find(t => t.id === draftState.nominatingTeamId);
+// Queue-aware Auto-Nomination Resolution
+function resolveAutoNomination() {
+  const teamId = draftState.nominatingTeamId;
+  const team = teams.find(t => t.id === teamId);
+  if (!team || !isTeamEligible(team)) return;
+
   const available = players.filter(p => p.status === 'available');
-  if (!available.length || !team) return;
+  if (available.length === 0) return;
 
-  available.sort((a, b) => {
-    const rankA = (a.autoRanks && a.autoRanks[team.id] !== undefined) ? a.autoRanks[team.id] : 9999;
-    const rankB = (b.autoRanks && b.autoRanks[team.id] !== undefined) ? b.autoRanks[team.id] : 9999;
-    return rankA - rankB;
-  });
+  let selectedPlayer = null;
 
-  const player = available[0];
-  const openingBid = team.budget > 0 ? 1 : 0;
-  executeNomination(player.id, team.id, openingBid);
+  // 1. Check Nomination Queue first
+  const queue = nominationQueues[teamId] || [];
+  for (let queuedId of queue) {
+    const candidate = available.find(p => String(p.id) === String(queuedId));
+    if (candidate) {
+      selectedPlayer = candidate;
+      // Pop from queue
+      nominationQueues[teamId] = queue.filter(id => String(id) !== String(queuedId));
+      break;
+    }
+  }
+
+  // 2. Fallback logic if queue is empty
+  if (!selectedPlayer) {
+    if (team.budget > 0) {
+      // Highest remaining FP/G
+      available.sort((a, b) => (b.fppg || 0) - (a.fppg || 0));
+      selectedPlayer = available[0];
+    } else {
+      // $0 budget: highest manual cap, then priority rank, then fallback to FP/G
+      const cappedPlayers = available.filter(p => p.autoCaps && p.autoCaps[teamId] !== undefined);
+      if (cappedPlayers.length > 0) {
+        cappedPlayers.sort((a, b) => {
+          const capDiff = (b.autoCaps[teamId] || 0) - (a.autoCaps[teamId] || 0);
+          if (capDiff !== 0) return capDiff;
+          const rankA = (a.autoRanks && a.autoRanks[teamId] !== undefined) ? a.autoRanks[teamId] : 9999;
+          const rankB = (b.autoRanks && b.autoRanks[teamId] !== undefined) ? b.autoRanks[teamId] : 9999;
+          return rankA - rankB;
+        });
+        selectedPlayer = cappedPlayers[0];
+      } else {
+        available.sort((a, b) => (b.fppg || 0) - (a.fppg || 0));
+        selectedPlayer = available[0];
+      }
+    }
+  }
+
+  if (selectedPlayer) {
+    const openingBid = team.budget > 0 ? 1 : 0;
+    executeNomination(selectedPlayer.id, team.id, openingBid);
+  }
 }
 
 function executeNomination(playerId, teamId, openingBid) {
@@ -247,6 +294,11 @@ function executeNomination(playerId, teamId, openingBid) {
   draftState.nominatedPlayer = player;
   draftState.currentBid = bid;
   draftState.highBidder = { id: team.id, name: team.name };
+
+  // Remove player from user's queue if present
+  if (nominationQueues[teamId]) {
+    nominationQueues[teamId] = nominationQueues[teamId].filter(id => String(id) !== String(player.id));
+  }
 
   startTimer('auction', timerConfig.beginningBidTime);
   io.emit('playerNominated', { draftState });
@@ -274,6 +326,11 @@ function finalizeSale() {
     targetPlayer.draftedBy = winningTeam.name;
     targetPlayer.draftedByTeamId = winningTeam.id;
     targetPlayer.price = price;
+
+    // Full Roster Rule: if roster hits cap, zero remaining budget
+    if (winningTeam.roster.length >= maxRosterSize) {
+      winningTeam.budget = 0;
+    }
 
     draftHistory.push({
       playerId: targetPlayer.id,
@@ -306,6 +363,21 @@ function finalizeSale() {
     teams: getPublicTeams(),
     players: getPublicPlayers()
   });
+
+  // Check if active nominator is on auto-draft
+  checkIfNominatorNeedsAutoNomination();
+}
+
+function checkIfNominatorNeedsAutoNomination() {
+  if (!draftState.nominatingTeamId) return;
+  const nomTeam = teams.find(t => t.id === draftState.nominatingTeamId);
+  if (nomTeam && nomTeam.isAuto) {
+    setTimeout(() => {
+      if (!draftState.nominatedPlayer && draftState.isDraftStarted && !draftState.isPaused) {
+        resolveAutoNomination();
+      }
+    }, 1500);
+  }
 }
 
 function triggerAutodraftCheck() {
@@ -359,11 +431,96 @@ function triggerAutodraftCheck() {
   }, 3000);
 }
 
+// Setup Demo Environment
+function initDemoMode() {
+  isDemoMode = true;
+  maxRosterSize = DEMO_ROSTER_SIZE;
+
+  teams = [
+    { id: 1, name: "Commish Team", budget: 50, roster: [], isAuto: false, passcode: "commish1", isCommish: true },
+    { id: 2, name: "Demo Team 2", budget: 50, roster: [], isAuto: false, passcode: "demo2", isCommish: false },
+    { id: 3, name: "Demo Team 3", budget: 50, roster: [], isAuto: false, passcode: "demo3", isCommish: false },
+    { id: 4, name: "Demo Team 4", budget: 50, roster: [], isAuto: false, passcode: "demo4", isCommish: false },
+    { id: 5, name: "AutoBot 5", budget: 50, roster: [], isAuto: true, passcode: "none_auto5", isCommish: false },
+    { id: 6, name: "AutoBot 6", budget: 50, roster: [], isAuto: true, passcode: "none_auto6", isCommish: false }
+  ];
+
+  players = JSON.parse(JSON.stringify(prodPlayers));
+  players.forEach(p => {
+    p.status = 'available';
+    p.draftedBy = null;
+    p.draftedByTeamId = null;
+    p.price = 0;
+    p.autoCaps = {};
+    p.autoRanks = {};
+  });
+
+  // Assign random budgets respecting $50 max budget to bots 5 and 6 on top 50 players
+  const top50 = [...players].sort((a, b) => (b.fppg || 0) - (a.fppg || 0)).slice(0, 50);
+  [5, 6].forEach(botId => {
+    let budgetAssigned = 0;
+    top50.forEach((p, idx) => {
+      if (budgetAssigned < 45 && Math.random() > 0.45) {
+        const bid = Math.min(Math.floor(Math.random() * 15) + 2, 50 - budgetAssigned);
+        if (bid > 0) {
+          const target = players.find(x => x.id === p.id);
+          if (target) {
+            target.autoCaps[botId] = bid;
+            target.autoRanks[botId] = idx + 1;
+            budgetAssigned += bid;
+          }
+        }
+      }
+    });
+  });
+
+  nominationQueues = {};
+  draftHistory = [];
+
+  draftState = {
+    isDraftStarted: false,
+    isDraftActive: true,
+    nominatedPlayer: null,
+    currentBid: 0,
+    highBidder: null,
+    nominatingTeamId: 1,
+    onDeckTeamId: 2,
+    timerSeconds: timerConfig.nominationTime,
+    timerMode: 'nomination',
+    isPaused: false,
+    isDemoMode: true
+  };
+}
+
+function initProdMode() {
+  isDemoMode = false;
+  maxRosterSize = PROD_ROSTER_SIZE;
+  teams = JSON.parse(fs.readFileSync(path.join(__dirname, 'teams.json'), 'utf8'));
+  players = JSON.parse(fs.readFileSync(path.join(__dirname, 'players.json'), 'utf8'));
+  nominationQueues = {};
+  draftHistory = [];
+
+  draftState = {
+    isDraftStarted: false,
+    isDraftActive: true,
+    nominatedPlayer: null,
+    currentBid: 0,
+    highBidder: null,
+    nominatingTeamId: 1,
+    onDeckTeamId: getNextNominatorId(1),
+    timerSeconds: timerConfig.nominationTime,
+    timerMode: 'nomination',
+    isPaused: false,
+    isDemoMode: false
+  };
+}
+
 io.on('connection', (socket) => {
   draftState.onDeckTeamId = getOnDeckNominatorId(draftState.nominatingTeamId);
 
   socket.on('authTeam', ({ passcode }) => {
-    const team = teams.find(t => t.passcode === passcode.trim());
+    const cleanPass = (passcode || '').trim();
+    const team = teams.find(t => t.passcode === cleanPass);
     if (!team) {
       socket.emit('authError', { message: 'Invalid Team Passcode' });
       return;
@@ -382,13 +539,23 @@ io.on('connection', (socket) => {
       },
       myCaps: caps,
       myRanks: ranks,
+      myQueue: nominationQueues[team.id] || [],
       timerConfig,
       teams: getPublicTeams(),
       players: getPublicPlayers(),
-      draftState
+      draftState,
+      maxRosterSize
     });
 
     io.emit('presenceUpdate', { teams: getPublicTeams() });
+  });
+
+  // Nomination Queue Handlers
+  socket.on('updateMyQueue', ({ queue }) => {
+    const teamId = socketSessions.get(socket.id);
+    if (!teamId || !Array.isArray(queue)) return;
+    nominationQueues[teamId] = queue;
+    socket.emit('queueUpdatedConfirmation', { myQueue: queue });
   });
 
   socket.on('toggleMyAutoDraft', () => {
@@ -402,8 +569,12 @@ io.on('connection', (socket) => {
     io.emit('presenceUpdate', { teams: getPublicTeams() });
     socket.emit('myAutoDraftChanged', { isAuto: team.isAuto });
 
-    if (team.isAuto && draftState.nominatedPlayer) {
-      triggerAutodraftCheck();
+    if (team.isAuto) {
+      if (draftState.nominatedPlayer) {
+        triggerAutodraftCheck();
+      } else if (draftState.nominatingTeamId === team.id && draftState.isDraftStarted && !draftState.isPaused) {
+        resolveAutoNomination();
+      }
     }
   });
 
@@ -483,7 +654,6 @@ io.on('connection', (socket) => {
 
     let updatedCount = 0;
     records.forEach(r => {
-      // Clean matching by ID or exact Name
       const targetId = String(r.playerId || '').trim();
       const targetName = String(r.name || '').trim().toLowerCase();
 
@@ -516,6 +686,27 @@ io.on('connection', (socket) => {
     return team && team.isCommish;
   }
 
+  // Commissioner Demo Mode Controls
+  socket.on('adminSwitchMode', ({ targetMode }) => {
+    if (!isCommishSocket()) return;
+    clearInterval(timerInterval);
+    clearTimeout(autoBidTimeout);
+
+    if (targetMode === 'demo') {
+      initDemoMode();
+    } else {
+      initProdMode();
+    }
+
+    io.emit('modeSwitched', {
+      isDemoMode,
+      maxRosterSize,
+      draftState,
+      teams: getPublicTeams(),
+      players: getPublicPlayers()
+    });
+  });
+
   socket.on('adminStartDraft', () => {
     if (!isCommishSocket()) return;
     draftState.isDraftStarted = true;
@@ -526,6 +717,7 @@ io.on('connection', (socket) => {
       teams: getPublicTeams(),
       players: getPublicPlayers()
     });
+    checkIfNominatorNeedsAutoNomination();
   });
 
   socket.on('adminUpdateTimers', ({ nominationTime, beginningBidTime, additionalBidTime }) => {
@@ -545,8 +737,12 @@ io.on('connection', (socket) => {
     saveStateToDisk();
     io.emit('presenceUpdate', { teams: getPublicTeams() });
 
-    if (team.isAuto && draftState.nominatedPlayer) {
-      triggerAutodraftCheck();
+    if (team.isAuto) {
+      if (draftState.nominatedPlayer) {
+        triggerAutodraftCheck();
+      } else if (draftState.nominatingTeamId === team.id && draftState.isDraftStarted && !draftState.isPaused) {
+        resolveAutoNomination();
+      }
     }
   });
 
@@ -608,8 +804,9 @@ io.on('connection', (socket) => {
     clearTimeout(autoBidTimeout);
     draftHistory = [];
 
+    const defaultBudget = isDemoMode ? 50 : 200;
     teams.forEach(t => {
-      t.budget = 200;
+      t.budget = defaultBudget;
       t.roster = [];
     });
 
@@ -630,7 +827,8 @@ io.on('connection', (socket) => {
       onDeckTeamId: getNextNominatorId(1),
       timerSeconds: timerConfig.nominationTime,
       timerMode: 'nomination',
-      isPaused: false
+      isPaused: false,
+      isDemoMode: isDemoMode
     };
 
     saveStateToDisk();

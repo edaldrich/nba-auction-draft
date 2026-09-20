@@ -178,6 +178,17 @@
     }
     .badge-total { color: #cbd5e1; font-size: 0.73rem; margin-left: 0.25rem; }
     .drafted-tag { color: #ef476f; font-weight: 700; font-size: 0.8rem; margin-top: 0.2rem; }
+    
+    .badge-injury {
+      display: inline-block;
+      background: #d90429;
+      color: #ffffff;
+      font-weight: 800;
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      font-size: 0.7rem;
+      margin-left: 0.3rem;
+    }
 
     .status-dot {
       display: inline-block;
@@ -241,11 +252,12 @@
     .board-col-header { border-bottom: 2px solid #0077b6; padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: center; }
     .board-pick { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.35rem; font-size: 0.8rem; }
 
+    /* FLOATING COMPACT PLAYER CARD */
     #floatingPlayerCard {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      width: 380px;
+      width: 360px;
       background: #162032;
       border: 2px solid #0284c7;
       border-radius: 10px;
@@ -253,7 +265,7 @@
       padding: 1rem;
       z-index: 4000;
       display: none;
-      animation: slideUpCard 0.25s ease-out;
+      animation: slideUpCard 0.22s ease-out;
     }
     @keyframes slideUpCard {
       from { transform: translateY(30px); opacity: 0; }
@@ -264,36 +276,42 @@
       justify-content: space-between;
       align-items: flex-start;
       border-bottom: 1px solid #334155;
-      padding-bottom: 0.5rem;
-      margin-bottom: 0.75rem;
+      padding-bottom: 0.45rem;
+      margin-bottom: 0.65rem;
     }
     .card-stat-pill-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0.4rem;
-      margin-bottom: 0.75rem;
+      gap: 0.35rem;
+      margin-bottom: 0.5rem;
       text-align: center;
     }
     .stat-pill {
       background: #0f172a;
       border: 1px solid #1e293b;
       border-radius: 6px;
-      padding: 0.35rem 0.2rem;
+      padding: 0.3rem 0.15rem;
     }
-    .stat-pill-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
-    .stat-pill-val { font-size: 1.05rem; font-weight: 800; color: #38bdf8; }
+    .stat-pill-label { font-size: 0.62rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
+    .stat-pill-val { font-size: 1rem; font-weight: 800; color: #38bdf8; }
     
-    .stats-table-compact {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.78rem;
-    }
-    .stats-table-compact th, .stats-table-compact td {
-      padding: 0.25rem 0.4rem;
+    /* Player News / Injury Snippet Box */
+    .player-news-box {
+      background: #0f172a;
       border: 1px solid #334155;
-      text-align: left;
+      border-radius: 6px;
+      padding: 0.5rem;
+      margin-top: 0.4rem;
+      font-size: 0.76rem;
+      line-height: 1.35;
+      display: none;
     }
-    .stats-table-compact th { background: #0b132b; color: #94a3b8; }
+    .news-tag {
+      font-weight: 800;
+      color: #ef233c;
+      text-transform: uppercase;
+      margin-right: 0.3rem;
+    }
 
     .modal-overlay {
       position: fixed;
@@ -342,7 +360,7 @@
     <div id="countdownFlashNum" class="countdown-flash-num">3</div>
   </div>
 
-  <!-- Floating Stats Card -->
+  <!-- Non-Blocking Floating Player Card (8 Stat Boxes + Latest News) -->
   <div id="floatingPlayerCard">
     <div class="card-header-bar">
       <div>
@@ -364,6 +382,16 @@
       <div class="stat-pill"><div class="stat-pill-label">3PTM</div><div id="pill3PT" class="stat-pill-val">-</div></div>
     </div>
 
+    <!-- Latest News & Injury Report Section -->
+    <div id="floatCardNewsBox" class="player-news-box">
+      <div style="font-weight: bold; color: #94a3b8; margin-bottom: 0.2rem; font-size: 0.7rem; text-transform: uppercase;">
+        Latest Injury / News Update (<span id="floatCardNewsDate">-</span>)
+      </div>
+      <div>
+        <span id="floatCardNewsTag" class="news-tag"></span>
+        <span id="floatCardNewsSnippet" style="color: #cbd5e1;"></span>
+      </div>
+    </div>
   </div>
 
   <!-- Passcode Login Modal -->
@@ -425,7 +453,6 @@
     </div>
   </div>
 
-  <!-- Hidden File Input for Cap Import -->
   <input type="file" id="capsCsvFileInput" accept=".csv" style="display: none;" onchange="handleCapsCsvUpload(event)" />
 
   <!-- Preferences Modal -->
@@ -468,7 +495,6 @@
 
   <!-- VIEW 1: Live War Room -->
   <div id="warRoomView" class="grid">
-    <!-- Left: Players Pool -->
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
         <h3>Players</h3>
@@ -477,7 +503,6 @@
         </button>
       </div>
 
-      <!-- CSV Cap Import & Export Toolbar (shown when in Cap Mode) -->
       <div id="capToolbar" class="cap-controls-bar" style="display: none;">
         <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="downloadCapsTemplate()">
           📥 Download Template
@@ -489,7 +514,6 @@
 
       <small style="color: #8d99ae; display: block; margin-bottom: 0.4rem;">(Double-click player to open floating stats)</small>
 
-      <!-- Player Search & Filters (Status + Team) -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.3rem;">
         <select id="statusFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
           <option value="available">Available Only</option>
@@ -567,7 +591,6 @@
 
     let userPrefs = { sound: true, visual: true };
 
-    // Web Audio Synthesizer
     let audioCtx = null;
     function getAudioContext() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -619,7 +642,6 @@
       playTone(1046.50, 'triangle', 0.45, 0.36);
     }
 
-    // Confetti Engine
     const canvas = document.getElementById('confettiCanvas');
     const ctx = canvas.getContext('2d');
     let confettiParticles = [];
@@ -674,7 +696,6 @@
       }
     }
 
-    // DOM Elements
     const authOverlay = document.getElementById('authOverlay');
     const passcodeInput = document.getElementById('passcodeInput');
     const authErrorMsg = document.getElementById('authErrorMsg');
@@ -888,7 +909,6 @@
       }
     });
 
-    // Award player silently without browser alert
     socket.on('playerSold', ({ player, winningTeam, price }) => {
       logMessage(`<span class="log-sold">🔨 SOLD!</span> <strong>${player.name}</strong> to <strong>${winningTeam.name}</strong> for $${price}!`);
       
@@ -991,8 +1011,6 @@
       const filter = statusFilter.value;
       const teamSelected = teamFilter.value;
 
-      const me = localData.teams.find(t => t.id === myTeam.id);
-
       const filtered = localData.players.filter(p => {
         if (query && !p.name.toLowerCase().includes(query)) return false;
         if (teamSelected !== 'ALL' && (p.nbaTeam || '').toUpperCase() !== teamSelected) return false;
@@ -1008,13 +1026,15 @@
         const myRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
         const isDrafted = p.status === 'drafted';
         const posClass = getPositionClass(p.pos);
+        const hasInjury = p.news && (p.news.tag === 'OUT' || p.news.tag === 'INJURY');
 
         return `
           <div class="player-row ${posClass} ${isDrafted ? 'player-row-drafted' : ''}" 
                ondblclick="openFloatingPlayerCard('${p.id}')">
             <div style="flex: 1; padding-right: 0.4rem;">
               <strong style="${isDrafted ? 'color:#ef476f;' : ''}">${p.name}</strong> 
-              <small>(${p.pos} - ${p.nbaTeam})</small>
+              <small>(${p.pos} • ${p.nbaTeam})</small>
+              ${hasInjury ? `<span class="badge-injury">${p.news.tag}</span>` : ''}
               <div>
                 <span class="badge-fppg">${p.fppg.toFixed(1)} FP/G</span>
                 <span class="badge-total">${p.fpts.toFixed(0)} FPts</span>
@@ -1022,7 +1042,7 @@
               ${isDrafted ? `<div class="drafted-tag">Drafted: ${p.draftedBy} ($${p.price})</div>` : ''}
               ${(!isDrafted && (myCap !== '' || myRank !== '')) ? `
                 <div style="font-size:0.75rem; color:#ffbe0b;">
-                  ${myCap !== '' ? `Cap: $${myCap}` : ''} ${myRank !== '' ? `&bull; Priority: #${myRank}` : ''}
+                  ${myCap !== '' ? `Cap: $${myCap}` : ''} ${myRank !== '' ? `• Priority: #${myRank}` : ''}
                 </div>
               ` : ''}
             </div>
@@ -1051,7 +1071,6 @@
       }).join('');
     }
 
-    // Direct 1-Click Nomination (No popup)
     function directNominate(playerId) {
       socket.emit('nominatePlayer', { playerId });
     }
@@ -1060,7 +1079,6 @@
       socket.emit('updateAutoCap', { playerId, maxBid, rank });
     }
 
-    // CSV Template Download
     function downloadCapsTemplate() {
       let csvContent = "data:text/csv;charset=utf-8,";
       csvContent += "Player ID,Player Name,Team,Position,FP/G,Max Bid ($),Priority Rank (1-300)\n";
@@ -1081,7 +1099,6 @@
       document.body.removeChild(link);
     }
 
-    // CSV Upload & Parsing
     function handleCapsCsvUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1104,7 +1121,6 @@
           const line = lines[i].trim();
           if (!line) continue;
 
-          // Split regex respecting quotes
           const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"\vert{}"$/g, '').trim());
 
           const playerId = idIdx !== -1 ? cols[idIdx] : null;
@@ -1122,7 +1138,7 @@
         }
       };
       reader.readAsText(file);
-      event.target.value = ''; // Reset input
+      event.target.value = '';
     }
 
     function renderTeams() {
@@ -1174,17 +1190,21 @@
       const me = localData.teams.find(t => t.id === myTeam?.id);
       const myBudget = me ? me.budget : 0;
       const isEligibleToBid = myBudget > state.currentBid;
+      const hasInjury = p.news && (p.news.tag === 'OUT' || p.news.tag === 'INJURY');
 
       auctionContentEl.innerHTML = `
-        <h1 style="color: #fff; margin-bottom: 0;">${p.name}</h1>
-        <p style="color: #8d99ae; margin-top: 0.2rem;">${p.pos} &bull; ${p.nbaTeam}</p>
+        <h1 style="color: #fff; margin-bottom: 0;">
+          ${p.name}
+          ${hasInjury ? `<span class="badge-injury" style="font-size: 0.85rem; vertical-align: middle;">${p.news.tag}</span>` : ''}
+        </h1>
+        <p style="color: #8d99ae; margin-top: 0.2rem;">${p.pos} • ${p.nbaTeam}</p>
         
         <div class="stat-strip">
           <span><strong>${p.fppg.toFixed(1)}</strong> FP/G</span>
           <span><strong>${p.fpts.toFixed(0)}</strong> FPts</span>
-          <span><strong>${p.fullStats?.PTS || 0}</strong> PTS</span>
-          <span><strong>${p.fullStats?.REB || 0}</strong> REB</span>
-          <span><strong>${p.fullStats?.AST || 0}</strong> AST</span>
+          <span><strong>${p.fullStats?.PTS ?? (p.stats?.pts ?? 0)}</strong> PTS</span>
+          <span><strong>${p.fullStats?.REB ?? (p.stats?.reb ?? 0)}</strong> REB</span>
+          <span><strong>${p.fullStats?.AST ?? (p.stats?.ast ?? 0)}</strong> AST</span>
         </div>
 
         <div class="timer-label" id="timerLabel">Auction Clock</div>
@@ -1213,7 +1233,7 @@
           <div class="board-col" style="${isMe ? 'border: 1px solid #38bdf8;' : ''}">
             <div class="board-col-header">
               <strong style="color: #48cae4; font-size: 0.95rem;">${t.name}</strong> ${isMe ? '<small style="color:#38bdf8;">(YOU)</small>' : ''}
-              <div style="font-size: 0.8rem; color: #06d6a0; font-weight: bold;">$${t.budget} left &bull; ${t.roster.length}/13</div>
+              <div style="font-size: 0.8rem; color: #06d6a0; font-weight: bold;">$${t.budget} left • ${t.roster.length}/13</div>
             </div>
             <div>
               ${t.roster.map(p => `
@@ -1221,7 +1241,7 @@
                   <div style="display: flex; justify-content: space-between;">
                     <strong>${p.name}</strong>                     <span style="color: #06d6a0; font-weight: bold;">$${p.price}</span>
                   </div>
-                  <div style="color: #8d99ae; font-size: 0.75rem;">${p.pos} -${p.nbaTeam}</div>
+                  <div style="color: #8d99ae; font-size: 0.75rem;">${p.pos} •${p.nbaTeam}</div>
                 </div>
               `).join('')}
               ${Array.from({ length: openSpots }).map(() => `
@@ -1247,7 +1267,8 @@
       socket.emit('placeBid', { bidAmount: val });
     }
 
-function openFloatingPlayerCard(playerId) {
+    // Cleaned up Floating Card: 8 stats + latest news note
+    function openFloatingPlayerCard(playerId) {
       const p = localData.players.find(x => x.id === playerId);
       if (!p) return;
 
@@ -1263,6 +1284,16 @@ function openFloatingPlayerCard(playerId) {
       document.getElementById('pillST').textContent = p.fullStats?.ST ?? (p.stats?.stl ?? '-');
       document.getElementById('pillBLK').textContent = p.fullStats?.BLK ?? (p.stats?.blk ?? '-');
       document.getElementById('pill3PT').textContent = p.fullStats?.['3PTM'] ?? (p.stats?.threes ?? '-');
+
+      const newsBox = document.getElementById('floatCardNewsBox');
+      if (p.news) {
+        document.getElementById('floatCardNewsDate').textContent = p.news.date || 'Recent';
+        document.getElementById('floatCardNewsTag').textContent = `[${p.news.tag}]`;
+        document.getElementById('floatCardNewsSnippet').textContent = p.news.snippet || p.news.headline;
+        newsBox.style.display = 'block';
+      } else {
+        newsBox.style.display = 'none';
+      }
 
       document.getElementById('floatingPlayerCard').style.display = 'block';
     }

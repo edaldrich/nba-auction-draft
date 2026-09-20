@@ -3,10 +3,14 @@ const http = require('http');
 const { Server } = require('socket.io');
 const fs = require('fs');
 const path = require('path');
+const Parser = require('rss-parser');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+const rssParser = new Parser({
+  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+});
 
 const PORT = process.env.PORT || 3000;
 
@@ -24,6 +28,59 @@ let timerConfig = {
   beginningBidTime: 45,
   additionalBidTime: 10
 };
+
+// RSS Ingestion Logic for Player News & Injuries
+async function fetchPlayerNews() {
+  try {
+    const feedUrls = [
+      'https://www.rotowire.com/rss/news.php?sport=nba',
+      'https://www.rotoballer.com/category/nba/nba-injury-news/feed'
+    ];
+
+    for (const url of feedUrls) {
+      try {
+        const feed = await rssParser.parseURL(url);
+        if (!feed || !feed.items) continue;
+
+        feed.items.forEach(item => {
+          const title = item.title || '';
+          const snippet = (item.contentSnippet || item.content || '').replace(/<[^>]+>/g, '').trim();
+          const pubDate = item.pubDate ? new Date(item.pubDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recent';
+
+          // Match player name in title or snippet
+          for (let p of players) {
+            if (p.name && (title.includes(p.name) || snippet.startsWith(p.name))) {
+              let tag = 'UPDATE';
+              const combined = (title + ' ' + snippet).toLowerCase();
+              if (combined.includes('out') || combined.includes('surgery') || combined.includes('tear') || combined.includes('fracture') || combined.includes('achilles')) {
+                tag = 'OUT';
+              } else if (combined.includes('questionable') || combined.includes('doubtful') || combined.includes('sprain') || combined.includes('strain') || combined.includes('injury')) {
+                tag = 'INJURY';
+              }
+
+              p.news = {
+                tag: tag,
+                headline: title,
+                snippet: snippet.slice(0, 260) + (snippet.length > 260 ? '...' : ''),
+                date: pubDate
+              };
+              break;
+            }
+          }
+        });
+        break; // Successfully fetched from first working feed
+      } catch (err) {
+        // Fall through to backup feed URL
+      }
+    }
+  } catch (globalErr) {
+    console.warn('[News Feed] Could not fetch remote RSS:', globalErr.message);
+  }
+}
+
+// Fetch news on startup and refresh every 20 minutes
+fetchPlayerNews();
+setInterval(fetchPlayerNews, 20 * 60 * 1000);
 
 const socketSessions = new Map();
 
@@ -60,7 +117,6 @@ function getPublicPlayers() {
   });
 }
 
-// Extract a single team's private caps and priorities
 function getTeamCapsAndRanks(teamId) {
   const caps = {};
   const ranks = {};
@@ -147,13 +203,11 @@ function startTimer(mode, duration) {
   }, 1000);
 }
 
-// Auto-nominate priority target if time expires
 function autoNominateCurrentTeam() {
   const team = teams.find(t => t.id === draftState.nominatingTeamId);
   const available = players.filter(p => p.status === 'available');
   if (!available.length || !team) return;
 
-  // Sort available by manager's custom priority ranking (ascending: 1 = top priority)
   available.sort((a, b) => {
     const rankA = (a.autoRanks && a.autoRanks[team.id] !== undefined) ? a.autoRanks[team.id] : 9999;
     const rankB = (b.autoRanks && b.autoRanks[team.id] !== undefined) ? b.autoRanks[team.id] : 9999;
@@ -267,10 +321,6 @@ function triggerAutodraftCheck() {
 
     if (eligibleBots.length === 0) return;
 
-    // Tie-breaker hierarchy:
-    // 1. Higher ceiling wins
-    // 2. If ceilings equal, lower Priority Rank number wins (Rank 1 beats Rank 5)
-    // 3. If priorities equal, random coin-flip
     eligibleBots.sort((a, b) => {
       const capA = player.autoCaps[a.id];
       const capB = player.autoCaps[b.id];
@@ -345,7 +395,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Direct nomination at minimum ($1 or $0)
   socket.on('nominatePlayer', ({ playerId }) => {
     if (!draftState.isDraftStarted) return;
     const teamId = socketSessions.get(socket.id);
@@ -384,7 +433,6 @@ io.on('connection', (socket) => {
     triggerAutodraftCheck();
   });
 
-  // Update single player cap & optional rank
   socket.on('updateAutoCap', ({ playerId, maxBid, rank }) => {
     const teamId = socketSessions.get(socket.id);
     if (!teamId) return;
@@ -417,7 +465,6 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Batch import caps + ranks from CSV
   socket.on('batchImportCaps', ({ records }) => {
     const teamId = socketSessions.get(socket.id);
     if (!teamId || !Array.isArray(records)) return;

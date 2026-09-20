@@ -2,16 +2,8 @@
   {
     "id": 1,
     "name": "Team 1",
-    "budget": 188,
-    "roster": [
-      {
-        "id": "03e75",
-        "name": "Nikola Jokic",
-        "pos": "C",
-        "nbaTeam": "DEN",
-        "price": 12
-      }
-    ],
+    "budget": 200,
+    "roster": [],
     "isAuto": false,
     "passcode": "commish1",
     "isCommish": true

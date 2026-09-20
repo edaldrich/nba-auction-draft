@@ -48,7 +48,44 @@
       100% { transform: scale(1.0); opacity: 0; }
     }
 
-    /* Top Status Banner */
+    /* Easter Egg Banner */
+    #easterEggToast {
+      position: fixed;
+      top: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 8000;
+      display: none;
+      text-align: center;
+      animation: easterEggPop 4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .easter-egg-card {
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #ffbe0b;
+      box-shadow: 0 0 35px rgba(255, 190, 11, 0.4), 0 10px 30px rgba(0, 0, 0, 0.8);
+      border-radius: 12px;
+      padding: 1rem 1.8rem;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      max-width: 90vw;
+    }
+
+    .easter-egg-icon { font-size: 2.8rem; line-height: 1; }
+    .easter-egg-title { font-size: 1.25rem; font-weight: 900; color: #ffbe0b; margin: 0; text-transform: uppercase; }
+    .easter-egg-subtitle { font-size: 0.95rem; color: #e2e8f0; margin: 0.2rem 0 0 0; font-weight: 600; }
+
+    @keyframes easterEggPop {
+      0% { opacity: 0; transform: translateX(-50%) translateY(-25px) scale(0.85); }
+      12% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-35px) scale(0.9); }
+    }
+
+    /* Top Banner */
     .top-banner {
       display: flex;
       flex-wrap: wrap;
@@ -80,7 +117,7 @@
     .pool-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
     .pool-val { font-size: 1.5rem; font-weight: 800; color: #06d6a0; line-height: 1.1; }
 
-    /* Desktop Layout Grid */
+    /* Layout */
     .grid {
       display: grid;
       grid-template-columns: 400px 1fr 300px;
@@ -132,7 +169,7 @@
       border: 1px solid #3a506b;
       border-radius: 4px;
       margin-bottom: 0.4rem;
-      font-size: 16px; /* Prevents auto-zoom in iOS Safari */
+      font-size: 16px;
     }
     .input-inline {
       width: 65px;
@@ -254,13 +291,12 @@
 
     #draftBoardView {
       display: none;
-      overflow-x: auto;
       background: #1c2541;
       border-radius: 8px;
       border: 1px solid #3a506b;
       padding: 1rem;
     }
-    .board-grid { display: grid; grid-template-columns: repeat(12, minmax(160px, 1fr)); gap: 0.75rem; }
+    .board-grid { display: grid; grid-template-columns: repeat(12, minmax(160px, 1fr)); gap: 0.75rem; overflow-x: auto; }
     .board-col { background: #0b132b; border: 1px solid #3a506b; border-radius: 6px; padding: 0.5rem; min-height: 480px; }
     .board-col-header { border-bottom: 2px solid #0077b6; padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: center; }
     .board-pick { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.35rem; font-size: 0.8rem; }
@@ -287,7 +323,6 @@
       cursor: pointer;
     }
 
-    /* Floating / Docked Player Inspector Card */
     #floatingPlayerCard {
       position: fixed;
       bottom: 15px;
@@ -385,7 +420,6 @@
       margin-bottom: 0.4rem;
     }
 
-    /* Mobile Navigation Bar */
     .mobile-tab-bar {
       display: none;
       grid-template-columns: repeat(3, 1fr);
@@ -409,17 +443,16 @@
       border-color: #0077b6;
     }
 
-    /* =========================================================
-       MOBILE OPTIMIZATION MEDIA QUERY (< 900px)
-       ========================================================= */
+    /* Single team inspection block for phones */
+    #mobileTeamSelectBox {
+      display: none;
+      margin-bottom: 0.75rem;
+    }
+
     @media (max-width: 900px) {
       body { padding: 0.4rem; }
-      
-      .top-banner {
-        padding: 0.5rem 0.75rem;
-      }
+      .top-banner { padding: 0.5rem 0.75rem; }
       .pool-val { font-size: 1.25rem; }
-
       .mobile-tab-bar { display: grid; }
 
       .grid {
@@ -428,12 +461,10 @@
         gap: 0.75rem;
       }
 
-      /* On mobile, center auction block is priority #1 */
       .card-auction-center { order: 1 !important; }
       .card-players { order: 2 !important; }
       .card-teams { order: 3 !important; }
 
-      /* Expanded touch targets for bids */
       .bid-btn-group {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -463,7 +494,6 @@
         font-size: 1rem;
       }
 
-      /* Dock player card to bottom sheet */
       #floatingPlayerCard {
         width: 100vw !important;
         right: 0 !important;
@@ -474,8 +504,19 @@
         overflow-y: auto;
       }
 
-      /* Manage mobile tab visibility */
       .mobile-hide-pane { display: none !important; }
+
+      /* Mobile Draft Board reflow */
+      #mobileTeamSelectBox { display: block; }
+      .board-grid {
+        display: block !important;
+      }
+      .board-col {
+        display: none;
+      }
+      .board-col.mobile-active-board-col {
+        display: block !important;
+      }
     }
   </style>
 </head>
@@ -486,7 +527,18 @@
     <div id="countdownFlashNum" class="countdown-flash-num">3</div>
   </div>
 
-  <!-- Non-Blocking Floating / Docked Player Card -->
+  <!-- Easter Egg Toast Banner -->
+  <div id="easterEggToast">
+    <div class="easter-egg-card">
+      <div id="easterEggIcon" class="easter-egg-icon"></div>
+      <div>
+        <h3 id="easterEggTitle" class="easter-egg-title"></h3>
+        <p id="easterEggSubtitle" class="easter-egg-subtitle"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating / Docked Player Inspector -->
   <div id="floatingPlayerCard">
     <div class="card-header-bar">
       <div>
@@ -635,7 +687,7 @@
     </div>
   </div>
 
-  <!-- Mobile Segmented View Switcher (Only visible on screens < 900px) -->
+  <!-- Mobile Segmented Bar -->
   <div class="mobile-tab-bar" id="mobileTabBar">
     <div id="mTabAuction" class="mobile-tab-btn active" onclick="switchMobilePane('auction')">Auction Block</div>
     <div id="mTabPlayers" class="mobile-tab-btn" onclick="switchMobilePane('players')">Player Pool & Queue</div>
@@ -645,7 +697,7 @@
   <!-- VIEW 1: Live War Room -->
   <div id="warRoomView" class="grid">
 
-    <!-- Center Column: Auction Block (Ranked #1 Priority on Mobile) -->
+    <!-- Center: Live Auction Block -->
     <div id="paneAuction" class="card block-center card-auction-center">
       <h2>Live Auction Block</h2>
 
@@ -676,7 +728,7 @@
       <div id="logBox"></div>
     </div>
 
-    <!-- Left Column: Players & Nomination Queue -->
+    <!-- Left: Players & Nomination Queue -->
     <div id="panePlayers" class="card card-players">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
         <h3 style="margin: 0; color: #48cae4; font-size: 1.05rem;">My Nomination Queue (<span id="queueCountBadge">0</span>)</h3>
@@ -688,7 +740,7 @@
       <!-- Pinned Queue with Drag & Drop -->
       <div id="nominationQueuePanel" style="background: #0f172a; border: 1px solid #0284c7; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.75rem;">
         <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.35rem;">
-          <span>Drag to reorder &bull; Auto-nominates top player</span>
+          <span>Drag to reorder • Top player auto-nominates</span>
         </div>
         <div id="queueListContainer" style="max-height: 125px; overflow-y: auto;"></div>
       </div>
@@ -718,14 +770,14 @@
         </select>
       </div>
 
-      <input type="text" id="playerSearch" class="selector" placeholder="Search player name..." oninput="renderPlayers()" />
+      <input type="text" id="playerSearch" class="selector" placeholder="Search player name (accent-free)..." oninput="renderPlayers()" />
 
       <div id="playerListContainer">
         <div id="playerList"></div>
       </div>
     </div>
 
-    <!-- Right Column: Teams & Budgets -->
+    <!-- Right: Teams & Budgets -->
     <div id="paneTeams" class="card card-teams">
       <h3>Teams & Budgets</h3>
       <div id="teamList"></div>
@@ -738,6 +790,13 @@
       <h2 style="margin: 0;">League Draft Board</h2>
       <button class="btn btn-secondary" onclick="switchTab('warRoom')">&larr; Back to War Room</button>
     </div>
+
+    <!-- Mobile Single Team View Selector -->
+    <div id="mobileTeamSelectBox">
+      <label style="font-size: 0.8rem; color: #8d99ae; margin-bottom: 0.25rem; display: block;">Select Team Roster to View:</label>
+      <select id="mobileTeamPicker" class="selector" onchange="onMobileTeamPickerChange()"></select>
+    </div>
+
     <div class="board-grid" id="boardColumns"></div>
   </div>
 
@@ -756,18 +815,31 @@
 
     let userPrefs = { sound: true, visual: true };
 
+    // Audio Autoplay Policy Unlock
     let audioCtx = null;
     function getAudioContext() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
       return audioCtx;
     }
+
+    // Touch and interaction listener to guarantee mobile audio unlock
+    ['click', 'touchstart', 'keydown'].forEach(evt => {
+      window.addEventListener(evt, () => {
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+      }, { once: true });
+    });
 
     function playTone(freq, type, duration, delay = 0, customVolume = 0.15) {
       if (!userPrefs.sound) return;
       try {
         const ctx = getAudioContext();
-        if (ctx.state === 'suspended') ctx.resume();
-
         setTimeout(() => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -783,17 +855,15 @@
       } catch (e) {}
     }
 
-    // Sound Cues
     function soundNominationTurn() {
-      playTone(523.25, 'triangle', 0.25, 0, 0.35);     // C5
-      playTone(659.25, 'triangle', 0.25, 0.12, 0.35);  // E5
-      playTone(783.99, 'triangle', 0.40, 0.24, 0.45);  // G5
+      playTone(523.25, 'triangle', 0.25, 0, 0.35);
+      playTone(659.25, 'triangle', 0.25, 0.12, 0.35);
+      playTone(783.99, 'triangle', 0.40, 0.24, 0.45);
     }
 
-    // Private 10-Second Warning Tone (Two urgent high beeps)
     function soundNominationTenSecondsRemaining() {
-      playTone(880.00, 'sine', 0.14, 0, 0.4);      // A5
-      playTone(880.00, 'sine', 0.18, 0.18, 0.4);   // A5
+      playTone(880.00, 'sine', 0.14, 0, 0.4);
+      playTone(880.00, 'sine', 0.18, 0.18, 0.4);
     }
 
     function soundNewPlayerNominated() {
@@ -867,7 +937,6 @@
       }
     }
 
-    // DOM Elements
     const authOverlay = document.getElementById('authOverlay');
     const passcodeInput = document.getElementById('passcodeInput');
     const authErrorMsg = document.getElementById('authErrorMsg');
@@ -892,6 +961,7 @@
     const urgencyOverlay = document.getElementById('urgencyOverlay');
     const countdownFlashNum = document.getElementById('countdownFlashNum');
     const demoModeBadge = document.getElementById('demoModeBadge');
+    const mobileTeamPicker = document.getElementById('mobileTeamPicker');
 
     const savedPrefs = localStorage.getItem('user_draft_prefs');
     if (savedPrefs) {
@@ -909,7 +979,25 @@
     function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
     function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
 
-    // Mobile View Pane Switcher
+    let easterEggTimeout = null;
+    function triggerEasterEgg(icon, title, subtitle) {
+      if (localData.draftState.isDemoMode || !userPrefs.visual) return;
+
+      const toast = document.getElementById('easterEggToast');
+      document.getElementById('easterEggIcon').textContent = icon;
+      document.getElementById('easterEggTitle').textContent = title;
+      document.getElementById('easterEggSubtitle').textContent = subtitle;
+
+      toast.style.display = 'none';
+      toast.offsetHeight;
+      toast.style.display = 'block';
+
+      clearTimeout(easterEggTimeout);
+      easterEggTimeout = setTimeout(() => {
+        toast.style.display = 'none';
+      }, 4000);
+    }
+
     function switchMobilePane(pane) {
       if (window.innerWidth > 900) return;
       currentMobilePane = pane;
@@ -928,8 +1016,10 @@
         document.getElementById('paneAuction').classList.remove('mobile-hide-pane');
         document.getElementById('panePlayers').classList.remove('mobile-hide-pane');
         document.getElementById('paneTeams').classList.remove('mobile-hide-pane');
+        document.querySelectorAll('.board-col').forEach(c => c.classList.remove('mobile-active-board-col'));
       } else {
         switchMobilePane(currentMobilePane);
+        onMobileTeamPickerChange();
       }
     });
 
@@ -946,6 +1036,7 @@
     function submitAuth() {
       const pass = passcodeInput.value.trim();
       if (!pass) return;
+      getAudioContext(); // Resume audio on explicit click
       socket.emit('authTeam', { passcode: pass });
     }
 
@@ -974,6 +1065,7 @@
 
       updateMyAutoBtn(myTeam.isAuto);
       populateTeamFilterOptions();
+      populateMobileTeamPicker();
       renderAll();
       renderQueue();
       logMessage(`Welcome, <strong>${myTeam.name}</strong>! Ready.`);
@@ -987,6 +1079,25 @@
       const sortedTeams = Array.from(teamsSet).sort();
       teamFilter.innerHTML = '<option value="ALL">All NBA Teams</option>' + 
         sortedTeams.map(t => `<option value="${t}">${t}</option>`).join('');
+    }
+
+    function populateMobileTeamPicker() {
+      if (!mobileTeamPicker) return;
+      mobileTeamPicker.innerHTML = localData.teams.map((t, idx) => 
+        `<option value="${t.id}" ${t.id === myTeam?.id ? 'selected' : ''}>${t.name} ($${t.budget})</option>`
+      ).join('');
+    }
+
+    function onMobileTeamPickerChange() {
+      if (window.innerWidth > 900) return;
+      const selId = mobileTeamPicker.value;
+      document.querySelectorAll('.board-col').forEach(col => {
+        if (col.getAttribute('data-team-id') === selId) {
+          col.classList.add('mobile-active-board-col');
+        } else {
+          col.classList.remove('mobile-active-board-col');
+        }
+      });
     }
 
     socket.on('presenceUpdate', ({ teams }) => {
@@ -1036,6 +1147,7 @@
       localData.players = data.players;
       maxRosterSize = data.maxRosterSize;
       myQueue = [];
+      populateMobileTeamPicker();
       renderAll();
       renderQueue();
       logMessage(data.isDemoMode ? "🟡 <strong>SWITCHED TO DEMO MODE (6 Teams / $50 / 4 Roster)</strong>" : "🔵 <strong>SWITCHED TO PRODUCTION MODE (12 Teams / $200 / 13 Roster)</strong>");
@@ -1065,8 +1177,17 @@
       renderPlayers();
       updateTopBanner();
       
-      // Auto switch mobile view to auction block so manager sees the active bid
       if (window.innerWidth <= 900) switchMobilePane('auction');
+
+      if (!draftState.isDemoMode && draftState.nominatedPlayer) {
+        const nomName = (draftState.nominatedPlayer.name || '').toLowerCase();
+        if (nomName.includes('giannis')) {
+          triggerEasterEgg('🪦', 'REST IN PEACE', 'Pour one out... Giannis has entered the chat.');
+        }
+        if (nomName.includes('trae young')) {
+          triggerEasterEgg('🏆', 'ANNUAL AWARD WINNER', 'Awarded: Ugliest Person Alive 🏆');
+        }
+      }
     });
 
     socket.on('bidAccepted', ({ draftState, isAutoBid }) => {
@@ -1115,21 +1236,18 @@
         labelEl.textContent = mode === 'nomination' ? 'Nomination Clock' : 'Auction Clock';
       }
 
-      // Check for your turn sound
       if (mode === 'nomination' && seconds === timerConfig.nominationTime) {
         if (myTeam && localData.draftState.nominatingTeamId === myTeam.id) {
           soundNominationTurn();
         }
       }
 
-      // Private 10-Second Warning Alert (Only heard by the team currently nominating)
       if (mode === 'nomination' && seconds === 10) {
         if (myTeam && localData.draftState.nominatingTeamId === myTeam.id) {
           soundNominationTenSecondsRemaining();
         }
       }
 
-      // 3, 2, 1 Countdown Flash & Audio
       if (mode === 'auction' && seconds >= 1 && seconds <= 3 && lastSecondFlashed !== seconds) {
         lastSecondFlashed = seconds;
         soundCountdownTick(seconds);
@@ -1146,6 +1264,10 @@
       
       myQueue = myQueue.filter(id => String(id) !== String(player.id));
       renderQueue();
+
+      if (!localData.draftState.isDemoMode && price === 51) {
+        triggerEasterEgg('💵', 'KHONTRAC', "Wow, that's Khris Middleton money.");
+      }
 
       if (myTeam && winningTeam.id === myTeam.id) {
         soundVictoryWon();
@@ -1245,7 +1367,6 @@
       return '';
     }
 
-    // Queue Operations with Drag-and-Drop
     let draggedQueueIndex = null;
 
     function handleQueueDragStart(e, index) {
@@ -1340,14 +1461,19 @@
       }
     }
 
+    // Diacritic-insensitive string normalizer
+    function cleanNormalize(str) {
+      return (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    }
+
     function renderPlayers() {
       if (!myTeam) return;
-      const query = (playerSearch.value || '').toLowerCase().trim();
+      const query = cleanNormalize(playerSearch.value);
       const filter = statusFilter.value;
       const teamSelected = teamFilter.value;
 
       const filtered = localData.players.filter(p => {
-        if (query && !p.name.toLowerCase().includes(query)) return false;
+        if (query && !cleanNormalize(p.name).includes(query)) return false;
         if (teamSelected !== 'ALL' && (p.nbaTeam || '').toUpperCase() !== teamSelected) return false;
         if (filter === 'available') return p.status === 'available';
         if (filter === 'drafted') return p.status === 'drafted';
@@ -1570,11 +1696,11 @@
     }
 
     function renderDraftBoard() {
-      boardColumnsEl.innerHTML = localData.teams.map(t => {
+      boardColumnsEl.innerHTML = localData.teams.map((t, idx) => {
         const openSpots = maxRosterSize - t.roster.length;
         const isMe = myTeam && t.id === myTeam.id;
         return `
-          <div class="board-col" style="${isMe ? 'border: 1px solid #38bdf8;' : ''}">
+          <div class="board-col ${idx === 0 ? 'mobile-active-board-col' : ''}" data-team-id="${t.id}" style="${isMe ? 'border: 1px solid #38bdf8;' : ''}">
             <div class="board-col-header">
               <strong style="color: #48cae4; font-size: 0.95rem;">${t.name}</strong> ${isMe ? '<small style="color:#38bdf8;">(YOU)</small>' : ''}
               <div style="font-size: 0.8rem; color: #06d6a0; font-weight: bold;">$${t.budget} left • ${t.roster.length}/${maxRosterSize}</div>
@@ -1597,17 +1723,30 @@
           </div>
         `;
       }).join('');
+      onMobileTeamPickerChange();
     }
 
+    // Bid Throttling (400ms cooldown)
+    let bidCooldownActive = false;
+
     function bidIncrement(increment) {
+      if (bidCooldownActive) return;
+      bidCooldownActive = true;
+      setTimeout(() => { bidCooldownActive = false; }, 400);
+
       const targetBid = localData.draftState.currentBid + increment;
       socket.emit('placeBid', { bidAmount: targetBid });
     }
 
     function bidCustom() {
+      if (bidCooldownActive) return;
       const input = document.getElementById('customBidInput');
       const val = parseInt(input.value, 10);
       if (isNaN(val)) return;
+
+      bidCooldownActive = true;
+      setTimeout(() => { bidCooldownActive = false; }, 400);
+
       socket.emit('placeBid', { bidAmount: val });
     }
 

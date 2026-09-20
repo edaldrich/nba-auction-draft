@@ -1079,15 +1079,20 @@
       socket.emit('updateAutoCap', { playerId, maxBid, rank });
     }
 
+// Position-free, comma-safe template download
     function downloadCapsTemplate() {
       let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "Player ID,Player Name,Team,Position,FP/G,Max Bid ($),Priority Rank (1-300)\n";
+      // Header has no position column
+      csvContent += "Player ID,Player Name,Team,FP/G,Max Bid ($),Priority Rank (1-300)\n";
 
       localData.players.forEach(p => {
         const currentCap = (myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
         const currentRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
-        const cleanName = `"${p.name.replace(/"/g, '""')}"`;
-        csvContent += `${p.id},${cleanName},${p.nbaTeam},${p.pos},${p.fppg.toFixed(1)},${currentCap},${currentRank}\n`;
+        // Sanitize any accidental commas or quotes in names
+        const cleanName = (p.name || '').replace(/[,"]/g, '').trim();
+        const cleanTeam = (p.nbaTeam || '').replace(/[,"]/g, '').trim();
+        
+        csvContent += `${p.id},${cleanName},${cleanTeam},${p.fppg.toFixed(1)},${currentCap},${currentRank}\n`;
       });
 
       const encodedUri = encodeURI(csvContent);
@@ -1099,6 +1104,7 @@
       document.body.removeChild(link);
     }
 
+    // Direct, resilient CSV upload parser
     function handleCapsCsvUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1121,7 +1127,8 @@
           const line = lines[i].trim();
           if (!line) continue;
 
-          const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"\vert{}"$/g, '').trim());
+          // Simple direct split since columns contain no internal commas
+          const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
 
           const playerId = idIdx !== -1 ? cols[idIdx] : null;
           const playerName = nameIdx !== -1 ? cols[nameIdx] : null;

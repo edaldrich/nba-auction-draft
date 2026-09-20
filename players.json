@@ -30,10 +30,10 @@
       "3D": "0.0",
       "2D": "0"
     },
-    "status": "drafted",
-    "draftedBy": "Team 1",
-    "draftedByTeamId": 1,
-    "price": 12,
+   "status": "available",
+    "draftedBy": null,
+    "draftedByTeamId": null,
+    "price": 0,
     "autoCaps": {}
   },
   {

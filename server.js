@@ -9,7 +9,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const rssParser = new Parser({
-  headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+  }
 });
 
 const PORT = process.env.PORT || 3000;
@@ -29,58 +31,68 @@ let timerConfig = {
   additionalBidTime: 10
 };
 
-// RSS Ingestion Logic for Player News & Injuries
+// Reliable News & Injury Ingestor
 async function fetchPlayerNews() {
-  try {
-    const feedUrls = [
-      'https://www.rotowire.com/rss/news.php?sport=nba',
-      'https://www.rotoballer.com/category/nba/nba-injury-news/feed'
-    ];
+  const feedUrls = [
+    'https://www.espn.com/espn/rss/nba/news',
+    'https://sports.yahoo.com/nba/rss.xml',
+    'https://www.rotowire.com/rss/news.php?sport=nba'
+  ];
 
-    for (const url of feedUrls) {
-      try {
-        const feed = await rssParser.parseURL(url);
-        if (!feed || !feed.items) continue;
+  let matchesFound = 0;
 
-        feed.items.forEach(item => {
-          const title = item.title || '';
-          const snippet = (item.contentSnippet || item.content || '').replace(/<[^>]+>/g, '').trim();
-          const pubDate = item.pubDate ? new Date(item.pubDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recent';
+  for (const url of feedUrls) {
+    try {
+      const feed = await rssParser.parseURL(url);
+      if (!feed || !feed.items || feed.items.length === 0) continue;
 
-          // Match player name in title or snippet
-          for (let p of players) {
-            if (p.name && (title.includes(p.name) || snippet.startsWith(p.name))) {
-              let tag = 'UPDATE';
-              const combined = (title + ' ' + snippet).toLowerCase();
-              if (combined.includes('out') || combined.includes('surgery') || combined.includes('tear') || combined.includes('fracture') || combined.includes('achilles')) {
-                tag = 'OUT';
-              } else if (combined.includes('questionable') || combined.includes('doubtful') || combined.includes('sprain') || combined.includes('strain') || combined.includes('injury')) {
-                tag = 'INJURY';
-              }
+      feed.items.forEach(item => {
+        const title = item.title || '';
+        const snippet = (item.contentSnippet || item.content || '').replace(/<[^>]+>/g, '').trim();
+        const pubDate = item.pubDate ? new Date(item.pubDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recent';
+        const combinedText = (title + ' ' + snippet).toLowerCase();
 
-              p.news = {
-                tag: tag,
-                headline: title,
-                snippet: snippet.slice(0, 260) + (snippet.length > 260 ? '...' : ''),
-                date: pubDate
-              };
-              break;
+        for (let p of players) {
+          if (!p.name) continue;
+          const nameLower = p.name.toLowerCase();
+
+          // Match player name as a full word/phrase
+          if (title.toLowerCase().includes(nameLower) || snippet.toLowerCase().includes(nameLower)) {
+            let tag = 'UPDATE';
+            if (combinedText.includes('out') || combinedText.includes('surgery') || combinedText.includes('tear') || combinedText.includes('fracture') || combinedText.includes('achilles') || combinedText.includes('sidelined')) {
+              tag = 'OUT';
+            } else if (combinedText.includes('questionable') || combinedText.includes('doubtful') || combinedText.includes('sprain') || combinedText.includes('strain') || combinedText.includes('injury') || combinedText.includes('day-to-day')) {
+              tag = 'INJURY';
             }
+
+            p.news = {
+              tag: tag,
+              headline: title,
+              snippet: snippet.slice(0, 260) + (snippet.length > 260 ? '...' : ''),
+              date: pubDate
+            };
+            matchesFound++;
           }
+        }
+      });
+
+      if (matchesFound > 0) {
+        console.log(`[News Feed] Updated ${matchesFound} player notes from ${url}`);
+        io.emit('stateUpdate', {
+          draftState,
+          teams: getPublicTeams(),
+          players: getPublicPlayers()
         });
-        break; // Successfully fetched from first working feed
-      } catch (err) {
-        // Fall through to backup feed URL
+        break;
       }
+    } catch (err) {
+      // Continue to next feed url if blocked
     }
-  } catch (globalErr) {
-    console.warn('[News Feed] Could not fetch remote RSS:', globalErr.message);
   }
 }
 
-// Fetch news on startup and refresh every 20 minutes
 fetchPlayerNews();
-setInterval(fetchPlayerNews, 20 * 60 * 1000);
+setInterval(fetchPlayerNews, 15 * 60 * 1000);
 
 const socketSessions = new Map();
 
@@ -471,7 +483,11 @@ io.on('connection', (socket) => {
 
     let updatedCount = 0;
     records.forEach(r => {
-      const player = players.find(p => p.id === r.playerId || p.name.toLowerCase() === (r.name || '').toLowerCase());
+      // Clean matching by ID or exact Name
+      const targetId = String(r.playerId || '').trim();
+      const targetName = String(r.name || '').trim().toLowerCase();
+
+      const player = players.find(p => (targetId && String(p.id).trim() === targetId) || (targetName && p.name.toLowerCase() === targetName));
       if (player) {
         if (!player.autoCaps) player.autoCaps = {};
         if (!player.autoRanks) player.autoRanks = {};

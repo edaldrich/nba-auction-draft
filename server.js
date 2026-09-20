@@ -295,10 +295,20 @@ function executeNomination(playerId, teamId, openingBid) {
   draftState.currentBid = bid;
   draftState.highBidder = { id: team.id, name: team.name };
 
-  // Remove player from user's queue if present
-  if (nominationQueues[teamId]) {
-    nominationQueues[teamId] = nominationQueues[teamId].filter(id => String(id) !== String(player.id));
-  }
+  // Scrub this nominated player from EVERY manager's nomination queue
+  Object.keys(nominationQueues).forEach(tId => {
+    if (Array.isArray(nominationQueues[tId])) {
+      nominationQueues[tId] = nominationQueues[tId].filter(id => String(id) !== String(player.id));
+    }
+  });
+
+  // Notify each authenticated socket of their updated queue
+  socketSessions.forEach((tId, sId) => {
+    const s = io.sockets.sockets.get(sId);
+    if (s && nominationQueues[tId]) {
+      s.emit('queueUpdatedConfirmation', { myQueue: nominationQueues[tId] });
+    }
+  });
 
   startTimer('auction', timerConfig.beginningBidTime);
   io.emit('playerNominated', { draftState });

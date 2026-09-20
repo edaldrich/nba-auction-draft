@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "Team 1",
+    "name": "Ed",
     "budget": 200,
     "roster": [],
     "isAuto": false,
@@ -10,17 +10,17 @@
   },
   {
     "id": 2,
-    "name": "Team 2",
+    "name": "Ryan",
     "budget": 200,
     "roster": [],
     "isAuto": false,
-    "passcode": "commish2",
+    "passcode": "team2pass",
     "isCommish": true
   },
   {
     "id": 3,
-    "name": "Team 3",
-    "budget": 200,
+    "name": "Pat",
+    "budget": 190,
     "roster": [],
     "isAuto": false,
     "passcode": "team3pass",
@@ -28,7 +28,7 @@
   },
   {
     "id": 4,
-    "name": "Team 4",
+    "name": "Andrew",
     "budget": 200,
     "roster": [],
     "isAuto": false,
@@ -37,7 +37,7 @@
   },
   {
     "id": 5,
-    "name": "Team 5",
+    "name": "Josh",
     "budget": 200,
     "roster": [],
     "isAuto": false,
@@ -46,7 +46,7 @@
   },
   {
     "id": 6,
-    "name": "Team 6",
+    "name": "Adan",
     "budget": 200,
     "roster": [],
     "isAuto": false,
@@ -55,7 +55,7 @@
   },
   {
     "id": 7,
-    "name": "Team 7",
+    "name": "Nick",
     "budget": 200,
     "roster": [],
     "isAuto": false,
@@ -64,7 +64,7 @@
   },
   {
     "id": 8,
-    "name": "Team 8",
+    "name": "Chris",
     "budget": 200,
     "roster": [],
     "isAuto": false,
@@ -73,7 +73,7 @@
   },
   {
     "id": 9,
-    "name": "Team 9",
+    "name": "Nat",
     "budget": 200,
     "roster": [],
     "isAuto": false,
@@ -82,7 +82,7 @@
   },
   {
     "id": 10,
-    "name": "Team 10",
+    "name": "David",
     "budget": 200,
     "roster": [],
     "isAuto": false,
@@ -91,16 +91,16 @@
   },
   {
     "id": 11,
-    "name": "Team 11",
-    "budget": 200,
+    "name": "Parker",
+    "budget": 215,
     "roster": [],
     "isAuto": false,
-    "passcode": "team11pass",
+    "passcode": "commish2",
     "isCommish": false
   },
   {
     "id": 12,
-    "name": "Team 12",
+    "name": "Clyde",
     "budget": 200,
     "roster": [],
     "isAuto": true,

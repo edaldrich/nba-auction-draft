@@ -18,13 +18,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 const PROD_ROSTER_SIZE = 13;
-const DEMO_ROSTER_SIZE = 4;
-const PROD_START_BUDGET = 200;
-const DEMO_START_BUDGET = 50;
 
 let isDemoMode = false;
 let maxRosterSize = PROD_ROSTER_SIZE;
-let startingBudget = PROD_START_BUDGET;
 
 let prodTeams = JSON.parse(fs.readFileSync(path.join(__dirname, 'teams.json'), 'utf8'));
 let prodPlayers = JSON.parse(fs.readFileSync(path.join(__dirname, 'players.json'), 'utf8'));
@@ -41,7 +37,10 @@ let timerConfig = {
   additionalBidTime: 10
 };
 
-// Non-blocking Debounced Disk Writes
+// Map storing base starting funds per team to cleanly calculate budgets
+let teamBaseBudgets = {};
+prodTeams.forEach(t => { teamBaseBudgets[t.id] = t.budget; });
+
 let saveTimeout = null;
 function saveStateToDisk() {
   if (isDemoMode) return;
@@ -54,14 +53,15 @@ function saveStateToDisk() {
 
 function recalculateTeamBudget(team) {
   const spent = team.roster.reduce((sum, p) => sum + (p.price || 0), 0);
+  const base = teamBaseBudgets[team.id] !== undefined ? teamBaseBudgets[team.id] : 200;
   if (team.roster.length >= maxRosterSize) {
     team.budget = 0;
   } else {
-    team.budget = Math.max(0, startingBudget - spent);
+    team.budget = Math.max(0, base - spent);
   }
 }
 
-// RSS News Feed Ingestion
+// RSS Ingestion
 async function fetchPlayerNews() {
   const feedUrls = [
     'https://www.espn.com/espn/rss/nba/news',
@@ -175,16 +175,16 @@ function isTeamEligible(team) {
 
 function getNextNominatorId(currentId) {
   const total = teams.length;
-  let nextId = (currentId % total) + 1;
-  let attempts = 0;
+  if (total === 0) return null;
 
-  while (attempts < total) {
-    const candidate = teams.find(t => t.id === nextId);
+  let currentIndex = teams.findIndex(t => t.id === currentId);
+  if (currentIndex === -1) currentIndex = 0;
+
+  for (let i = 1; i <= total; i++) {
+    const candidate = teams[(currentIndex + i) % total];
     if (candidate && isTeamEligible(candidate)) {
       return candidate.id;
     }
-    nextId = (nextId % total) + 1;
-    attempts++;
   }
   return null;
 }
@@ -390,7 +390,6 @@ function checkIfNominatorNeedsAutoNomination() {
   }
 }
 
-// Bid Mutex Lock
 let bidLock = false;
 
 function handleBidSubmission(teamId, bidAmount, isAutoBid = false) {
@@ -479,20 +478,33 @@ function triggerAutodraftCheck() {
   }, 1200);
 }
 
-function initDemoMode() {
+// Configurable Dynamic Demo Initializer
+function initDynamicDemoMode({ selectedTeamIds, demoBudget, demoRosterLimit, botTeamIds }) {
   isDemoMode = true;
-  maxRosterSize = DEMO_ROSTER_SIZE;
-  startingBudget = DEMO_START_BUDGET;
+  maxRosterSize = parseInt(demoRosterLimit, 10) || 4;
+  const budget = parseInt(demoBudget, 10) || 50;
 
-  teams = [
-    { id: 1, name: "Commish Team", budget: 50, roster: [], isAuto: false, passcode: "commish1", isCommish: true },
-    { id: 2, name: "Demo Team 2", budget: 50, roster: [], isAuto: false, passcode: "demo2", isCommish: false },
-    { id: 3, name: "Demo Team 3", budget: 50, roster: [], isAuto: false, passcode: "demo3", isCommish: false },
-    { id: 4, name: "Demo Team 4", budget: 50, roster: [], isAuto: false, passcode: "demo4", isCommish: false },
-    { id: 5, name: "AutoBot 5", budget: 50, roster: [], isAuto: true, passcode: "none_auto5", isCommish: false },
-    { id: 6, name: "AutoBot 6", budget: 50, roster: [], isAuto: true, passcode: "none_auto6", isCommish: false }
-  ];
+  // Filter and configure selected teams
+  teams = prodTeams
+    .filter(t => selectedTeamIds.includes(t.id))
+    .map(t => {
+      const isBot = botTeamIds.includes(t.id);
+      return {
+        id: t.id,
+        name: t.name,
+        budget: budget,
+        roster: [],
+        isAuto: isBot,
+        passcode: t.passcode,
+        isCommish: !!t.isCommish
+      };
+    });
 
+  // Re-map base budgets
+  teamBaseBudgets = {};
+  teams.forEach(t => { teamBaseBudgets[t.id] = budget; });
+
+  // Fresh player clone without production caps or ranks
   players = JSON.parse(JSON.stringify(prodPlayers));
   players.forEach(p => {
     p.status = 'available';
@@ -503,20 +515,29 @@ function initDemoMode() {
     p.autoRanks = {};
   });
 
-  const top50 = [...players].sort((a, b) => (b.fppg || 0) - (a.fppg || 0)).slice(0, 50);
-  [5, 6].forEach(botId => {
-    let budgetAssigned = 0;
-    top50.forEach((p, idx) => {
-      if (budgetAssigned < 45 && Math.random() > 0.45) {
-        const bid = Math.min(Math.floor(Math.random() * 15) + 2, 50 - budgetAssigned);
-        if (bid > 0) {
-          const target = players.find(x => x.id === p.id);
-          if (target) {
-            target.autoCaps[botId] = bid;
-            target.autoRanks[botId] = idx + 1;
-            budgetAssigned += bid;
-          }
-        }
+  // Tiered Autodraft Bot Bids (Top 10: $10-$20, Top 11-30: $0-$10)
+  const top30 = [...players].sort((a, b) => (b.fppg || 0) - (a.fppg || 0)).slice(0, 30);
+  const top10 = top30.slice(0, 10);
+  const next20 = top30.slice(10, 30);
+
+  botTeamIds.forEach(botId => {
+    // Top 10 ($10 - $20)
+    top10.forEach((p, idx) => {
+      const target = players.find(x => x.id === p.id);
+      if (target) {
+        const randBid = Math.floor(Math.random() * 11) + 10; // $10 to $20
+        target.autoCaps[botId] = Math.min(randBid, budget);
+        target.autoRanks[botId] = idx + 1;
+      }
+    });
+
+    // Top 11-30 ($0 - $10)
+    next20.forEach((p, idx) => {
+      const target = players.find(x => x.id === p.id);
+      if (target) {
+        const randBid = Math.floor(Math.random() * 11); // $0 to $10
+        target.autoCaps[botId] = randBid;
+        target.autoRanks[botId] = 10 + idx + 1;
       }
     });
   });
@@ -524,14 +545,15 @@ function initDemoMode() {
   nominationQueues = {};
   draftHistory = [];
 
+  const firstTeamId = teams[0]?.id || 1;
   draftState = {
     isDraftStarted: false,
     isDraftActive: true,
     nominatedPlayer: null,
     currentBid: 0,
     highBidder: null,
-    nominatingTeamId: 1,
-    onDeckTeamId: 2,
+    nominatingTeamId: firstTeamId,
+    onDeckTeamId: getNextNominatorId(firstTeamId),
     timerSeconds: timerConfig.nominationTime,
     timerMode: 'nomination',
     isPaused: false,
@@ -542,9 +564,13 @@ function initDemoMode() {
 function initProdMode() {
   isDemoMode = false;
   maxRosterSize = PROD_ROSTER_SIZE;
-  startingBudget = PROD_START_BUDGET;
 
-  teams = JSON.parse(fs.readFileSync(path.join(__dirname, 'teams.json'), 'utf8'));
+  // Restore production teams and budgets
+  prodTeams = JSON.parse(fs.readFileSync(path.join(__dirname, 'teams.json'), 'utf8'));
+  teams = JSON.parse(JSON.stringify(prodTeams));
+  teamBaseBudgets = {};
+  teams.forEach(t => { teamBaseBudgets[t.id] = t.budget; });
+
   players = JSON.parse(fs.readFileSync(path.join(__dirname, 'players.json'), 'utf8'));
   nominationQueues = {};
   draftHistory = [];
@@ -592,6 +618,7 @@ io.on('connection', (socket) => {
       timerConfig,
       teams: getPublicTeams(),
       players: getPublicPlayers(),
+      allLeagueTeams: prodTeams.map(t => ({ id: t.id, name: t.name })),
       draftState,
       maxRosterSize
     });
@@ -714,7 +741,39 @@ io.on('connection', (socket) => {
     return team && team.isCommish;
   }
 
-  // --- EMERGENCY COMMISSIONER OVERRIDES ---
+  // Configurable Demo Mode Trigger
+  socket.on('adminSwitchConfiguredDemo', (config) => {
+    if (!isCommishSocket()) return;
+    clearInterval(timerInterval);
+    clearTimeout(autoBidTimeout);
+
+    initDynamicDemoMode(config);
+
+    io.emit('modeSwitched', {
+      isDemoMode,
+      maxRosterSize,
+      draftState,
+      teams: getPublicTeams(),
+      players: getPublicPlayers()
+    });
+  });
+
+  socket.on('adminSwitchProd', () => {
+    if (!isCommishSocket()) return;
+    clearInterval(timerInterval);
+    clearTimeout(autoBidTimeout);
+
+    initProdMode();
+
+    io.emit('modeSwitched', {
+      isDemoMode,
+      maxRosterSize,
+      draftState,
+      teams: getPublicTeams(),
+      players: getPublicPlayers()
+    });
+  });
+
   socket.on('adminOverrideBudget', ({ targetTeamId, newBudget }) => {
     if (!isCommishSocket()) return;
     const team = teams.find(t => t.id === targetTeamId);
@@ -723,6 +782,7 @@ io.on('connection', (socket) => {
     const b = parseInt(newBudget, 10);
     if (!isNaN(b) && b >= 0) {
       team.budget = b;
+      teamBaseBudgets[team.id] = b;
       saveStateToDisk();
       io.emit('stateUpdate', {
         draftState,
@@ -742,13 +802,11 @@ io.on('connection', (socket) => {
     const cleanPrice = parseInt(newPrice, 10);
     if (isNaN(cleanPrice) || cleanPrice < 0) return;
 
-    // Remove from old team
     if (oldTeam) {
       oldTeam.roster = oldTeam.roster.filter(p => p.id !== player.id);
       recalculateTeamBudget(oldTeam);
     }
 
-    // Add to new team
     newTeam.roster.push({
       id: player.id,
       name: player.name,
@@ -758,7 +816,6 @@ io.on('connection', (socket) => {
     });
     recalculateTeamBudget(newTeam);
 
-    // Update player
     player.draftedBy = newTeam.name;
     player.draftedByTeamId = newTeam.id;
     player.price = cleanPrice;
@@ -789,26 +846,6 @@ io.on('connection', (socket) => {
 
     saveStateToDisk();
     io.emit('stateUpdate', {
-      draftState,
-      teams: getPublicTeams(),
-      players: getPublicPlayers()
-    });
-  });
-
-  socket.on('adminSwitchMode', ({ targetMode }) => {
-    if (!isCommishSocket()) return;
-    clearInterval(timerInterval);
-    clearTimeout(autoBidTimeout);
-
-    if (targetMode === 'demo') {
-      initDemoMode();
-    } else {
-      initProdMode();
-    }
-
-    io.emit('modeSwitched', {
-      isDemoMode,
-      maxRosterSize,
       draftState,
       teams: getPublicTeams(),
       players: getPublicPlayers()
@@ -913,9 +950,9 @@ io.on('connection', (socket) => {
     clearTimeout(autoBidTimeout);
     draftHistory = [];
 
-    const defaultBudget = isDemoMode ? DEMO_START_BUDGET : PROD_START_BUDGET;
     teams.forEach(t => {
-      t.budget = defaultBudget;
+      const base = teamBaseBudgets[t.id] !== undefined ? teamBaseBudgets[t.id] : 200;
+      t.budget = base;
       t.roster = [];
     });
 
@@ -932,8 +969,8 @@ io.on('connection', (socket) => {
       nominatedPlayer: null,
       currentBid: 0,
       highBidder: null,
-      nominatingTeamId: 1,
-      onDeckTeamId: getNextNominatorId(1),
+      nominatingTeamId: teams[0]?.id || 1,
+      onDeckTeamId: getNextNominatorId(teams[0]?.id || 1),
       timerSeconds: timerConfig.nominationTime,
       timerMode: 'nomination',
       isPaused: false,

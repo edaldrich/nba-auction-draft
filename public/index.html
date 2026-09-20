@@ -453,9 +453,7 @@
       transform: rotate(1.5deg) scale(1.02);
       border-color: #38bdf8;
     }
-    .queue-item.drag-over {
-      border-top: 2px solid #06d6a0;
-    }
+    .queue-item.drag-over { border-top: 2px solid #06d6a0; }
     .queue-btn-group { display: flex; gap: 0.2rem; }
     .queue-btn {
       background: #1e293b;
@@ -594,11 +592,7 @@
       border-color: #0077b6;
     }
 
-    #mobileTeamSelectBox {
-      display: none;
-      margin-bottom: 0.75rem;
-    }
-
+    #mobileTeamSelectBox { display: none; margin-bottom: 0.75rem; }
     .admin-accordion-box {
       background: rgba(11, 19, 43, 0.6);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -750,12 +744,34 @@
         <button class="btn btn-success" onclick="exportDraftResultsCSV()">📥 Export Results CSV</button>
       </div>
 
-      <div style="background: #0f172a; padding: 0.75rem; border-radius: 6px; border: 1px solid #f77f00; margin-bottom: 1rem;">
-        <h4 style="margin: 0 0 0.35rem 0; color: #fcbf49;">Draft Mode Configuration</h4>
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-          <button id="btnSwitchProd" class="btn" style="flex: 1;" onclick="adminSwitchMode('prod')">Production (12 Teams / $200)</button>
-          <button id="btnSwitchDemo" class="btn btn-warning" style="flex: 1;" onclick="adminSwitchMode('demo')">Demo Mode (6 Teams / $50)</button>
+      <!-- DYNAMIC CONFIGURABLE DEMO BUILDER -->
+      <div style="background: #0f172a; padding: 0.85rem; border-radius: 6px; border: 1px solid #f77f00; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <h4 style="margin: 0; color: #fcbf49;">⚙️ Dynamic Demo / Mock Mode Builder</h4>
+          <button id="btnSwitchProd" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="adminSwitchProd()">Restore Full Production Mode</button>
         </div>
+        
+        <p style="color: #94a3b8; font-size: 0.78rem; margin: 0 0 0.6rem 0;">
+          Select participating managers for the mock. Any checked team marked as <em>[BOT]</em> will auto-draft with random bids ($10-$20 on top 10, $0-$10 on top 11-30).
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem;">
+          <div>
+            <label style="font-size: 0.75rem; color: #cbd5e1;">Starting Budget ($)</label>
+            <input type="number" id="demoConfigBudget" class="selector" value="50" style="margin-bottom: 0;" />
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: #cbd5e1;">Roster Spots Per Team</label>
+            <input type="number" id="demoConfigRosterLimit" class="selector" value="4" style="margin-bottom: 0;" />
+          </div>
+        </div>
+
+        <label style="font-size: 0.75rem; font-weight: bold; color: #38bdf8; display: block; margin-bottom: 0.3rem;">Select Teams to Include:</label>
+        <div id="demoTeamsCheckboxList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; max-height: 140px; overflow-y: auto; background: rgba(11, 19, 43, 0.7); padding: 0.4rem; border-radius: 4px; margin-bottom: 0.6rem;"></div>
+
+        <button class="btn btn-warning" style="width: 100%; padding: 0.55rem; font-size: 0.9rem;" onclick="adminLaunchConfiguredDemo()">
+          ▶️ Launch Configured Demo Mode
+        </button>
       </div>
       
       <div style="background: rgba(11, 19, 43, 0.6); padding: 0.75rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 1rem;">
@@ -793,11 +809,9 @@
         </div>
       </div>
 
-      <!-- EMERGENCY COMMISSIONER OVERRIDES SUITE -->
       <div class="admin-accordion-box">
         <h4 style="margin: 0 0 0.5rem 0; color: #ef233c;">🚨 Emergency Overrides & Adjustments</h4>
         
-        <!-- Override Team Budget -->
         <div style="margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.75rem;">
           <label style="font-size: 0.78rem; font-weight: bold; color: #cbd5e1; display: block; margin-bottom: 0.25rem;">Adjust Team Budget</label>
           <div style="display: flex; gap: 0.4rem;">
@@ -807,7 +821,6 @@
           </div>
         </div>
 
-        <!-- Transfer Drafted Player / Retool Price -->
         <div>
           <label style="font-size: 0.78rem; font-weight: bold; color: #cbd5e1; display: block; margin-bottom: 0.25rem;">Transfer Player Ownership & Price</label>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.4rem;">
@@ -877,8 +890,6 @@
   </div>
 
   <div id="warRoomView" class="grid">
-
-    <!-- Center: Live Auction Block -->
     <div id="paneAuction" class="card card-auction-center">
       <div id="stageBadgesContainer"></div>
 
@@ -909,7 +920,6 @@
       <div id="logBox"></div>
     </div>
 
-    <!-- Left: Players & Nomination Queue -->
     <div id="panePlayers" class="card card-players">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
         <h3 style="margin: 0; color: #48cae4; font-size: 1.05rem;">My Nomination Queue (<span id="queueCountBadge">0</span>)</h3>
@@ -957,7 +967,6 @@
       </div>
     </div>
 
-    <!-- Right: Teams & Budgets -->
     <div id="paneTeams" class="card card-teams">
       <h3>Teams & Budgets</h3>
       <div id="teamList"></div>
@@ -981,6 +990,7 @@
   <script>
     const socket = io();
     let localData = { teams: [], players: [], draftState: {} };
+    let allLeagueTeams = [];
     let myTeam = null;
     let myCaps = {};
     let myRanks = {};
@@ -1030,12 +1040,8 @@
 
     let audioCtx = null;
     function getAudioContext() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       return audioCtx;
     }
 
@@ -1174,10 +1180,10 @@
     const demoModeBadge = document.getElementById('demoModeBadge');
     const mobileTeamPicker = document.getElementById('mobileTeamPicker');
 
-    // Overrides DOM
     const overrideTeamSelect = document.getElementById('overrideTeamSelect');
     const transferPlayerSelect = document.getElementById('transferPlayerSelect');
     const transferNewTeamSelect = document.getElementById('transferNewTeamSelect');
+    const demoTeamsCheckboxList = document.getElementById('demoTeamsCheckboxList');
 
     const savedPrefs = localStorage.getItem('user_draft_prefs');
     if (savedPrefs) {
@@ -1280,6 +1286,7 @@
       localData.teams = data.teams;
       localData.players = data.players;
       localData.draftState = data.draftState;
+      allLeagueTeams = data.allLeagueTeams || [];
 
       localStorage.setItem('draft_passcode', passcodeInput.value.trim() || localStorage.getItem('draft_passcode'));
       authOverlay.style.display = 'none';
@@ -1374,7 +1381,7 @@
       populateMobileTeamPicker();
       renderAll();
       renderQueue();
-      logMessage(data.isDemoMode ? "🟡 <strong>SWITCHED TO DEMO MODE (6 Teams / $50 / 4 Roster)</strong>" : "🔵 <strong>SWITCHED TO PRODUCTION MODE (12 Teams / $200 / 13 Roster)</strong>");
+      logMessage(data.isDemoMode ? `🟡 <strong>SWITCHED TO DEMO MODE (${localData.teams.length} Teams / ${maxRosterSize} Roster)</strong>` : `🔵 <strong>SWITCHED TO PRODUCTION MODE (12 Teams / 13 Roster)</strong>`);
     });
 
     socket.on('timersUpdated', ({ timerConfig: tc }) => {
@@ -2106,6 +2113,7 @@
 
       updateCommishModalUI();
       populateOverrideDropdowns();
+      populateDemoTeamCheckboxes();
       renderCommishAutoList();
       document.getElementById('commishModal').style.display = 'flex';
     }
@@ -2130,7 +2138,57 @@
       }
     }
 
-    // Populate Emergency Overwrite Dropdowns
+    function populateDemoTeamCheckboxes() {
+      if (!demoTeamsCheckboxList || allLeagueTeams.length === 0) return;
+      demoTeamsCheckboxList.innerHTML = allLeagueTeams.map(t => {
+        const isCurrent = localData.teams.some(x => x.id === t.id);
+        const currentTeam = localData.teams.find(x => x.id === t.id);
+        const isBot = currentTeam?.isAuto || false;
+
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(28, 37, 65, 0.5); padding: 0.25rem 0.4rem; border-radius: 4px;">
+            <label style="font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+              <input type="checkbox" class="demo-team-cb" value="${t.id}" ${isCurrent ? 'checked' : ''} />
+              <span>${t.name}</span>
+            </label>
+            <label style="font-size: 0.68rem; color: #ffbe0b; cursor: pointer; display: flex; align-items: center; gap: 0.2rem;">
+              <input type="checkbox" class="demo-bot-cb" data-team-id="${t.id}" ${isBot ? 'checked' : ''} />
+              BOT
+            </label>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function adminLaunchConfiguredDemo() {
+      const selected = Array.from(document.querySelectorAll('.demo-team-cb:checked')).map(cb => parseInt(cb.value, 10));
+      if (selected.length < 2) return alert("Select at least 2 teams for the mock draft.");
+
+      const bots = Array.from(document.querySelectorAll('.demo-bot-cb:checked'))
+        .map(cb => parseInt(cb.getAttribute('data-team-id'), 10))
+        .filter(id => selected.includes(id));
+
+      const demoBudget = document.getElementById('demoConfigBudget').value;
+      const demoRosterLimit = document.getElementById('demoConfigRosterLimit').value;
+
+      if (confirm(`Launch Demo Mode with ${selected.length} teams ($${demoBudget} budget, ${demoRosterLimit} roster slots)?`)) {
+        socket.emit('adminSwitchConfiguredDemo', {
+          selectedTeamIds: selected,
+          botTeamIds: bots,
+          demoBudget,
+          demoRosterLimit
+        });
+        closeCommishModal();
+      }
+    }
+
+    function adminSwitchProd() {
+      if (confirm("Restore full Production Mode (all 12 teams, official budgets, and stored caps)?")) {
+        socket.emit('adminSwitchProd');
+        closeCommishModal();
+      }
+    }
+
     function populateOverrideDropdowns() {
       if (!overrideTeamSelect || !transferPlayerSelect || !transferNewTeamSelect) return;
 
@@ -2180,7 +2238,6 @@
       }
     }
 
-    // Export Final Results CSV
     function exportDraftResultsCSV() {
       let csv = "Winning Team,Player Name,Position,NBA Team,Price Paid,FP/G\n";
 
@@ -2200,13 +2257,6 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }
-
-    function adminSwitchMode(targetMode) {
-      if (confirm(`Switch draft to ${targetMode.toUpperCase()} mode? This will reset rosters and budgets to match the mode parameters.`)) {
-        socket.emit('adminSwitchMode', { targetMode });
-        closeCommishModal();
-      }
     }
 
     function adminStartDraft() {

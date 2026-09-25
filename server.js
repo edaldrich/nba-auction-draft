@@ -15,7 +15,6 @@ const rssParser = new Parser({
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
-// Serve custom team images folder
 app.use('/team_images', express.static(path.join(__dirname, 'team_images')));
 app.use(express.json());
 
@@ -59,6 +58,39 @@ function recalculateTeamBudget(team) {
     team.budget = 0;
   } else {
     team.budget = Math.max(0, base - spent);
+  }
+}
+
+// Calculate the absolute highest bid a team can legally place
+function getMaxAllowedBid(team) {
+  if (!isTeamEligible(team)) return -1;
+  const openSpots = maxRosterSize - team.roster.length;
+  // If team has open spots, they can bid up to their remaining budget
+  return team.budget;
+}
+
+// Check if no opponent can legally beat the current bid
+function checkUnbeatableBid() {
+  if (!draftState.nominatedPlayer || !draftState.highBidder) return;
+
+  const leaderTeamId = draftState.highBidder.id;
+  let highestOpponentMaxBid = -1;
+
+  for (const team of teams) {
+    if (team.id === leaderTeamId) continue;
+    if (!isTeamEligible(team)) continue;
+
+    const maxBid = getMaxAllowedBid(team);
+    if (maxBid > highestOpponentMaxBid) {
+      highestOpponentMaxBid = maxBid;
+    }
+  }
+
+  // If nobody else can bid higher than the current bid, end immediately
+  if (draftState.currentBid >= highestOpponentMaxBid) {
+    clearInterval(timerInterval);
+    clearTimeout(autoBidTimeout);
+    finalizeSale();
   }
 }
 
@@ -303,6 +335,7 @@ function executeNomination(playerId, teamId, openingBid) {
   draftState.currentBid = bid;
   draftState.highBidder = { id: team.id, name: team.name };
 
+  // Scrub from all managers' queues
   Object.keys(nominationQueues).forEach(tId => {
     if (Array.isArray(nominationQueues[tId])) {
       nominationQueues[tId] = nominationQueues[tId].filter(id => String(id) !== String(player.id));
@@ -318,6 +351,10 @@ function executeNomination(playerId, teamId, openingBid) {
 
   startTimer('auction', timerConfig.beginningBidTime);
   io.emit('playerNominated', { draftState });
+
+  // Check if opening bid is already unbeatable
+  checkUnbeatableBid();
+
   triggerAutodraftCheck();
 }
 
@@ -421,6 +458,10 @@ function handleBidSubmission(teamId, bidAmount, isAutoBid = false) {
     }
 
     io.emit('bidAccepted', { draftState, isAutoBid });
+
+    // Check if new high bid is unbeatable by anyone else
+    checkUnbeatableBid();
+
     return true;
   } finally {
     bidLock = false;

@@ -18,7 +18,14 @@
       min-height: 100vh;
     }
 
-    /* Outbid Screen Jolt Flash */
+    #confettiCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
     #outbidJoltOverlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -58,7 +65,6 @@
       100% { transform: scale(1.0); opacity: 0; }
     }
 
-    /* Lightweight Win Banner */
     #winBannerToast {
       position: fixed;
       top: 20%;
@@ -81,7 +87,6 @@
       to { transform: translateX(-50%) scale(1); opacity: 1; }
     }
 
-    /* Easter Egg Floating Banner */
     #easterEggToast {
       position: fixed;
       top: 18%;
@@ -115,7 +120,6 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-25px); }
     }
 
-    /* Top Status Bar */
     .top-banner {
       display: flex;
       flex-wrap: wrap;
@@ -147,7 +151,6 @@
     .pool-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
     .pool-val { font-size: 1.55rem; font-weight: 800; color: #06d6a0; line-height: 1.1; }
 
-    /* Layout */
     .grid {
       display: grid;
       grid-template-columns: 400px 1fr 310px;
@@ -166,7 +169,6 @@
 
     .card-auction-center { text-align: center; }
 
-    /* HIGH BIDDER STATUS BAR */
     #highBidderBanner {
       padding: 0.65rem 1rem;
       border-radius: 6px;
@@ -190,7 +192,6 @@
       border: 1px solid #233554;
     }
 
-    /* Stable Circular SVG Timer Ring */
     .timer-ring-container {
       position: relative;
       width: 110px;
@@ -206,7 +207,7 @@
     .timer-bar {
       stroke: #06d6a0;
       stroke-linecap: round;
-      stroke-dasharray: 282.74; /* 2 * PI * 45 */
+      stroke-dasharray: 282.74;
       stroke-dashoffset: 0;
       transition: stroke-dashoffset 0.85s linear, stroke 0.2s;
     }
@@ -234,7 +235,6 @@
       margin: 0.2rem 0;
     }
 
-    /* Avatar Badges */
     .avatar-wrapper {
       display: inline-flex;
       align-items: center;
@@ -888,7 +888,7 @@
   <div id="warRoomView" class="grid">
     <div id="paneAuction" class="card card-auction-center">
       
-      <!-- Prominent Leader Bar -->
+      <!-- Prominent High Bidder Header -->
       <div id="highBidderBanner" class="leader-other">No High Bidder</div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; background: #0b132b; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #233554;">
@@ -909,7 +909,6 @@
         </div>
       </div>
 
-      <!-- Stable Dynamic Auction Stage -->
       <div id="auctionContent">
         <div id="stagePlayerMeta">
           <p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to start the draft...</p>
@@ -988,7 +987,7 @@
         </select>
       </div>
 
-      <input type="text" id="playerSearch" class="selector" placeholder="Search player name (accent-free)..." oninput="renderPlayers()" />
+      <input type="text" id="playerSearch" class="selector" placeholder="Search player name..." oninput="renderPlayers()" />
 
       <div id="playerListContainer">
         <div id="playerList"></div>
@@ -1029,7 +1028,7 @@
     let currentTab = 'warRoom';
     let currentMobilePane = 'auction';
 
-    const RING_CIRCUMFERENCE = 282.74; // 2 * PI * 45
+    const RING_CIRCUMFERENCE = 282.74;
 
     const NBA_TEAM_COLORS = {
       ATL: { p: '#E03A3E' }, BOS: { p: '#007A33' }, BKN: { p: '#777D84' }, CHA: { p: '#1D1160' },
@@ -1142,7 +1141,6 @@
     const demoModeBadge = document.getElementById('demoModeBadge');
     const mobileTeamPicker = document.getElementById('mobileTeamPicker');
 
-    // Live Block Stage References
     const highBidderBanner = document.getElementById('highBidderBanner');
     const stagePlayerMeta = document.getElementById('stagePlayerMeta');
     const timerRingBar = document.getElementById('timerRingBar');
@@ -1405,7 +1403,6 @@
       }
     });
 
-    // Targeted DOM update on bid: No HTML re-rendering means zero visual jumping
     socket.on('bidAccepted', ({ draftState, isAutoBid }) => {
       const prevLeaderId = localData.draftState?.highBidder?.id;
       localData.draftState = draftState;
@@ -1417,7 +1414,6 @@
       const tag = isAutoBid ? '<span class="log-auto">[AUTO]</span> ' : '';
       logMessage(`💰 ${tag}<strong>${draftState.highBidder.name}</strong> bids <strong>$${draftState.currentBid}</strong>`);
       
-      // Smoothly update stage without tearing down the timer
       updateStageOnBid();
     });
 
@@ -1630,6 +1626,10 @@
     }
 
     function addPlayerToQueue(playerId) {
+      // Disallow queueing player currently on the auction block
+      if (localData.draftState?.nominatedPlayer && String(localData.draftState.nominatedPlayer.id) === String(playerId)) {
+        return;
+      }
       if (!myQueue.includes(playerId)) {
         myQueue.push(playerId);
         socket.emit('updateMyQueue', { queue: myQueue });
@@ -1652,6 +1652,12 @@
     }
 
     function renderQueue() {
+      // Clean out on-the-block player from local queue view
+      const onBlockId = localData.draftState?.nominatedPlayer?.id;
+      if (onBlockId) {
+        myQueue = myQueue.filter(id => String(id) !== String(onBlockId));
+      }
+
       queueCountBadge.textContent = myQueue.length;
       if (myQueue.length === 0) {
         queueListContainer.innerHTML = `<small style="color: #64748b; display: block; padding: 0.35rem 0;">No queued players. Click <strong>+Q</strong> to queue.</small>`;
@@ -1688,7 +1694,6 @@
     function addCurrentPlayerToQueue() {
       if (currentInspectedPlayerId) {
         addPlayerToQueue(currentInspectedPlayerId);
-        alert("Player added to your nomination queue!");
       }
     }
 
@@ -1701,11 +1706,18 @@
       const query = cleanNormalize(playerSearch.value);
       const filter = statusFilter.value;
       const teamSelected = teamFilter.value;
+      const onBlockPlayerId = localData.draftState?.nominatedPlayer?.id;
 
       const filtered = localData.players.filter(p => {
         if (query && !cleanNormalize(p.name).includes(query)) return false;
         if (teamSelected !== 'ALL' && (p.nbaTeam || '').toUpperCase() !== teamSelected) return false;
-        if (filter === 'available') return p.status === 'available';
+
+        const isCurrentlyOnBlock = (onBlockPlayerId && String(p.id) === String(onBlockPlayerId));
+
+        if (filter === 'available') {
+          // Hide player if drafted OR currently on the block
+          return p.status === 'available' && !isCurrentlyOnBlock;
+        }
         if (filter === 'drafted') return p.status === 'drafted';
         return true;
       });
@@ -1716,6 +1728,7 @@
         const myCap = (myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
         const myRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
         const isDrafted = p.status === 'drafted';
+        const isOnBlock = (onBlockPlayerId && String(p.id) === String(onBlockPlayerId));
         const posClass = getPositionClass(p.pos);
         const hasInjury = p.news && (p.news.tag === 'OUT' || p.news.tag === 'INJURY');
         const inQueue = myQueue.includes(p.id);
@@ -1724,10 +1737,11 @@
           <div class="player-row ${posClass} ${isDrafted ? 'player-row-drafted' : ''}" 
                ondblclick="openFloatingPlayerCard('${p.id}')">
             <div style="flex: 1; padding-right: 0.3rem;">
-              <strong style="${isDrafted ? 'color:#ef476f;' : ''}">${p.name}</strong> 
+              <strong style="${isDrafted ? 'color:#ef476f;' : (isOnBlock ? 'color:#ffbe0b;' : '')}">${p.name}</strong> 
               <small>(${p.pos} • ${p.nbaTeam})</small>
               ${hasInjury ? `<span class="badge-injury">${p.news.tag}</span>` : ''}
-              ${inQueue ? `<span style="color:#06d6a0; font-size:0.75rem; font-weight:bold; margin-left:0.25rem;">[QUEUED]</span>` : ''}
+              ${isOnBlock ? `<span style="color:#ffbe0b; font-size:0.75rem; font-weight:bold; margin-left:0.25rem;">[ON BLOCK]</span>` : ''}
+              ${(!isOnBlock && inQueue) ? `<span style="color:#06d6a0; font-size:0.75rem; font-weight:bold; margin-left:0.25rem;">[QUEUED]</span>` : ''}
               <div>
                 <span class="badge-fppg">${p.fppg.toFixed(1)} FP/G</span>
                 <span class="badge-total">${p.fpts.toFixed(0)} FPts</span>
@@ -1754,12 +1768,13 @@
                 <div style="display: flex; gap: 0.2rem; align-items: center;">
                   <button class="btn btn-secondary" style="padding: 0.3rem 0.5rem; font-size: 0.8rem;" 
                     onclick="event.stopPropagation(); addPlayerToQueue('${p.id}')"
+                    ${isOnBlock ? 'disabled' : ''}
                     title="Add to Queue">
                     +Q
                   </button>
                   <button class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;" 
                     onclick="event.stopPropagation(); directNominate('${p.id}')" 
-                    ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate || !localData.draftState.isDraftStarted) ? 'disabled' : ''}
+                    ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate || !localData.draftState.isDraftStarted || isOnBlock) ? 'disabled' : ''}
                     title="${!localData.draftState.isDraftStarted ? 'Draft not started' : (!isMyTurnToNominate ? 'Not your turn' : 'Nominate')}">
                     Nominate
                   </button>
@@ -1871,7 +1886,6 @@
       }).join('');
     }
 
-    // Stable Stage Render: Never tears down the timer ring on bids
     function renderAuctionStage() {
       const state = localData.draftState;
 
@@ -1930,7 +1944,6 @@
       updateStageOnBid();
     }
 
-    // High Bidder & Button Refresh (Zero HTML teardown = No visual glitching)
     function updateStageOnBid() {
       const state = localData.draftState;
       if (!state.nominatedPlayer) return;
@@ -1939,7 +1952,6 @@
       const myBudget = me ? me.budget : 0;
       const isLeading = myTeam && state.highBidder?.id === myTeam.id;
 
-      // Update High Bidder Banner
       if (isLeading) {
         highBidderBanner.className = 'leader-you';
         highBidderBanner.innerHTML = `★ YOU LEAD THE BID AT $${state.currentBid} ★`;
@@ -1953,12 +1965,10 @@
 
       currentBidDisplay.textContent = `$${state.currentBid}`;
 
-      // Max allowable calculation
       const openSpots = me ? (maxRosterSize - me.roster.length) : 0;
       const trueMaxBid = openSpots > 0 ? (myBudget - (openSpots - 1)) : 0;
       userMaxAllowedBid.textContent = `$${Math.max(0, trueMaxBid)}`;
 
-      // Update Button Text & Disables
       btnInc1.textContent = `+$1 ($${state.currentBid + 1})`;
       btnInc3.textContent = `+$3 ($${state.currentBid + 3})`;
       btnInc5.textContent = `+$5 ($${state.currentBid + 5})`;
@@ -1971,7 +1981,6 @@
       customBidInput.min = state.currentBid + 1;
       customBidInput.max = myBudget;
 
-      // Sync Ring immediately to current second
       const fraction = Math.max(0, state.timerSeconds / timerConfig.beginningBidTime);
       timerRingBar.style.strokeDashoffset = RING_CIRCUMFERENCE * (1 - fraction);
     }

@@ -7,15 +7,28 @@
   <script src="/socket.io/socket.io.js"></script>
   <style>
     * { box-sizing: border-box; }
+
+    /* Prevent whole-screen pull-down / blank scroll space */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #080d1a;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #0b132b;
+      background: radial-gradient(circle at 50% 0%, #152244 0%, #080d1a 100%);
       color: #e0e1dd;
-      margin: 0;
-      padding: 0.75rem;
       position: relative;
-      overflow-x: hidden;
-      min-height: 100vh;
+    }
+
+    #appWrapper {
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0.75rem;
     }
 
     #confettiCanvas {
@@ -120,6 +133,7 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-25px); }
     }
 
+    /* Top Status Bar */
     .top-banner {
       display: flex;
       flex-wrap: wrap;
@@ -151,6 +165,7 @@
     .pool-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
     .pool-val { font-size: 1.55rem; font-weight: 800; color: #06d6a0; line-height: 1.1; }
 
+    /* Layout */
     .grid {
       display: grid;
       grid-template-columns: 400px 1fr 310px;
@@ -169,6 +184,7 @@
 
     .card-auction-center { text-align: center; }
 
+    /* High Bidder Bar */
     #highBidderBanner {
       padding: 0.65rem 1rem;
       border-radius: 6px;
@@ -597,7 +613,6 @@
     }
 
     @media (max-width: 900px) {
-      body { padding: 0.4rem; }
       .top-banner { padding: 0.5rem 0.75rem; }
       .pool-val { font-size: 1.25rem; }
       .mobile-tab-bar { display: grid; }
@@ -661,357 +676,359 @@
 </head>
 <body>
 
-  <canvas id="confettiCanvas"></canvas>
-  <div id="outbidJoltOverlay"></div>
-  <div id="urgencyOverlay">
-    <div id="countdownFlashNum" class="countdown-flash-num">3</div>
-  </div>
-
-  <div id="winBannerToast"></div>
-
-  <div id="easterEggToast">
-    <div class="easter-egg-card">
-      <div id="easterEggIcon" class="easter-egg-icon"></div>
-      <div>
-        <h3 id="easterEggTitle" class="easter-egg-title"></h3>
-        <p id="easterEggSubtitle" class="easter-egg-subtitle"></p>
-      </div>
-    </div>
-  </div>
-
-  <div id="floatingPlayerCard">
-    <div class="card-header-bar">
-      <div>
-        <h3 id="floatCardName" style="margin: 0; color: #fff; font-size: 1.2rem;"></h3>
-        <span id="floatCardTeamPos" style="color: #38bdf8; font-size: 0.85rem; font-weight: bold;"></span>
-        <span id="floatCardRank" style="color: #94a3b8; font-size: 0.8rem; margin-left: 0.4rem;"></span>
-      </div>
-      <button class="modal-close" style="position: static; font-size: 1.4rem;" onclick="closeFloatingPlayerCard()">✕</button>
+  <!-- Viewport App Wrapper to lock background window scroll -->
+  <div id="appWrapper">
+    <canvas id="confettiCanvas"></canvas>
+    <div id="outbidJoltOverlay"></div>
+    <div id="urgencyOverlay">
+      <div id="countdownFlashNum" class="countdown-flash-num">3</div>
     </div>
 
-    <div class="card-stat-pill-grid">
-      <div class="stat-pill"><div class="stat-pill-label">FP/G</div><div id="pillFPPG" class="stat-pill-val">-</div></div>
-      <div class="stat-pill"><div class="stat-pill-label">FPTS</div><div id="pillFPTS" class="stat-pill-val">-</div></div>
-      <div class="stat-pill"><div class="stat-pill-label">PTS</div><div id="pillPTS" class="stat-pill-val">-</div></div>
-      <div class="stat-pill"><div class="stat-pill-label">REB</div><div id="pillREB" class="stat-pill-val">-</div></div>
-      <div class="stat-pill"><div class="stat-pill-label">AST</div><div id="pillAST" class="stat-pill-val">-</div></div>
-      <div class="stat-pill"><div class="stat-pill-label">ST</div><div id="pillST" class="stat-pill-val">-</div></div>
-      <div class="stat-pill"><div class="stat-pill-label">BLK</div><div id="pillBLK" class="stat-pill-val">-</div></div>
-      <div class="stat-pill"><div class="stat-pill-label">3PTM</div><div id="pill3PT" class="stat-pill-val">-</div></div>
-    </div>
+    <div id="winBannerToast"></div>
 
-    <div style="margin-top: 0.4rem;">
-      <button id="floatCardAddToQueueBtn" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; padding: 0.45rem;" onclick="addCurrentPlayerToQueue()">
-        + Add To My Nomination Queue
-      </button>
-    </div>
-
-    <div id="floatCardNewsBox" class="player-news-box">
-      <div style="font-weight: bold; color: #94a3b8; margin-bottom: 0.2rem; font-size: 0.7rem; text-transform: uppercase;">
-        Latest Injury / News Update (<span id="floatCardNewsDate">-</span>)
-      </div>
-      <div>
-        <span id="floatCardNewsTag" class="news-tag"></span>
-        <span id="floatCardNewsSnippet" style="color: #cbd5e1;"></span>
-      </div>
-    </div>
-  </div>
-
-  <div id="authOverlay" class="modal-overlay">
-    <div class="modal-box" style="max-width: 360px; text-align: center;">
-      <h2 style="margin-bottom: 0.5rem;">League Draft Sign-In</h2>
-      <p style="color: #8d99ae; font-size: 0.85rem; margin-top: 0;">Enter your team passcode</p>
-      <input type="password" id="passcodeInput" class="selector" placeholder="Team Passcode" style="text-align: center; font-size: 16px; margin-bottom: 1rem;" />
-      <button class="btn" style="width: 100%; padding: 0.75rem; font-size: 1rem;" onclick="submitAuth()">Enter Draft Room</button>
-      <p id="authErrorMsg" style="color: #ef233c; font-size: 0.85rem; margin-top: 0.75rem; display: none;"></p>
-    </div>
-  </div>
-
-  <!-- Commissioner Command Modal -->
-  <div id="commishModal" class="modal-overlay" style="display: none;">
-    <div class="modal-box">
-      <button class="modal-close" onclick="closeCommishModal()">✕</button>
-      <h2>🛡️ Commissioner Command Center</h2>
-
-      <div style="background: rgba(6, 214, 160, 0.15); border: 1px solid #06d6a0; border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+    <div id="easterEggToast">
+      <div class="easter-egg-card">
+        <div id="easterEggIcon" class="easter-egg-icon"></div>
         <div>
-          <strong style="color: #06d6a0;">Final Draft Results</strong>
-          <div style="font-size: 0.75rem; color: #cbd5e1;">Export all team rosters & purchase prices to CSV</div>
+          <h3 id="easterEggTitle" class="easter-egg-title"></h3>
+          <p id="easterEggSubtitle" class="easter-egg-subtitle"></p>
         </div>
-        <button class="btn btn-success" onclick="exportDraftResultsCSV()">📥 Export Results CSV</button>
+      </div>
+    </div>
+
+    <div id="floatingPlayerCard">
+      <div class="card-header-bar">
+        <div>
+          <h3 id="floatCardName" style="margin: 0; color: #fff; font-size: 1.2rem;"></h3>
+          <span id="floatCardTeamPos" style="color: #38bdf8; font-size: 0.85rem; font-weight: bold;"></span>
+          <span id="floatCardRank" style="color: #94a3b8; font-size: 0.8rem; margin-left: 0.4rem;"></span>
+        </div>
+        <button class="modal-close" style="position: static; font-size: 1.4rem;" onclick="closeFloatingPlayerCard()">✕</button>
       </div>
 
-      <div style="background: #0f172a; padding: 0.85rem; border-radius: 6px; border: 1px solid #f77f00; margin-bottom: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-          <h4 style="margin: 0; color: #fcbf49;">⚙️ Dynamic Demo / Mock Mode Builder</h4>
-          <button id="btnSwitchProd" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="adminSwitchProd()">Restore Production Mode</button>
-        </div>
-        
-        <p style="color: #94a3b8; font-size: 0.78rem; margin: 0 0 0.6rem 0;">
-          Checked teams marked <em>[BOT]</em> will auto-draft with random tiered bids ($10-$20 on top 10, $0-$10 on top 11-30).
-        </p>
+      <div class="card-stat-pill-grid">
+        <div class="stat-pill"><div class="stat-pill-label">FP/G</div><div id="pillFPPG" class="stat-pill-val">-</div></div>
+        <div class="stat-pill"><div class="stat-pill-label">FPTS</div><div id="pillFPTS" class="stat-pill-val">-</div></div>
+        <div class="stat-pill"><div class="stat-pill-label">PTS</div><div id="pillPTS" class="stat-pill-val">-</div></div>
+        <div class="stat-pill"><div class="stat-pill-label">REB</div><div id="pillREB" class="stat-pill-val">-</div></div>
+        <div class="stat-pill"><div class="stat-pill-label">AST</div><div id="pillAST" class="stat-pill-val">-</div></div>
+        <div class="stat-pill"><div class="stat-pill-label">ST</div><div id="pillST" class="stat-pill-val">-</div></div>
+        <div class="stat-pill"><div class="stat-pill-label">BLK</div><div id="pillBLK" class="stat-pill-val">-</div></div>
+        <div class="stat-pill"><div class="stat-pill-label">3PTM</div><div id="pill3PT" class="stat-pill-val">-</div></div>
+      </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem;">
-          <div>
-            <label style="font-size: 0.75rem; color: #cbd5e1;">Starting Budget ($)</label>
-            <input type="number" id="demoConfigBudget" class="selector" value="50" style="margin-bottom: 0;" />
-          </div>
-          <div>
-            <label style="font-size: 0.75rem; color: #cbd5e1;">Roster Spots Per Team</label>
-            <input type="number" id="demoConfigRosterLimit" class="selector" value="4" style="margin-bottom: 0;" />
-          </div>
-        </div>
-
-        <label style="font-size: 0.75rem; font-weight: bold; color: #38bdf8; display: block; margin-bottom: 0.3rem;">Select Teams to Include:</label>
-        <div id="demoTeamsCheckboxList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; max-height: 140px; overflow-y: auto; background: #0b132b; padding: 0.4rem; border-radius: 4px; margin-bottom: 0.6rem;"></div>
-
-        <button class="btn btn-warning" style="width: 100%; padding: 0.55rem; font-size: 0.9rem;" onclick="adminLaunchConfiguredDemo()">
-          ▶️ Launch Configured Demo Mode
+      <div style="margin-top: 0.4rem;">
+        <button id="floatCardAddToQueueBtn" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; padding: 0.45rem;" onclick="addCurrentPlayerToQueue()">
+          + Add To My Nomination Queue
         </button>
       </div>
-      
-      <div style="background: #0b132b; padding: 0.75rem; border-radius: 6px; border: 1px solid #233554; margin-bottom: 1rem;">
-        <h4 style="margin: 0 0 0.4rem 0;">Draft Status</h4>
-        <div id="commishDraftStatusText" style="color: #ffbe0b; font-weight: bold; margin-bottom: 0.5rem;">Draft Not Started</div>
-        <button id="commishStartDraftBtn" class="btn btn-success" onclick="adminStartDraft()">▶️ Start Draft Officially</button>
-      </div>
 
-      <div style="margin-bottom: 1rem;">
-        <h4>Timer Configuration (Seconds)</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem;">
-          <div>
-            <label style="font-size: 0.75rem; color: #8d99ae;">Nomination Time</label>
-            <input type="number" id="inputNomTime" class="selector" />
-          </div>
-          <div>
-            <label style="font-size: 0.75rem; color: #8d99ae;">Initial Bid Time</label>
-            <input type="number" id="inputBidTime" class="selector" />
-          </div>
-          <div>
-            <label style="font-size: 0.75rem; color: #8d99ae;">Late Bid Reset</label>
-            <input type="number" id="inputResetTime" class="selector" />
-          </div>
+      <div id="floatCardNewsBox" class="player-news-box">
+        <div style="font-weight: bold; color: #94a3b8; margin-bottom: 0.2rem; font-size: 0.7rem; text-transform: uppercase;">
+          Latest Injury / News Update (<span id="floatCardNewsDate">-</span>)
         </div>
-        <button class="btn" onclick="saveTimerSettings()">Save Timers</button>
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <h4>Draft Room Controls</h4>
-        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-          <button id="pauseBtnModal" class="btn btn-warning" onclick="adminTogglePause()">Pause Draft</button>
-          <button class="btn btn-secondary" onclick="adminResetBlock()">Cancel Block</button>
-          <button class="btn btn-warning" onclick="adminUndoLastSale()">↩ Undo Last Sale</button>
-          <button class="btn btn-danger" onclick="adminResetDraft()">Reset Current Draft</button>
-        </div>
-      </div>
-
-      <div class="admin-accordion-box">
-        <h4 style="margin: 0 0 0.5rem 0; color: #ef233c;">🚨 Emergency Overrides & Adjustments</h4>
-        
-        <div style="margin-bottom: 0.75rem; border-bottom: 1px solid #233554; padding-bottom: 0.75rem;">
-          <label style="font-size: 0.78rem; font-weight: bold; color: #cbd5e1; display: block; margin-bottom: 0.25rem;">Adjust Team Budget</label>
-          <div style="display: flex; gap: 0.4rem;">
-            <select id="overrideTeamSelect" class="selector" style="flex: 2; margin-bottom: 0;"></select>
-            <input type="number" id="overrideBudgetValue" class="input-inline" placeholder="New $" style="flex: 1; margin-bottom: 0;" />
-            <button class="btn btn-secondary" onclick="submitBudgetOverride()">Save Budget</button>
-          </div>
-        </div>
-
         <div>
-          <label style="font-size: 0.78rem; font-weight: bold; color: #cbd5e1; display: block; margin-bottom: 0.25rem;">Transfer Player Ownership & Price</label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.4rem;">
-            <select id="transferPlayerSelect" class="selector" style="margin-bottom: 0;"></select>
-            <select id="transferNewTeamSelect" class="selector" style="margin-bottom: 0;"></select>
-          </div>
-          <div style="display: flex; gap: 0.4rem;">
-            <input type="number" id="transferNewPrice" class="input-inline" placeholder="New Price $" style="flex: 1;" />
-            <button class="btn btn-warning" style="flex: 1;" onclick="submitPlayerTransfer()">Reassign Player</button>
-            <button class="btn btn-danger" style="flex: 1;" onclick="submitPlayerRelease()">Release To Pool</button>
-          </div>
+          <span id="floatCardNewsTag" class="news-tag"></span>
+          <span id="floatCardNewsSnippet" style="color: #cbd5e1;"></span>
         </div>
       </div>
+    </div>
 
-      <div style="margin-top: 1rem;">
-        <h4>Force Team Auto-Draft Mode</h4>
-        <div id="commishAutoTogglesList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;"></div>
+    <div id="authOverlay" class="modal-overlay">
+      <div class="modal-box" style="max-width: 360px; text-align: center;">
+        <h2 style="margin-bottom: 0.5rem;">League Draft Sign-In</h2>
+        <p style="color: #8d99ae; font-size: 0.85rem; margin-top: 0;">Enter your team passcode</p>
+        <input type="password" id="passcodeInput" class="selector" placeholder="Team Passcode" style="text-align: center; font-size: 16px; margin-bottom: 1rem;" />
+        <button class="btn" style="width: 100%; padding: 0.75rem; font-size: 1rem;" onclick="submitAuth()">Enter Draft Room</button>
+        <p id="authErrorMsg" style="color: #ef233c; font-size: 0.85rem; margin-top: 0.75rem; display: none;"></p>
       </div>
     </div>
-  </div>
 
-  <input type="file" id="capsCsvFileInput" accept=".csv" style="display: none;" onchange="handleCapsCsvUpload(event)" />
+    <!-- Commissioner Command Modal -->
+    <div id="commishModal" class="modal-overlay" style="display: none;">
+      <div class="modal-box">
+        <button class="modal-close" onclick="closeCommishModal()">✕</button>
+        <h2>🛡️ Commissioner Command Center</h2>
 
-  <div id="settingsModal" class="modal-overlay" style="display: none;">
-    <div class="modal-box" style="max-width: 400px;">
-      <button class="modal-close" onclick="closeSettingsModal()">✕</button>
-      <h2>⚙️ Experience Preferences</h2>
-      
-      <div style="margin-top: 1rem;">
-        <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem;">
-          <input type="checkbox" id="prefSoundToggle" checked onchange="savePreferences()" />
-          <strong>Enable Sound Effects</strong>
-        </label>
-        
-        <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem;">
-          <input type="checkbox" id="prefVisualToggle" checked onchange="savePreferences()" />
-          <strong>Enable Visual Urgency (3-2-1 Screen Flash)</strong>
-        </label>
-      </div>
-    </div>
-  </div>
-
-  <div class="top-banner">
-    <div class="nom-indicator">
-      <div>
-        Nomination Turn: <span id="currentNomDisplay" class="nom-current">Waiting to Start...</span>
-        <span id="demoModeBadge" class="badge-demo" style="display: none;">DEMO</span>
-      </div>
-      <div class="nom-ondeck">On Deck: <span id="onDeckNomDisplay">-</span></div>
-    </div>
-
-    <div class="tab-nav">
-      <button id="tabWarRoomBtn" class="tab-btn active" onclick="switchTab('warRoom')">Live War Room</button>
-      <button id="tabBoardBtn" class="tab-btn" onclick="switchTab('board')">Full Draft Board</button>
-    </div>
-
-    <div class="pool-stat">
-      <div class="pool-label">Total Draft Pool Left</div>
-      <div class="pool-val" id="totalPoolDisplay">$2,400</div>
-    </div>
-  </div>
-
-  <div class="mobile-tab-bar" id="mobileTabBar">
-    <div id="mTabAuction" class="mobile-tab-btn active" onclick="switchMobilePane('auction')">Auction Block</div>
-    <div id="mTabPlayers" class="mobile-tab-btn" onclick="switchMobilePane('players')">Player Pool & Queue</div>
-    <div id="mTabTeams" class="mobile-tab-btn" onclick="switchMobilePane('teams')">Teams & Budgets</div>
-  </div>
-
-  <div id="warRoomView" class="grid">
-    <div id="paneAuction" class="card card-auction-center">
-      
-      <!-- Prominent High Bidder Header -->
-      <div id="highBidderBanner" class="leader-other">No High Bidder</div>
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; background: #0b132b; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #233554;">
-        <div style="display: flex; align-items: center; gap: 0.4rem;">
-          <span id="userTeamAvatarBadge"></span>
-          <span id="userTeamBadge" style="font-weight: bold; color: #48cae4;"></span>
-          <button class="btn btn-secondary" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; margin-left: 0.25rem;" onclick="logout()">Logout</button>
+        <div style="background: rgba(6, 214, 160, 0.15); border: 1px solid #06d6a0; border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong style="color: #06d6a0;">Final Draft Results</strong>
+            <div style="font-size: 0.75rem; color: #cbd5e1;">Export all team rosters & purchase prices to CSV</div>
+          </div>
+          <button class="btn btn-success" onclick="exportDraftResultsCSV()">📥 Export Results CSV</button>
         </div>
-        
-        <div style="display: flex; align-items: center; gap: 0.3rem;">
-          <button id="myAutoDraftBtn" class="btn btn-toggle-auto" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="toggleMyAutoDraft()">
-            Auto-Draft: OFF
-          </button>
-          <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="openSettingsModal()">⚙️</button>
-          <button id="openCommishBtn" class="btn btn-warning" style="display: none; font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openCommishModal()">
-            🛡️ Commish
+
+        <div style="background: #0f172a; padding: 0.85rem; border-radius: 6px; border: 1px solid #f77f00; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <h4 style="margin: 0; color: #fcbf49;">⚙️ Dynamic Demo / Mock Mode Builder</h4>
+            <button id="btnSwitchProd" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="adminSwitchProd()">Restore Production Mode</button>
+          </div>
+          
+          <p style="color: #94a3b8; font-size: 0.78rem; margin: 0 0 0.6rem 0;">
+            Checked teams marked <em>[BOT]</em> will auto-draft with random tiered bids ($10-$20 on top 10, $0-$10 on top 11-30).
+          </p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <div>
+              <label style="font-size: 0.75rem; color: #cbd5e1;">Starting Budget ($)</label>
+              <input type="number" id="demoConfigBudget" class="selector" value="50" style="margin-bottom: 0;" />
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; color: #cbd5e1;">Roster Spots Per Team</label>
+              <input type="number" id="demoConfigRosterLimit" class="selector" value="4" style="margin-bottom: 0;" />
+            </div>
+          </div>
+
+          <label style="font-size: 0.75rem; font-weight: bold; color: #38bdf8; display: block; margin-bottom: 0.3rem;">Select Teams to Include:</label>
+          <div id="demoTeamsCheckboxList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; max-height: 140px; overflow-y: auto; background: #0b132b; padding: 0.4rem; border-radius: 4px; margin-bottom: 0.6rem;"></div>
+
+          <button class="btn btn-warning" style="width: 100%; padding: 0.55rem; font-size: 0.9rem;" onclick="adminLaunchConfiguredDemo()">
+            ▶️ Launch Configured Demo Mode
           </button>
         </div>
-      </div>
-
-      <div id="auctionContent">
-        <div id="stagePlayerMeta">
-          <p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to start the draft...</p>
+        
+        <div style="background: #0b132b; padding: 0.75rem; border-radius: 6px; border: 1px solid #233554; margin-bottom: 1rem;">
+          <h4 style="margin: 0 0 0.4rem 0;">Draft Status</h4>
+          <div id="commishDraftStatusText" style="color: #ffbe0b; font-weight: bold; margin-bottom: 0.5rem;">Draft Not Started</div>
+          <button id="commishStartDraftBtn" class="btn btn-success" onclick="adminStartDraft()">▶️ Start Draft Officially</button>
         </div>
 
-        <div class="timer-ring-container">
-          <svg class="timer-svg" viewBox="0 0 100 100">
-            <circle class="timer-track" cx="50" cy="50" r="45"></circle>
-            <circle id="timerRingBar" class="timer-bar" cx="50" cy="50" r="45"></circle>
-          </svg>
-          <div class="timer-text-inner">
-            <div id="timerNumberDisplay" class="timer-number">--</div>
-            <div id="timerLabelDisplay" class="timer-subtext">Clock</div>
+        <div style="margin-bottom: 1rem;">
+          <h4>Timer Configuration (Seconds)</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem;">
+            <div>
+              <label style="font-size: 0.75rem; color: #8d99ae;">Nomination Time</label>
+              <input type="number" id="inputNomTime" class="selector" />
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; color: #8d99ae;">Initial Bid Time</label>
+              <input type="number" id="inputBidTime" class="selector" />
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; color: #8d99ae;">Late Bid Reset</label>
+              <input type="number" id="inputResetTime" class="selector" />
+            </div>
+          </div>
+          <button class="btn" onclick="saveTimerSettings()">Save Timers</button>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <h4>Draft Room Controls</h4>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <button id="pauseBtnModal" class="btn btn-warning" onclick="adminTogglePause()">Pause Draft</button>
+            <button class="btn btn-secondary" onclick="adminResetBlock()">Cancel Block</button>
+            <button class="btn btn-warning" onclick="adminUndoLastSale()">↩ Undo Last Sale</button>
+            <button class="btn btn-danger" onclick="adminResetDraft()">Reset Current Draft</button>
           </div>
         </div>
 
-        <div id="currentBidDisplay" class="current-bid">$0</div>
+        <div class="admin-accordion-box">
+          <h4 style="margin: 0 0 0.5rem 0; color: #ef233c;">🚨 Emergency Overrides & Adjustments</h4>
+          
+          <div style="margin-bottom: 0.75rem; border-bottom: 1px solid #233554; padding-bottom: 0.75rem;">
+            <label style="font-size: 0.78rem; font-weight: bold; color: #cbd5e1; display: block; margin-bottom: 0.25rem;">Adjust Team Budget</label>
+            <div style="display: flex; gap: 0.4rem;">
+              <select id="overrideTeamSelect" class="selector" style="flex: 2; margin-bottom: 0;"></select>
+              <input type="number" id="overrideBudgetValue" class="input-inline" placeholder="New $" style="flex: 1; margin-bottom: 0;" />
+              <button class="btn btn-secondary" onclick="submitBudgetOverride()">Save Budget</button>
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size: 0.78rem; font-weight: bold; color: #cbd5e1; display: block; margin-bottom: 0.25rem;">Transfer Player Ownership & Price</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.4rem;">
+              <select id="transferPlayerSelect" class="selector" style="margin-bottom: 0;"></select>
+              <select id="transferNewTeamSelect" class="selector" style="margin-bottom: 0;"></select>
+            </div>
+            <div style="display: flex; gap: 0.4rem;">
+              <input type="number" id="transferNewPrice" class="input-inline" placeholder="New Price $" style="flex: 1;" />
+              <button class="btn btn-warning" style="flex: 1;" onclick="submitPlayerTransfer()">Reassign Player</button>
+              <button class="btn btn-danger" style="flex: 1;" onclick="submitPlayerRelease()">Release To Pool</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1rem;">
+          <h4>Force Team Auto-Draft Mode</h4>
+          <div id="commishAutoTogglesList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;"></div>
+        </div>
+      </div>
+    </div>
+
+    <input type="file" id="capsCsvFileInput" accept=".csv" style="display: none;" onchange="handleCapsCsvUpload(event)" />
+
+    <div id="settingsModal" class="modal-overlay" style="display: none;">
+      <div class="modal-box" style="max-width: 400px;">
+        <button class="modal-close" onclick="closeSettingsModal()">✕</button>
+        <h2>⚙️ Experience Preferences</h2>
         
-        <div id="maxBidCapacityHint" style="color: #8d99ae; font-size: 0.85rem; margin-bottom: 0.5rem;">
-          Your Max Allowed Bid: <strong id="userMaxAllowedBid" style="color: #06d6a0;">$0</strong>
+        <div style="margin-top: 1rem;">
+          <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem;">
+            <input type="checkbox" id="prefSoundToggle" checked onchange="savePreferences()" />
+            <strong>Enable Sound Effects</strong>
+          </label>
+          
+          <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem;">
+            <input type="checkbox" id="prefVisualToggle" checked onchange="savePreferences()" />
+            <strong>Enable Visual Urgency (3-2-1 Screen Flash)</strong>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="top-banner">
+      <div class="nom-indicator">
+        <div>
+          Nomination Turn: <span id="currentNomDisplay" class="nom-current">Waiting to Start...</span>
+          <span id="demoModeBadge" class="badge-demo" style="display: none;">DEMO</span>
+        </div>
+        <div class="nom-ondeck">On Deck: <span id="onDeckNomDisplay">-</span></div>
+      </div>
+
+      <div class="tab-nav">
+        <button id="tabWarRoomBtn" class="tab-btn active" onclick="switchTab('warRoom')">Live War Room</button>
+        <button id="tabBoardBtn" class="tab-btn" onclick="switchTab('board')">Full Draft Board</button>
+      </div>
+
+      <div class="pool-stat">
+        <div class="pool-label">Total Draft Pool Left</div>
+        <div class="pool-val" id="totalPoolDisplay">$2,400</div>
+      </div>
+    </div>
+
+    <div class="mobile-tab-bar" id="mobileTabBar">
+      <div id="mTabAuction" class="mobile-tab-btn active" onclick="switchMobilePane('auction')">Auction Block</div>
+      <div id="mTabPlayers" class="mobile-tab-btn" onclick="switchMobilePane('players')">Player Pool & Queue</div>
+      <div id="mTabTeams" class="mobile-tab-btn" onclick="switchMobilePane('teams')">Teams & Budgets</div>
+    </div>
+
+    <div id="warRoomView" class="grid">
+      <div id="paneAuction" class="card card-auction-center">
+        
+        <div id="highBidderBanner" class="leader-other">No High Bidder</div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; background: #0b132b; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #233554;">
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <span id="userTeamAvatarBadge"></span>
+            <span id="userTeamBadge" style="font-weight: bold; color: #48cae4;"></span>
+            <button class="btn btn-secondary" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; margin-left: 0.25rem;" onclick="logout()">Logout</button>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 0.3rem;">
+            <button id="myAutoDraftBtn" class="btn btn-toggle-auto" style="font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="toggleMyAutoDraft()">
+              Auto-Draft: OFF
+            </button>
+            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="openSettingsModal()">⚙️</button>
+            <button id="openCommishBtn" class="btn btn-warning" style="display: none; font-size: 0.75rem; padding: 0.25rem 0.55rem;" onclick="openCommishModal()">
+              🛡️ Commish
+            </button>
+          </div>
+        </div>
+
+        <div id="auctionContent">
+          <div id="stagePlayerMeta">
+            <p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to start the draft...</p>
+          </div>
+
+          <div class="timer-ring-container">
+            <svg class="timer-svg" viewBox="0 0 100 100">
+              <circle class="timer-track" cx="50" cy="50" r="45"></circle>
+              <circle id="timerRingBar" class="timer-bar" cx="50" cy="50" r="45"></circle>
+            </svg>
+            <div class="timer-text-inner">
+              <div id="timerNumberDisplay" class="timer-number">--</div>
+              <div id="timerLabelDisplay" class="timer-subtext">Clock</div>
+            </div>
+          </div>
+
+          <div id="currentBidDisplay" class="current-bid">$0</div>
+          
+          <div id="maxBidCapacityHint" style="color: #8d99ae; font-size: 0.85rem; margin-bottom: 0.5rem;">
+            Your Max Allowed Bid: <strong id="userMaxAllowedBid" style="color: #06d6a0;">$0</strong>
+          </div>
+          
+          <div class="bid-btn-group">
+            <button id="btnInc1" class="btn" onclick="bidIncrement(1)" disabled>+$1</button>
+            <button id="btnInc3" class="btn" onclick="bidIncrement(3)" disabled>+$3</button>
+            <button id="btnInc5" class="btn" onclick="bidIncrement(5)" disabled>+$5</button>
+          </div>
+
+          <div class="custom-bid-group">
+            <input type="number" id="customBidInput" class="input-inline" placeholder="$ Amount">
+            <button id="btnCustomBid" class="btn btn-secondary" onclick="bidCustom()" disabled>Custom Bid</button>
+          </div>
+        </div>
+
+        <h4 style="text-align: left; margin: 1rem 0 0.25rem 0; color: #48cae4;">Draft Activity Log</h4>
+        <div id="logBox"></div>
+      </div>
+
+      <div id="panePlayers" class="card card-players">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+          <h3 style="margin: 0; color: #48cae4; font-size: 1.05rem;">My Nomination Queue (<span id="queueCountBadge">0</span>)</h3>
+          <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="toggleCapMode()">
+            Set My Caps
+          </button>
         </div>
         
-        <div class="bid-btn-group">
-          <button id="btnInc1" class="btn" onclick="bidIncrement(1)" disabled>+$1</button>
-          <button id="btnInc3" class="btn" onclick="bidIncrement(3)" disabled>+$3</button>
-          <button id="btnInc5" class="btn" onclick="bidIncrement(5)" disabled>+$5</button>
+        <div id="nominationQueuePanel" style="background: #0f1c30; border: 1px solid #0284c7; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.35rem;">
+            <span>Drag to reorder • Top player auto-nominates</span>
+          </div>
+          <div id="queueListContainer" style="max-height: 125px; overflow-y: auto;"></div>
         </div>
 
-        <div class="custom-bid-group">
-          <input type="number" id="customBidInput" class="input-inline" placeholder="$ Amount">
-          <button id="btnCustomBid" class="btn btn-secondary" onclick="bidCustom()" disabled>Custom Bid</button>
+        <div id="capToolbar" class="cap-controls-bar" style="display: none;">
+          <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="downloadCapsTemplate()">
+            📥 Download Template
+          </button>
+          <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="document.getElementById('capsCsvFileInput').click()">
+            📤 Import CSV
+          </button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+          <h4 style="margin: 0; color: #e0e1dd; font-size: 0.95rem;">Player Pool</h4>
+          <small style="color: #8d99ae; font-size: 0.72rem;">(Double-click for stats)</small>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.3rem;">
+          <select id="statusFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
+            <option value="available">Available Only</option>
+            <option value="all">All Players</option>
+            <option value="drafted">Drafted Only</option>
+          </select>
+          <select id="teamFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
+            <option value="ALL">All NBA Teams</option>
+          </select>
+        </div>
+
+        <input type="text" id="playerSearch" class="selector" placeholder="Search player name..." oninput="renderPlayers()" />
+
+        <div id="playerListContainer">
+          <div id="playerList"></div>
         </div>
       </div>
 
-      <h4 style="text-align: left; margin: 1rem 0 0.25rem 0; color: #48cae4;">Draft Activity Log</h4>
-      <div id="logBox"></div>
-    </div>
-
-    <div id="panePlayers" class="card card-players">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-        <h3 style="margin: 0; color: #48cae4; font-size: 1.05rem;">My Nomination Queue (<span id="queueCountBadge">0</span>)</h3>
-        <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="toggleCapMode()">
-          Set My Caps
-        </button>
-      </div>
-      
-      <div id="nominationQueuePanel" style="background: #0f1c30; border: 1px solid #0284c7; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.75rem;">
-        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.35rem;">
-          <span>Drag to reorder • Top player auto-nominates</span>
-        </div>
-        <div id="queueListContainer" style="max-height: 125px; overflow-y: auto;"></div>
-      </div>
-
-      <div id="capToolbar" class="cap-controls-bar" style="display: none;">
-        <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="downloadCapsTemplate()">
-          📥 Download Template
-        </button>
-        <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="document.getElementById('capsCsvFileInput').click()">
-          📤 Import CSV
-        </button>
-      </div>
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-        <h4 style="margin: 0; color: #e0e1dd; font-size: 0.95rem;">Player Pool</h4>
-        <small style="color: #8d99ae; font-size: 0.72rem;">(Double-click for stats)</small>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.3rem;">
-        <select id="statusFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
-          <option value="available">Available Only</option>
-          <option value="all">All Players</option>
-          <option value="drafted">Drafted Only</option>
-        </select>
-        <select id="teamFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
-          <option value="ALL">All NBA Teams</option>
-        </select>
-      </div>
-
-      <input type="text" id="playerSearch" class="selector" placeholder="Search player name..." oninput="renderPlayers()" />
-
-      <div id="playerListContainer">
-        <div id="playerList"></div>
+      <div id="paneTeams" class="card card-teams">
+        <h3>Teams & Budgets</h3>
+        <div id="teamList"></div>
       </div>
     </div>
 
-    <div id="paneTeams" class="card card-teams">
-      <h3>Teams & Budgets</h3>
-      <div id="teamList"></div>
-    </div>
-  </div>
+    <div id="draftBoardView">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="margin: 0;">League Draft Board</h2>
+        <button class="btn btn-secondary" onclick="switchTab('warRoom')">&larr; Back to War Room</button>
+      </div>
 
-  <div id="draftBoardView">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <h2 style="margin: 0;">League Draft Board</h2>
-      <button class="btn btn-secondary" onclick="switchTab('warRoom')">&larr; Back to War Room</button>
-    </div>
+      <div id="mobileTeamSelectBox">
+        <label style="font-size: 0.8rem; color: #8d99ae; margin-bottom: 0.25rem; display: block;">Select Team Roster to View:</label>
+        <select id="mobileTeamPicker" class="selector" onchange="onMobileTeamPickerChange()"></select>
+      </div>
 
-    <div id="mobileTeamSelectBox">
-      <label style="font-size: 0.8rem; color: #8d99ae; margin-bottom: 0.25rem; display: block;">Select Team Roster to View:</label>
-      <select id="mobileTeamPicker" class="selector" onchange="onMobileTeamPickerChange()"></select>
+      <div class="board-grid" id="boardColumns"></div>
     </div>
-
-    <div class="board-grid" id="boardColumns"></div>
   </div>
 
   <script>
@@ -1056,6 +1073,7 @@
       }, { once: true });
     });
 
+    // Explicit audio node cleanup to avoid memory bloat
     function playTone(freq, type, duration, delay = 0, customVolume = 0.15) {
       if (!userPrefs.sound) return;
       try {
@@ -1069,6 +1087,14 @@
           gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
           osc.connect(gain);
           gain.connect(ctx.destination);
+          
+          osc.onended = () => {
+            try {
+              osc.disconnect();
+              gain.disconnect();
+            } catch (err) {}
+          };
+
           osc.start();
           osc.stop(ctx.currentTime + duration);
         }, delay * 1000);
@@ -1388,6 +1414,7 @@
       
       renderAuctionStage();
       renderPlayers();
+      renderQueue();
       updateTopBanner();
       
       if (window.innerWidth <= 900) switchMobilePane('auction');
@@ -1626,7 +1653,6 @@
     }
 
     function addPlayerToQueue(playerId) {
-      // Disallow queueing player currently on the auction block
       if (localData.draftState?.nominatedPlayer && String(localData.draftState.nominatedPlayer.id) === String(playerId)) {
         return;
       }
@@ -1652,7 +1678,6 @@
     }
 
     function renderQueue() {
-      // Clean out on-the-block player from local queue view
       const onBlockId = localData.draftState?.nominatedPlayer?.id;
       if (onBlockId) {
         myQueue = myQueue.filter(id => String(id) !== String(onBlockId));
@@ -1715,16 +1740,18 @@
         const isCurrentlyOnBlock = (onBlockPlayerId && String(p.id) === String(onBlockPlayerId));
 
         if (filter === 'available') {
-          // Hide player if drafted OR currently on the block
           return p.status === 'available' && !isCurrentlyOnBlock;
         }
         if (filter === 'drafted') return p.status === 'drafted';
         return true;
       });
 
+      // Cap visible rendering to top 80 players for smooth performance
+      const visibleSlice = filtered.slice(0, 80);
+
       const isMyTurnToNominate = localData.draftState.isDraftStarted && (myTeam.id === localData.draftState.nominatingTeamId);
 
-      playerListEl.innerHTML = filtered.map(p => {
+      playerListEl.innerHTML = visibleSlice.map(p => {
         const myCap = (myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
         const myRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
         const isDrafted = p.status === 'drafted';
@@ -1784,6 +1811,10 @@
           </div>
         `;
       }).join('');
+
+      if (filtered.length > 80) {
+        playerListEl.innerHTML += `<div style="text-align: center; color: #8d99ae; font-size: 0.8rem; padding: 0.5rem;">Showing top 80 of ${filtered.length} players. Use search bar to find others.</div>`;
+      }
     }
 
     function directNominate(playerId) {

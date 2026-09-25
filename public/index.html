@@ -195,15 +195,22 @@
       box-shadow: 0 0 15px rgba(247, 127, 0, 0.7);
     }
 
-    /* Team Avatars */
+    /* Team Avatar Badges */
+    .avatar-wrapper {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      position: relative;
+    }
     .team-avatar {
       width: 24px;
       height: 24px;
       border-radius: 50%;
       object-fit: cover;
-      vertical-align: middle;
       border: 1px solid rgba(255, 255, 255, 0.3);
       background: #0b132b;
+      display: inline-block;
     }
     .team-avatar-fallback {
       display: inline-flex;
@@ -218,14 +225,6 @@
       font-weight: 800;
       text-transform: uppercase;
       border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .team-avatar-lg {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #ffbe0b;
-      box-shadow: 0 0 10px rgba(255, 190, 11, 0.4);
     }
 
     .timer-ring-container {
@@ -1132,17 +1131,21 @@
       playTone(1046.50, 'triangle', 0.45, 0.36);
     }
 
-    // Avatar Helper with Initial Fallback
-    function getTeamAvatarHTML(teamName, sizeClass = '') {
+    // Avatar Helper
+    function getTeamAvatarHTML(teamName) {
       const cleanName = (teamName || '').trim();
       const firstLetter = cleanName.charAt(0) || '?';
       return `
-        <img src="/team_images/${cleanName}.png" class="team-avatar ${sizeClass}" 
-             onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'team-avatar-fallback ${sizeClass}\\'>${firstLetter}</span>';" />
+        <span class="avatar-wrapper">
+          <img src="/team_images/${encodeURIComponent(cleanName)}.png" 
+               class="team-avatar" 
+               onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-flex';" />
+          <span class="team-avatar-fallback" style="display:none;">${firstLetter}</span>
+        </span>
       `;
     }
 
-    // Confetti Engine with Team Image Burst Cannon
+    // Confetti Engine (100% Winning Team Images Only)
     const canvas = document.getElementById('confettiCanvas');
     const ctx = canvas.getContext('2d');
     let confettiParticles = [];
@@ -1158,49 +1161,33 @@
     function triggerConfetti(winningTeamName = null) {
       if (!userPrefs.visual) return;
       confettiParticles = [];
-      const colors = ['#06d6a0', '#38bdf8', '#ffbe0b', '#ef476f', '#c084fc'];
 
-      // Standard particle sprinkles
-      for (let i = 0; i < 110; i++) {
-        confettiParticles.push({
-          x: canvas.width / 2,
-          y: canvas.height / 2,
-          w: Math.random() * 8 + 4,
-          h: Math.random() * 8 + 4,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          vx: (Math.random() - 0.5) * 22,
-          vy: (Math.random() - 0.5) * 22 - 6,
-          gravity: 0.35,
-          alpha: 1,
-          type: 'rect'
-        });
-      }
+      const cleanName = (winningTeamName || '').trim();
+      const img = new Image();
+      img.src = `/team_images/${encodeURIComponent(cleanName)}.png`;
 
-      // Winning team image burst
-      if (winningTeamName) {
-        const img = new Image();
-        img.src = `/team_images/${winningTeamName}.png`;
-        img.onload = () => {
-          for (let i = 0; i < 28; i++) {
-            confettiParticles.push({
-              x: canvas.width / 2,
-              y: canvas.height / 2,
-              size: Math.random() * 26 + 32,
-              vx: (Math.random() - 0.5) * 26,
-              vy: (Math.random() - 0.5) * 26 - 7,
-              rot: Math.random() * Math.PI * 2,
-              rotSpeed: (Math.random() - 0.5) * 0.15,
-              gravity: 0.32,
-              alpha: 1,
-              type: 'image',
-              image: img
-            });
-          }
-        };
-      }
+      const spawnBurst = (loadedImg = null) => {
+        for (let i = 0; i < 35; i++) {
+          confettiParticles.push({
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            size: Math.random() * 26 + 34,
+            vx: (Math.random() - 0.5) * 28,
+            vy: (Math.random() - 0.5) * 28 - 7,
+            rot: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random() - 0.5) * 0.18,
+            gravity: 0.32,
+            alpha: 1,
+            image: loadedImg,
+            fallbackText: cleanName.charAt(0) || '★'
+          });
+        }
+        cancelAnimationFrame(confettiAnimation);
+        renderConfetti();
+      };
 
-      cancelAnimationFrame(confettiAnimation);
-      renderConfetti();
+      img.onload = () => spawnBurst(img);
+      img.onerror = () => spawnBurst(null); // Fallback image stamp if file not uploaded yet
     }
 
     function renderConfetti() {
@@ -1214,14 +1201,26 @@
         ctx.save();
         ctx.globalAlpha = Math.max(0, p.alpha);
 
-        if (p.type === 'image' && p.image) {
+        if (p.image) {
           p.rot += p.rotSpeed;
           ctx.translate(p.x, p.y);
           ctx.rotate(p.rot);
           ctx.drawImage(p.image, -p.size / 2, -p.size / 2, p.size, p.size);
         } else {
-          ctx.fillStyle = p.color;
-          ctx.fillRect(p.x, p.y, p.w, p.h);
+          // Circular fallback emblem with team initial
+          ctx.translate(p.x, p.y);
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          ctx.fillStyle = '#0077b6';
+          ctx.fill();
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.fillStyle = '#fff';
+          ctx.font = `bold ${p.size / 2}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(p.fallbackText, 0, 0);
         }
 
         ctx.restore();
@@ -1605,7 +1604,7 @@
         triggerEasterEgg('💵', 'KHONTRAC', "Wow, that's Khris Middleton money.");
       }
 
-      // Trigger Confetti & Custom Team Image Explosion
+      // 100% Team Image Burst (no rectangular confetti)
       triggerConfetti(winningTeam.name);
 
       if (myTeam && winningTeam.id === myTeam.id) {

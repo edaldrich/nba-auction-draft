@@ -5,7 +5,7 @@
     "budget": 200,
     "roster": [],
     "isAuto": false,
-    "passcode": "commish1",
+    "passcode": "eddie64",
     "isCommish": true
   },
   {
@@ -14,8 +14,8 @@
     "budget": 200,
     "roster": [],
     "isAuto": false,
-    "passcode": "team2pass",
-    "isCommish": true
+    "passcode": "ryan911",
+    "isCommish": false
   },
   {
     "id": 3,
@@ -23,7 +23,7 @@
     "budget": 190,
     "roster": [],
     "isAuto": false,
-    "passcode": "team3pass",
+    "passcode": "pat69",
     "isCommish": false
   },
   {
@@ -32,7 +32,7 @@
     "budget": 200,
     "roster": [],
     "isAuto": false,
-    "passcode": "team4pass",
+    "passcode": "andrewisgay",
     "isCommish": false
   },
   {
@@ -41,7 +41,7 @@
     "budget": 200,
     "roster": [],
     "isAuto": false,
-    "passcode": "team5pass",
+    "passcode": "josh999",
     "isCommish": false
   },
   {
@@ -50,7 +50,7 @@
     "budget": 200,
     "roster": [],
     "isAuto": false,
-    "passcode": "team6pass",
+    "passcode": "adan4eva",
     "isCommish": false
   },
   {
@@ -59,7 +59,7 @@
     "budget": 200,
     "roster": [],
     "isAuto": false,
-    "passcode": "team7pass",
+    "passcode": "nick4good",
     "isCommish": false
   },
   {
@@ -68,7 +68,7 @@
     "budget": 200,
     "roster": [],
     "isAuto": false,
-    "passcode": "team8pass",
+    "passcode": "chrishellyeah",
     "isCommish": false
   },
   {
@@ -77,7 +77,7 @@
     "budget": 200,
     "roster": [],
     "isAuto": false,
-    "passcode": "team9pass",
+    "passcode": "natattack2",
     "isCommish": false
   },
   {
@@ -86,7 +86,7 @@
     "budget": 200,
     "roster": [],
     "isAuto": false,
-    "passcode": "team10pass",
+    "passcode": "shepallday",
     "isCommish": false
   },
   {
@@ -95,8 +95,8 @@
     "budget": 215,
     "roster": [],
     "isAuto": false,
-    "passcode": "commish2",
-    "isCommish": false
+    "passcode": "ratking111",
+    "isCommish": true
   },
   {
     "id": 12,
@@ -104,7 +104,7 @@
     "budget": 200,
     "roster": [],
     "isAuto": true,
-    "passcode": "team12pass",
+    "passcode": "clyde666",
     "isCommish": false
   }
 ]

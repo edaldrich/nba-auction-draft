@@ -15,6 +15,8 @@ const rssParser = new Parser({
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
+// Serve custom team images folder
+app.use('/team_images', express.static(path.join(__dirname, 'team_images')));
 app.use(express.json());
 
 const PROD_ROSTER_SIZE = 13;
@@ -37,7 +39,6 @@ let timerConfig = {
   additionalBidTime: 10
 };
 
-// Map storing base starting funds per team to cleanly calculate budgets
 let teamBaseBudgets = {};
 prodTeams.forEach(t => { teamBaseBudgets[t.id] = t.budget; });
 
@@ -478,13 +479,11 @@ function triggerAutodraftCheck() {
   }, 1200);
 }
 
-// Configurable Dynamic Demo Initializer
 function initDynamicDemoMode({ selectedTeamIds, demoBudget, demoRosterLimit, botTeamIds }) {
   isDemoMode = true;
   maxRosterSize = parseInt(demoRosterLimit, 10) || 4;
   const budget = parseInt(demoBudget, 10) || 50;
 
-  // Filter and configure selected teams
   teams = prodTeams
     .filter(t => selectedTeamIds.includes(t.id))
     .map(t => {
@@ -500,11 +499,9 @@ function initDynamicDemoMode({ selectedTeamIds, demoBudget, demoRosterLimit, bot
       };
     });
 
-  // Re-map base budgets
   teamBaseBudgets = {};
   teams.forEach(t => { teamBaseBudgets[t.id] = budget; });
 
-  // Fresh player clone without production caps or ranks
   players = JSON.parse(JSON.stringify(prodPlayers));
   players.forEach(p => {
     p.status = 'available';
@@ -515,27 +512,24 @@ function initDynamicDemoMode({ selectedTeamIds, demoBudget, demoRosterLimit, bot
     p.autoRanks = {};
   });
 
-  // Tiered Autodraft Bot Bids (Top 10: $10-$20, Top 11-30: $0-$10)
   const top30 = [...players].sort((a, b) => (b.fppg || 0) - (a.fppg || 0)).slice(0, 30);
   const top10 = top30.slice(0, 10);
   const next20 = top30.slice(10, 30);
 
   botTeamIds.forEach(botId => {
-    // Top 10 ($10 - $20)
     top10.forEach((p, idx) => {
       const target = players.find(x => x.id === p.id);
       if (target) {
-        const randBid = Math.floor(Math.random() * 11) + 10; // $10 to $20
+        const randBid = Math.floor(Math.random() * 11) + 10;
         target.autoCaps[botId] = Math.min(randBid, budget);
         target.autoRanks[botId] = idx + 1;
       }
     });
 
-    // Top 11-30 ($0 - $10)
     next20.forEach((p, idx) => {
       const target = players.find(x => x.id === p.id);
       if (target) {
-        const randBid = Math.floor(Math.random() * 11); // $0 to $10
+        const randBid = Math.floor(Math.random() * 11);
         target.autoCaps[botId] = randBid;
         target.autoRanks[botId] = 10 + idx + 1;
       }
@@ -565,7 +559,6 @@ function initProdMode() {
   isDemoMode = false;
   maxRosterSize = PROD_ROSTER_SIZE;
 
-  // Restore production teams and budgets
   prodTeams = JSON.parse(fs.readFileSync(path.join(__dirname, 'teams.json'), 'utf8'));
   teams = JSON.parse(JSON.stringify(prodTeams));
   teamBaseBudgets = {};
@@ -741,7 +734,6 @@ io.on('connection', (socket) => {
     return team && team.isCommish;
   }
 
-  // Configurable Demo Mode Trigger
   socket.on('adminSwitchConfiguredDemo', (config) => {
     if (!isCommishSocket()) return;
     clearInterval(timerInterval);

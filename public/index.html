@@ -99,6 +99,7 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-35px) scale(0.9); }
     }
 
+    /* Top Banner */
     .top-banner {
       display: flex;
       flex-wrap: wrap;
@@ -192,6 +193,39 @@
       margin-bottom: 0.4rem;
       text-transform: uppercase;
       box-shadow: 0 0 15px rgba(247, 127, 0, 0.7);
+    }
+
+    /* Team Avatars */
+    .team-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+      vertical-align: middle;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: #0b132b;
+    }
+    .team-avatar-fallback {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #0077b6;
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .team-avatar-lg {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ffbe0b;
+      box-shadow: 0 0 10px rgba(255, 190, 11, 0.4);
     }
 
     .timer-ring-container {
@@ -744,7 +778,7 @@
         <button class="btn btn-success" onclick="exportDraftResultsCSV()">📥 Export Results CSV</button>
       </div>
 
-      <!-- DYNAMIC CONFIGURABLE DEMO BUILDER -->
+      <!-- Configurable Demo Builder -->
       <div style="background: #0f172a; padding: 0.85rem; border-radius: 6px; border: 1px solid #f77f00; margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
           <h4 style="margin: 0; color: #fcbf49;">⚙️ Dynamic Demo / Mock Mode Builder</h4>
@@ -752,7 +786,7 @@
         </div>
         
         <p style="color: #94a3b8; font-size: 0.78rem; margin: 0 0 0.6rem 0;">
-          Select participating managers for the mock. Any checked team marked as <em>[BOT]</em> will auto-draft with random bids ($10-$20 on top 10, $0-$10 on top 11-30).
+          Select participating managers for the mock. Checked teams marked <em>[BOT]</em> will auto-draft with random bids ($10-$20 on top 10, $0-$10 on top 11-30).
         </p>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem;">
@@ -894,7 +928,8 @@
       <div id="stageBadgesContainer"></div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; background: rgba(11, 19, 43, 0.7); padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08);">
-        <div>
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <span id="userTeamAvatarBadge"></span>
           <span id="userTeamBadge" style="font-weight: bold; color: #48cae4;"></span>
           <button class="btn btn-secondary" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; margin-left: 0.25rem;" onclick="logout()">Logout</button>
         </div>
@@ -1097,6 +1132,17 @@
       playTone(1046.50, 'triangle', 0.45, 0.36);
     }
 
+    // Avatar Helper with Initial Fallback
+    function getTeamAvatarHTML(teamName, sizeClass = '') {
+      const cleanName = (teamName || '').trim();
+      const firstLetter = cleanName.charAt(0) || '?';
+      return `
+        <img src="/team_images/${cleanName}.png" class="team-avatar ${sizeClass}" 
+             onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'team-avatar-fallback ${sizeClass}\\'>${firstLetter}</span>';" />
+      `;
+    }
+
+    // Confetti Engine with Team Image Burst Cannon
     const canvas = document.getElementById('confettiCanvas');
     const ctx = canvas.getContext('2d');
     let confettiParticles = [];
@@ -1109,23 +1155,50 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    function triggerConfetti() {
+    function triggerConfetti(winningTeamName = null) {
       if (!userPrefs.visual) return;
       confettiParticles = [];
       const colors = ['#06d6a0', '#38bdf8', '#ffbe0b', '#ef476f', '#c084fc'];
-      for (let i = 0; i < 120; i++) {
+
+      // Standard particle sprinkles
+      for (let i = 0; i < 110; i++) {
         confettiParticles.push({
           x: canvas.width / 2,
           y: canvas.height / 2,
           w: Math.random() * 8 + 4,
           h: Math.random() * 8 + 4,
           color: colors[Math.floor(Math.random() * colors.length)],
-          vx: (Math.random() - 0.5) * 20,
-          vy: (Math.random() - 0.5) * 20 - 5,
+          vx: (Math.random() - 0.5) * 22,
+          vy: (Math.random() - 0.5) * 22 - 6,
           gravity: 0.35,
-          alpha: 1
+          alpha: 1,
+          type: 'rect'
         });
       }
+
+      // Winning team image burst
+      if (winningTeamName) {
+        const img = new Image();
+        img.src = `/team_images/${winningTeamName}.png`;
+        img.onload = () => {
+          for (let i = 0; i < 28; i++) {
+            confettiParticles.push({
+              x: canvas.width / 2,
+              y: canvas.height / 2,
+              size: Math.random() * 26 + 32,
+              vx: (Math.random() - 0.5) * 26,
+              vy: (Math.random() - 0.5) * 26 - 7,
+              rot: Math.random() * Math.PI * 2,
+              rotSpeed: (Math.random() - 0.5) * 0.15,
+              gravity: 0.32,
+              alpha: 1,
+              type: 'image',
+              image: img
+            });
+          }
+        };
+      }
+
       cancelAnimationFrame(confettiAnimation);
       renderConfetti();
     }
@@ -1136,12 +1209,21 @@
         p.x += p.vx;
         p.y += p.vy;
         p.vy += p.gravity;
-        p.alpha -= 0.008;
+        p.alpha -= 0.007;
 
         ctx.save();
         ctx.globalAlpha = Math.max(0, p.alpha);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, p.w, p.h);
+
+        if (p.type === 'image' && p.image) {
+          p.rot += p.rotSpeed;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.drawImage(p.image, -p.size / 2, -p.size / 2, p.size, p.size);
+        } else {
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, p.w, p.h);
+        }
+
         ctx.restore();
       });
 
@@ -1155,6 +1237,7 @@
     const passcodeInput = document.getElementById('passcodeInput');
     const authErrorMsg = document.getElementById('authErrorMsg');
     const userTeamBadge = document.getElementById('userTeamBadge');
+    const userTeamAvatarBadge = document.getElementById('userTeamAvatarBadge');
     const myAutoDraftBtn = document.getElementById('myAutoDraftBtn');
     const openCommishBtn = document.getElementById('openCommishBtn');
     const capToolbar = document.getElementById('capToolbar');
@@ -1291,6 +1374,7 @@
       localStorage.setItem('draft_passcode', passcodeInput.value.trim() || localStorage.getItem('draft_passcode'));
       authOverlay.style.display = 'none';
 
+      userTeamAvatarBadge.innerHTML = getTeamAvatarHTML(myTeam.name);
       userTeamBadge.textContent = `${myTeam.name} ${myTeam.isCommish ? '🛡️' : ''}`;
       if (myTeam.isCommish) openCommishBtn.style.display = 'inline-block';
 
@@ -1521,9 +1605,11 @@
         triggerEasterEgg('💵', 'KHONTRAC', "Wow, that's Khris Middleton money.");
       }
 
+      // Trigger Confetti & Custom Team Image Explosion
+      triggerConfetti(winningTeam.name);
+
       if (myTeam && winningTeam.id === myTeam.id) {
         soundVictoryWon();
-        triggerConfetti();
       }
     });
 
@@ -1587,8 +1673,8 @@
       const nomTeam = localData.teams.find(t => t.id === nomId);
       const onDeckTeam = localData.teams.find(t => t.id === onDeckId);
 
-      currentNomDisplay.textContent = nomTeam ? `${nomTeam.name} ($${nomTeam.budget})` : 'Draft Complete';
-      onDeckNomDisplay.textContent = onDeckTeam ? `${onDeckTeam.name} ($${onDeckTeam.budget})` : 'None';
+      currentNomDisplay.innerHTML = nomTeam ? `${getTeamAvatarHTML(nomTeam.name)} ${nomTeam.name} ($${nomTeam.budget})` : 'Draft Complete';
+      onDeckNomDisplay.innerHTML = onDeckTeam ? `${getTeamAvatarHTML(onDeckTeam.name)} ${onDeckTeam.name} ($${onDeckTeam.budget})` : 'None';
     }
 
     function toggleCapMode() {
@@ -1765,7 +1851,7 @@
                 <span class="badge-fppg">${p.fppg.toFixed(1)} FP/G</span>
                 <span class="badge-total">${p.fpts.toFixed(0)} FPts</span>
               </div>
-              ${isDrafted ? `<div class="drafted-tag">Drafted: ${p.draftedBy} ($${p.price})</div>` : ''}
+              ${isDrafted ? `<div class="drafted-tag">Drafted: ${getTeamAvatarHTML(p.draftedBy)} ${p.draftedBy} ($${p.price})</div>` : ''}
               ${(!isDrafted && (myCap !== '' || myRank !== '')) ? `
                 <div style="font-size:0.75rem; color:#ffbe0b;">
                   ${myCap !== '' ? `Cap: $${myCap}` : ''} ${myRank !== '' ? `• Priority: #${myRank}` : ''}
@@ -1885,8 +1971,9 @@
         return `
           <div class="team-row" style="${isTurn ? 'border-left: 3px solid #ffbe0b; padding-left: 0.4rem;' : ''} ${isMe ? 'background: rgba(56, 189, 248, 0.08);' : ''}">
             <div class="team-meta-row">
-              <div style="display: flex; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
                 <span class="status-dot status-${t.status}"></span>
+                ${getTeamAvatarHTML(t.name)}
                 <div>
                   <strong>${t.name}</strong> ${isMe ? '<small style="color:#38bdf8;">(YOU)</small>' : ''}
                   ${isTurn ? '<small style="color:#ffbe0b; font-weight:bold;"> [NOMINATING]</small>' : ''}
@@ -1937,7 +2024,7 @@
               <div id="timerLabelDisplay" class="timer-subtext">Nomination</div>
             </div>
           </div>
-          <p style="color: #8d99ae; font-size: 1.05rem;">Waiting for <strong style="color: #ffbe0b;">${nomTeam ? nomTeam.name : 'Next Team'}</strong> to nominate...</p>
+          <p style="color: #8d99ae; font-size: 1.05rem;">Waiting for <strong style="color: #ffbe0b;">${nomTeam ? getTeamAvatarHTML(nomTeam.name) + ' ' + nomTeam.name : 'Next Team'}</strong> to nominate...</p>
         `;
         return;
       }
@@ -2000,7 +2087,10 @@
         </div>
 
         <div class="current-bid">$${state.currentBid}</div>
-        <p style="margin: 0.2rem 0;">High Bidder: <strong>${state.highBidder ? state.highBidder.name : 'None'}</strong></p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin: 0.2rem 0;">
+          <span>High Bidder:</span>
+          ${state.highBidder ? `${getTeamAvatarHTML(state.highBidder.name)} <strong>${state.highBidder.name}</strong>` : '<strong>None</strong>'}
+        </div>
         <small style="color: #8d99ae;">Your Max Allowed Bid: <strong style="color: #06d6a0;">$${Math.max(0, trueMaxBid)}</strong></small>
         
         <div class="bid-btn-group">
@@ -2023,7 +2113,10 @@
         return `
           <div class="board-col ${idx === 0 ? 'mobile-active-board-col' : ''}" data-team-id="${t.id}" style="${isMe ? 'border: 1px solid #38bdf8;' : ''}">
             <div class="board-col-header">
-              <strong style="color: #48cae4; font-size: 0.95rem;">${t.name}</strong> ${isMe ? '<small style="color:#38bdf8;">(YOU)</small>' : ''}
+              <div style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; margin-bottom: 0.2rem;">
+                ${getTeamAvatarHTML(t.name)}
+                <strong style="color: #48cae4; font-size: 0.95rem;">${t.name}</strong> ${isMe ? '<small style="color:#38bdf8;">(YOU)</small>' : ''}
+              </div>
               <div style="font-size: 0.8rem; color: #06d6a0; font-weight: bold;">$${t.budget} left • ${t.roster.length}/${maxRosterSize}</div>
             </div>
             <div>

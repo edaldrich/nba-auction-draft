@@ -8,7 +8,7 @@
   <style>
     * { box-sizing: border-box; }
 
-    /* Prevent whole-screen pull-down / blank scroll space */
+    /* Locks background bounce / eliminates empty top space */
     html, body {
       height: 100%;
       margin: 0;
@@ -184,7 +184,6 @@
 
     .card-auction-center { text-align: center; }
 
-    /* High Bidder Bar */
     #highBidderBanner {
       padding: 0.65rem 1rem;
       border-radius: 6px;
@@ -676,7 +675,7 @@
 </head>
 <body>
 
-  <!-- Viewport App Wrapper to lock background window scroll -->
+  <!-- Full Height App Wrapper to block blank pull-down scroll space -->
   <div id="appWrapper">
     <canvas id="confettiCanvas"></canvas>
     <div id="outbidJoltOverlay"></div>
@@ -1073,7 +1072,6 @@
       }, { once: true });
     });
 
-    // Explicit audio node cleanup to avoid memory bloat
     function playTone(freq, type, duration, delay = 0, customVolume = 0.15) {
       if (!userPrefs.sound) return;
       try {
@@ -1344,6 +1342,10 @@
       if (me) updateMyAutoBtn(me.isAuto);
       renderTeams();
       if (myTeam?.isCommish) renderCommishAutoList();
+    });
+
+    socket.on('chatNotification', ({ message }) => {
+      logMessage(message);
     });
 
     socket.on('myAutoDraftChanged', ({ isAuto }) => {
@@ -1746,8 +1748,8 @@
         return true;
       });
 
-      // Cap visible rendering to top 80 players for smooth performance
-      const visibleSlice = filtered.slice(0, 80);
+      // Cap visible rendering to top 130 players for snappy scrolling
+      const visibleSlice = filtered.slice(0, 130);
 
       const isMyTurnToNominate = localData.draftState.isDraftStarted && (myTeam.id === localData.draftState.nominatingTeamId);
 
@@ -1812,8 +1814,8 @@
         `;
       }).join('');
 
-      if (filtered.length > 80) {
-        playerListEl.innerHTML += `<div style="text-align: center; color: #8d99ae; font-size: 0.8rem; padding: 0.5rem;">Showing top 80 of ${filtered.length} players. Use search bar to find others.</div>`;
+      if (filtered.length > 130) {
+        playerListEl.innerHTML += `<div style="text-align: center; color: #8d99ae; font-size: 0.8rem; padding: 0.5rem;">Showing top 130 of ${filtered.length} players. Use search bar to find others.</div>`;
       }
     }
 
@@ -1825,6 +1827,7 @@
       socket.emit('updateAutoCap', { playerId, maxBid, rank });
     }
 
+    // Excel formula formatted CSV export (="ID") so Excel cannot coerce IDs into numbers
     function downloadCapsTemplate() {
       let csvContent = "data:text/csv;charset=utf-8,";
       csvContent += "Player ID,Player Name,Team,FP/G,Max Bid ($),Priority Rank (1-300)\n";
@@ -1834,7 +1837,11 @@
         const currentRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
         const cleanName = (p.name || '').replace(/[,"]/g, '').trim();
         const cleanTeam = (p.nbaTeam || '').replace(/[,"]/g, '').trim();
-        csvContent += `${p.id},${cleanName},${cleanTeam},${p.fppg.toFixed(1)},${currentCap},${currentRank}\n`;
+        
+        // Excel literal string formula representation
+        const excelSafeId = `="` + String(p.id).replace(/"/g, '') + `"`;
+
+        csvContent += `${excelSafeId},${cleanName},${cleanTeam},${p.fppg.toFixed(1)},${currentCap},${currentRank}\n`;
       });
 
       const encodedUri = encodeURI(csvContent);
@@ -1846,6 +1853,7 @@
       document.body.removeChild(link);
     }
 
+    // Resilient parser stripping Excel formula characters (=, ", ')
     function handleCapsCsvUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1868,9 +1876,10 @@
           const line = lines[i].trim();
           if (!line) continue;
 
-          const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-          const playerId = idIdx !== -1 ? cols[idIdx] : null;
-          const playerName = nameIdx !== -1 ? cols[nameIdx] : null;
+          const cols = line.split(',').map(c => c.trim().replace(/^="|^"|"$|^'/g, ''));
+
+          const playerId = idIdx !== -1 ? cols[idIdx].trim() : null;
+          const playerName = nameIdx !== -1 ? cols[nameIdx].trim() : null;
           const maxBid = capIdx !== -1 ? cols[capIdx] : '';
           const rank = rankIdx !== -1 ? cols[rankIdx] : '';
 

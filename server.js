@@ -61,15 +61,11 @@ function recalculateTeamBudget(team) {
   }
 }
 
-// Calculate the absolute highest bid a team can legally place
 function getMaxAllowedBid(team) {
   if (!isTeamEligible(team)) return -1;
-  const openSpots = maxRosterSize - team.roster.length;
-  // If team has open spots, they can bid up to their remaining budget
   return team.budget;
 }
 
-// Check if no opponent can legally beat the current bid
 function checkUnbeatableBid() {
   if (!draftState.nominatedPlayer || !draftState.highBidder) return;
 
@@ -86,7 +82,6 @@ function checkUnbeatableBid() {
     }
   }
 
-  // If nobody else can bid higher than the current bid, end immediately
   if (draftState.currentBid >= highestOpponentMaxBid) {
     clearInterval(timerInterval);
     clearTimeout(autoBidTimeout);
@@ -335,7 +330,6 @@ function executeNomination(playerId, teamId, openingBid) {
   draftState.currentBid = bid;
   draftState.highBidder = { id: team.id, name: team.name };
 
-  // Scrub from all managers' queues
   Object.keys(nominationQueues).forEach(tId => {
     if (Array.isArray(nominationQueues[tId])) {
       nominationQueues[tId] = nominationQueues[tId].filter(id => String(id) !== String(player.id));
@@ -352,9 +346,7 @@ function executeNomination(playerId, teamId, openingBid) {
   startTimer('auction', timerConfig.beginningBidTime);
   io.emit('playerNominated', { draftState });
 
-  // Check if opening bid is already unbeatable
   checkUnbeatableBid();
-
   triggerAutodraftCheck();
 }
 
@@ -459,7 +451,6 @@ function handleBidSubmission(teamId, bidAmount, isAutoBid = false) {
 
     io.emit('bidAccepted', { draftState, isAutoBid });
 
-    // Check if new high bid is unbeatable by anyone else
     checkUnbeatableBid();
 
     return true;
@@ -746,7 +737,12 @@ io.on('connection', (socket) => {
       const targetId = String(r.playerId || '').trim();
       const targetName = String(r.name || '').trim().toLowerCase();
 
-      const player = players.find(p => (targetId && String(p.id).trim() === targetId) || (targetName && p.name.toLowerCase() === targetName));
+      // Dual match by ID string or Name
+      const player = players.find(p => 
+        (targetId && String(p.id).trim() === targetId) || 
+        (targetName && p.name.toLowerCase() === targetName)
+      );
+
       if (player) {
         if (!player.autoCaps) player.autoCaps = {};
         if (!player.autoRanks) player.autoRanks = {};
@@ -1018,8 +1014,27 @@ io.on('connection', (socket) => {
     });
   });
 
+  // Disconnect Safety Net: Switch disconnected manager to Auto-Draft
   socket.on('disconnect', () => {
-    socketSessions.delete(socket.id);
+    const teamId = socketSessions.get(socket.id);
+    if (teamId) {
+      const team = teams.find(t => t.id === teamId);
+      if (team && !team.isAuto) {
+        team.isAuto = true;
+        saveStateToDisk();
+        io.emit('presenceUpdate', { teams: getPublicTeams() });
+        io.emit('chatNotification', { 
+          message: `⚠️ <strong>${team.name}</strong> disconnected. Automatically switched to <strong>Auto-Draft</strong>.` 
+        });
+
+        if (draftState.nominatedPlayer) {
+          triggerAutodraftCheck();
+        } else if (draftState.nominatingTeamId === team.id && draftState.isDraftStarted && !draftState.isPaused) {
+          resolveAutoNomination();
+        }
+      }
+      socketSessions.delete(socket.id);
+    }
     io.emit('presenceUpdate', { teams: getPublicTeams() });
   });
 });

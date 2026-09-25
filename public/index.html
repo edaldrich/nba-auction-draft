@@ -9,7 +9,7 @@
     * { box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: radial-gradient(circle at 50% 0%, #152244 0%, #080d1a 100%);
+      background-color: #0b132b;
       color: #e0e1dd;
       margin: 0;
       padding: 0.75rem;
@@ -18,23 +18,16 @@
       min-height: 100vh;
     }
 
-    #confettiCanvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      pointer-events: none;
-      z-index: 9999;
-    }
-
+    /* Outbid Screen Jolt Flash */
     #outbidJoltOverlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       border: 6px solid #ef233c;
-      box-shadow: inset 0 0 50px rgba(239, 35, 60, 0.6);
+      box-shadow: inset 0 0 40px rgba(239, 35, 60, 0.5);
       pointer-events: none;
       z-index: 4500;
       display: none;
-      animation: outbidPulse 0.6s ease-out;
+      animation: outbidPulse 0.5s ease-out;
     }
     @keyframes outbidPulse {
       0% { opacity: 0; }
@@ -45,7 +38,7 @@
     #urgencyOverlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(circle, rgba(239,35,60,0.18) 0%, rgba(239,35,60,0.5) 100%);
+      background: radial-gradient(circle, rgba(239,35,60,0.15) 0%, rgba(239,35,60,0.45) 100%);
       pointer-events: none;
       z-index: 5000;
       display: none;
@@ -53,10 +46,10 @@
       align-items: center;
     }
     .countdown-flash-num {
-      font-size: clamp(8rem, 25vw, 16rem);
+      font-size: clamp(8rem, 25vw, 15rem);
       font-weight: 900;
       color: #ffbe0b;
-      text-shadow: 0 0 30px rgba(255, 190, 11, 0.8), 0 0 60px rgba(239, 35, 60, 0.9);
+      text-shadow: 0 0 30px rgba(255, 190, 11, 0.8);
       animation: pulsePop 0.8s ease-out;
     }
     @keyframes pulsePop {
@@ -65,6 +58,30 @@
       100% { transform: scale(1.0); opacity: 0; }
     }
 
+    /* Lightweight Win Banner */
+    #winBannerToast {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #06d6a0;
+      color: #0b132b;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1.4rem;
+      font-weight: 900;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 8500;
+      display: none;
+      pointer-events: none;
+      animation: popIn 0.3s ease-out;
+    }
+    @keyframes popIn {
+      from { transform: translateX(-50%) scale(0.8); opacity: 0; }
+      to { transform: translateX(-50%) scale(1); opacity: 1; }
+    }
+
+    /* Easter Egg Floating Banner */
     #easterEggToast {
       position: fixed;
       top: 18%;
@@ -77,9 +94,8 @@
       animation: easterEggPop 4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
     .easter-egg-card {
-      background: rgba(15, 23, 42, 0.95);
+      background: #111d4a;
       border: 2px solid #ffbe0b;
-      box-shadow: 0 0 35px rgba(255, 190, 11, 0.4), 0 10px 30px rgba(0, 0, 0, 0.8);
       border-radius: 12px;
       padding: 1rem 1.8rem;
       color: #fff;
@@ -88,120 +104,142 @@
       gap: 1rem;
       max-width: 90vw;
     }
-    .easter-egg-icon { font-size: 2.8rem; line-height: 1; }
-    .easter-egg-title { font-size: 1.25rem; font-weight: 900; color: #ffbe0b; margin: 0; text-transform: uppercase; }
-    .easter-egg-subtitle { font-size: 0.95rem; color: #e2e8f0; margin: 0.2rem 0 0 0; font-weight: 600; }
+    .easter-egg-icon { font-size: 2.5rem; line-height: 1; }
+    .easter-egg-title { font-size: 1.2rem; font-weight: 900; color: #ffbe0b; margin: 0; text-transform: uppercase; }
+    .easter-egg-subtitle { font-size: 0.9rem; color: #e2e8f0; margin: 0.2rem 0 0 0; font-weight: 600; }
 
     @keyframes easterEggPop {
-      0% { opacity: 0; transform: translateX(-50%) translateY(-25px) scale(0.85); }
-      12% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-      80% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-      100% { opacity: 0; transform: translateX(-50%) translateY(-35px) scale(0.9); }
+      0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      12% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-25px); }
     }
 
-    /* Top Banner */
+    /* Top Status Bar */
     .top-banner {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 0.5rem;
-      background: rgba(28, 37, 65, 0.65);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
-      border-radius: 10px;
+      background: #162238;
+      border: 1px solid #233554;
+      border-radius: 8px;
       padding: 0.65rem 1.25rem;
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.75rem;
     }
     .nom-indicator { flex: 1 1 200px; }
     .nom-current { color: #ffbe0b; font-weight: bold; }
     .nom-ondeck { color: #8d99ae; font-size: 0.82rem; margin-top: 0.15rem; }
     .tab-nav { display: flex; gap: 0.4rem; }
     .tab-btn {
-      background: rgba(11, 19, 43, 0.75);
+      background: #0b132b;
       color: #8d99ae;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid #233554;
       padding: 0.45rem 1rem;
       border-radius: 6px;
       font-size: 0.85rem;
       font-weight: bold;
       cursor: pointer;
-      transition: all 0.2s;
     }
-    .tab-btn:hover { color: #fff; border-color: rgba(255, 255, 255, 0.25); }
-    .tab-btn.active { background: #0077b6; color: white; border-color: #0077b6; box-shadow: 0 0 12px rgba(0, 119, 182, 0.5); }
+    .tab-btn.active { background: #0077b6; color: white; border-color: #0077b6; }
     .pool-stat { text-align: right; }
     .pool-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
-    .pool-val { font-size: 1.55rem; font-weight: 800; color: #06d6a0; line-height: 1.1; text-shadow: 0 0 10px rgba(6, 214, 160, 0.3); }
+    .pool-val { font-size: 1.55rem; font-weight: 800; color: #06d6a0; line-height: 1.1; }
 
+    /* Layout */
     .grid {
       display: grid;
-      grid-template-columns: 410px 1fr 310px;
-      gap: 1rem;
+      grid-template-columns: 400px 1fr 310px;
+      gap: 0.9rem;
       max-width: 1640px;
       margin: 0 auto;
     }
     .card {
-      background: rgba(28, 37, 65, 0.65);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-radius: 10px;
-      padding: 1.1rem;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+      background: #162238;
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid #233554;
       position: relative;
-      transition: border 0.3s ease, box-shadow 0.3s ease;
     }
     h2, h3, h4 { margin-top: 0; color: #48cae4; }
 
-    .card-auction-center { text-align: center; transition: all 0.3s ease; }
-    .high-bidder-halo {
-      border: 2px solid #06d6a0 !important;
-      box-shadow: 0 0 35px rgba(6, 214, 160, 0.35), 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
+    .card-auction-center { text-align: center; }
+
+    /* HIGH BIDDER STATUS BAR */
+    #highBidderBanner {
+      padding: 0.65rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: background 0.2s, color 0.2s;
     }
-    .leading-badge {
-      display: inline-block;
+    .leader-you {
       background: #06d6a0;
       color: #0b132b;
-      font-weight: 900;
-      font-size: 0.72rem;
-      letter-spacing: 1px;
-      padding: 0.2rem 0.6rem;
-      border-radius: 20px;
-      margin-bottom: 0.4rem;
-      text-transform: uppercase;
-      box-shadow: 0 0 12px rgba(6, 214, 160, 0.6);
-      animation: pulseBadge 1.8s infinite;
+      border: 2px solid #05b386;
     }
-    @keyframes pulseBadge {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.04); }
+    .leader-other {
+      background: #0f1c30;
+      color: #e0e1dd;
+      border: 1px solid #233554;
     }
 
-    .hot-streak-badge {
-      display: inline-flex;
+    /* Stable Circular SVG Timer Ring */
+    .timer-ring-container {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      margin: 0.35rem auto;
+      display: flex;
       align-items: center;
-      gap: 0.3rem;
-      background: linear-gradient(135deg, #ef233c 0%, #f77f00 100%);
-      color: #fff;
-      font-weight: 900;
-      font-size: 0.72rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 20px;
-      margin-bottom: 0.4rem;
+      justify-content: center;
+    }
+    .timer-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .timer-svg circle { fill: none; stroke-width: 7; }
+    .timer-track { stroke: #233554; }
+    .timer-bar {
+      stroke: #06d6a0;
+      stroke-linecap: round;
+      stroke-dasharray: 282.74; /* 2 * PI * 45 */
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 0.85s linear, stroke 0.2s;
+    }
+    .timer-text-inner {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .timer-number { font-size: 2.1rem; font-weight: 800; color: #ffbe0b; }
+    .timer-subtext {
+      font-size: 0.62rem;
+      color: #8d99ae;
       text-transform: uppercase;
-      box-shadow: 0 0 15px rgba(247, 127, 0, 0.7);
+      letter-spacing: 0.5px;
+      margin-top: 0.2rem;
     }
 
-    /* Team Avatar Badges */
+    .current-bid {
+      font-size: clamp(2.3rem, 5vw, 3.2rem);
+      font-weight: 900;
+      color: #06d6a0;
+      margin: 0.2rem 0;
+    }
+
+    /* Avatar Badges */
     .avatar-wrapper {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       vertical-align: middle;
-      position: relative;
     }
     .team-avatar {
       width: 24px;
@@ -224,52 +262,6 @@
       font-size: 0.68rem;
       font-weight: 800;
       text-transform: uppercase;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .timer-ring-container {
-      position: relative;
-      width: 120px;
-      height: 120px;
-      margin: 0.4rem auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .timer-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
-    .timer-svg circle { fill: none; stroke-width: 7; }
-    .timer-track { stroke: rgba(255, 255, 255, 0.08); }
-    .timer-bar {
-      stroke: #06d6a0;
-      stroke-linecap: round;
-      stroke-dasharray: 326.72;
-      stroke-dashoffset: 0;
-      transition: stroke-dashoffset 0.95s linear, stroke 0.3s ease;
-      filter: drop-shadow(0 0 6px currentColor);
-    }
-    .timer-text-inner {
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-    }
-    .timer-number { font-size: 2.2rem; font-weight: 800; color: #ffbe0b; }
-    .timer-subtext {
-      font-size: 0.62rem;
-      color: #8d99ae;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 0.2rem;
-    }
-
-    .current-bid {
-      font-size: clamp(2.3rem, 5vw, 3rem);
-      font-weight: 900;
-      color: #06d6a0;
-      margin: 0.25rem 0;
-      text-shadow: 0 0 20px rgba(6, 214, 160, 0.4);
     }
 
     .nba-team-pill {
@@ -281,8 +273,8 @@
       font-size: 0.8rem;
       font-weight: 800;
       letter-spacing: 0.5px;
-      background: #111d4a;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #0f1c30;
+      border: 1px solid #233554;
       margin-top: 0.2rem;
     }
 
@@ -290,21 +282,19 @@
       background: #0077b6;
       color: white;
       border: none;
-      padding: 0.5rem 0.85rem;
-      font-size: 0.88rem;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.9rem;
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
       margin: 0.15rem;
       touch-action: manipulation;
-      transition: all 0.15s ease;
     }
-    .btn:hover { background: #023e8a; transform: translateY(-1px); }
-    .btn:active { transform: translateY(1px); }
-    .btn:disabled { background: #4a5568; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn:hover { background: #023e8a; }
+    .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
     .btn-success { background: #06d6a0; color: #0b132b; }
-    .btn-secondary { background: rgba(58, 80, 107, 0.7); }
-    .btn-secondary:hover { background: #4f6d7a; }
+    .btn-secondary { background: #233554; }
+    .btn-secondary:hover { background: #2f456c; }
     .btn-danger { background: #d90429; }
     .btn-warning { background: #f77f00; }
     .btn-toggle-auto { background: #5a189a; border: 1px solid #9d4edd; }
@@ -313,9 +303,9 @@
     .selector {
       width: 100%;
       padding: 0.5rem;
-      background: rgba(11, 19, 43, 0.85);
+      background: #0b132b;
       color: white;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid #233554;
       border-radius: 6px;
       margin-bottom: 0.4rem;
       font-size: 16px;
@@ -323,9 +313,9 @@
     .input-inline {
       width: 65px;
       padding: 0.35rem 0.4rem;
-      background: rgba(11, 19, 43, 0.85);
+      background: #0b132b;
       color: white;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid #233554;
       border-radius: 6px;
       text-align: center;
       font-size: 16px;
@@ -336,36 +326,35 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 0.65rem;
+      padding: 0.45rem 0.6rem;
       border-radius: 6px;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.3rem;
       user-select: none;
       cursor: pointer;
-      border-left: 5px solid transparent;
-      background: rgba(17, 29, 74, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      transition: transform 0.1s ease, background 0.15s ease;
+      border-left: 4px solid transparent;
+      background: #0f1c30;
+      border: 1px solid #1a2942;
     }
-    .player-row:hover { transform: translateX(2px); background: rgba(28, 45, 100, 0.85); }
+    .player-row:hover { background: #162846; }
     .pos-guard { border-left-color: #38bdf8; }
     .pos-forward { border-left-color: #10b981; }
     .pos-center { border-left-color: #c084fc; }
     .player-row-drafted {
-      background: rgba(217, 4, 41, 0.12) !important;
+      background: rgba(217, 4, 41, 0.1) !important;
       border-left-color: #ef233c !important;
       opacity: 0.65;
     }
 
     .badge-fppg {
       display: inline-block;
-      background: rgba(0, 0, 0, 0.4);
+      background: #0b132b;
       color: #38bdf8;
       font-weight: 700;
       border-radius: 4px;
       padding: 0.12rem 0.35rem;
       font-size: 0.74rem;
     }
-    .badge-total { color: #cbd5e1; font-size: 0.72rem; margin-left: 0.2rem; }
+    .badge-total { color: #8d99ae; font-size: 0.72rem; margin-left: 0.2rem; }
     .drafted-tag { color: #ef476f; font-weight: 700; font-size: 0.8rem; margin-top: 0.2rem; }
     
     .badge-injury {
@@ -396,8 +385,8 @@
       border-radius: 50%;
       margin-right: 0.4rem;
     }
-    .status-online { background-color: #10b981; box-shadow: 0 0 6px #10b981; }
-    .status-auto { background-color: #ffbe0b; box-shadow: 0 0 6px #ffbe0b; }
+    .status-online { background-color: #10b981; }
+    .status-auto { background-color: #ffbe0b; }
     .status-offline { background-color: #ef233c; }
 
     .stat-strip {
@@ -405,9 +394,9 @@
       justify-content: center;
       flex-wrap: wrap;
       gap: 0.75rem 1.2rem;
-      background: rgba(11, 19, 43, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 0.5rem 0.8rem;
+      background: #0b132b;
+      border: 1px solid #233554;
+      padding: 0.45rem 0.8rem;
       border-radius: 6px;
       margin: 0.5rem auto;
       max-width: 500px;
@@ -417,7 +406,7 @@
 
     .team-row {
       padding: 0.45rem 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid #1a2942;
     }
     .team-meta-row {
       display: flex;
@@ -428,22 +417,22 @@
     .budget-bar-track {
       width: 100%;
       height: 4px;
-      background: rgba(255, 255, 255, 0.08);
+      background: #0b132b;
       border-radius: 2px;
       overflow: hidden;
     }
     .budget-bar-fill {
       height: 100%;
-      background: linear-gradient(90deg, #0077b6, #06d6a0);
+      background: #06d6a0;
       border-radius: 2px;
       transition: width 0.3s ease;
     }
 
     #logBox {
-      background: rgba(11, 19, 43, 0.75);
+      background: #0b132b;
       height: 120px;
       overflow-y: auto;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid #233554;
       border-radius: 6px;
       padding: 0.5rem;
       font-family: monospace;
@@ -457,40 +446,33 @@
 
     #draftBoardView {
       display: none;
-      background: rgba(28, 37, 65, 0.65);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #162238;
+      border-radius: 8px;
+      border: 1px solid #233554;
       padding: 1rem;
     }
     .board-grid { display: grid; grid-template-columns: repeat(12, minmax(160px, 1fr)); gap: 0.75rem; overflow-x: auto; }
-    .board-col { background: rgba(11, 19, 43, 0.75); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 0.5rem; min-height: 480px; }
+    .board-col { background: #0b132b; border: 1px solid #233554; border-radius: 6px; padding: 0.5rem; min-height: 480px; }
     .board-col-header { border-bottom: 2px solid #0077b6; padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: center; }
-    .board-pick { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.35rem; font-size: 0.8rem; }
+    .board-pick { background: #1a2942; border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.35rem; font-size: 0.8rem; }
 
     .queue-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(11, 19, 43, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #0b132b;
+      border: 1px solid #233554;
       border-radius: 5px;
       padding: 0.35rem 0.55rem;
       margin-bottom: 0.3rem;
       font-size: 0.82rem;
-      transition: all 0.15s ease;
     }
-    .queue-item.dragging {
-      opacity: 0.4;
-      transform: rotate(1.5deg) scale(1.02);
-      border-color: #38bdf8;
-    }
+    .queue-item.dragging { opacity: 0.4; }
     .queue-item.drag-over { border-top: 2px solid #06d6a0; }
     .queue-btn-group { display: flex; gap: 0.2rem; }
     .queue-btn {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #1a2942;
+      border: 1px solid #233554;
       color: #94a3b8;
       border-radius: 3px;
       padding: 0.15rem 0.4rem;
@@ -503,26 +485,24 @@
       bottom: 15px;
       right: 15px;
       width: 360px;
-      background: rgba(22, 32, 50, 0.92);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: #101c30;
       border: 2px solid #0284c7;
       border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(2, 132, 199, 0.3);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
       padding: 1rem;
       z-index: 4000;
       display: none;
-      animation: slideUpCard 0.22s ease-out;
+      animation: slideUpCard 0.2s ease-out;
     }
     @keyframes slideUpCard {
-      from { transform: translateY(30px); opacity: 0; }
+      from { transform: translateY(20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
     .card-header-bar {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      border-bottom: 1px solid #334155;
+      border-bottom: 1px solid #233554;
       padding-bottom: 0.45rem;
       margin-bottom: 0.65rem;
     }
@@ -534,8 +514,8 @@
       text-align: center;
     }
     .stat-pill {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #0b132b;
+      border: 1px solid #233554;
       border-radius: 6px;
       padding: 0.3rem 0.15rem;
     }
@@ -543,8 +523,8 @@
     .stat-pill-val { font-size: 1rem; font-weight: 800; color: #38bdf8; }
     
     .player-news-box {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #0b132b;
+      border: 1px solid #233554;
       border-radius: 6px;
       padding: 0.5rem;
       margin-top: 0.4rem;
@@ -552,31 +532,22 @@
       line-height: 1.35;
       display: none;
     }
-    .news-tag {
-      font-weight: 800;
-      color: #ef233c;
-      text-transform: uppercase;
-      margin-right: 0.3rem;
-    }
+    .news-tag { font-weight: 800; color: #ef233c; text-transform: uppercase; margin-right: 0.3rem; }
 
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(8, 13, 26, 0.85);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 6000;
     }
     .modal-box {
-      background: rgba(28, 37, 65, 0.95);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: #162238;
       padding: 1.5rem;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      border: 1px solid #233554;
       box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
       max-width: 650px;
       width: 92%;
@@ -595,12 +566,7 @@
       cursor: pointer;
     }
 
-    .cap-controls-bar {
-      display: flex;
-      gap: 0.3rem;
-      flex-wrap: wrap;
-      margin-bottom: 0.4rem;
-    }
+    .cap-controls-bar { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
 
     .mobile-tab-bar {
       display: none;
@@ -609,9 +575,9 @@
       margin-bottom: 0.75rem;
     }
     .mobile-tab-btn {
-      background: rgba(28, 37, 65, 0.7);
+      background: #162238;
       color: #8d99ae;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid #233554;
       border-radius: 6px;
       padding: 0.55rem;
       font-weight: bold;
@@ -619,16 +585,12 @@
       text-align: center;
       cursor: pointer;
     }
-    .mobile-tab-btn.active {
-      background: #0077b6;
-      color: #ffffff;
-      border-color: #0077b6;
-    }
+    .mobile-tab-btn.active { background: #0077b6; color: #ffffff; border-color: #0077b6; }
 
     #mobileTeamSelectBox { display: none; margin-bottom: 0.75rem; }
     .admin-accordion-box {
-      background: rgba(11, 19, 43, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #0b132b;
+      border: 1px solid #233554;
       border-radius: 6px;
       padding: 0.75rem;
       margin-top: 0.75rem;
@@ -705,6 +667,8 @@
     <div id="countdownFlashNum" class="countdown-flash-num">3</div>
   </div>
 
+  <div id="winBannerToast"></div>
+
   <div id="easterEggToast">
     <div class="easter-egg-card">
       <div id="easterEggIcon" class="easter-egg-icon"></div>
@@ -777,15 +741,14 @@
         <button class="btn btn-success" onclick="exportDraftResultsCSV()">📥 Export Results CSV</button>
       </div>
 
-      <!-- Configurable Demo Builder -->
       <div style="background: #0f172a; padding: 0.85rem; border-radius: 6px; border: 1px solid #f77f00; margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
           <h4 style="margin: 0; color: #fcbf49;">⚙️ Dynamic Demo / Mock Mode Builder</h4>
-          <button id="btnSwitchProd" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="adminSwitchProd()">Restore Full Production Mode</button>
+          <button id="btnSwitchProd" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="adminSwitchProd()">Restore Production Mode</button>
         </div>
         
         <p style="color: #94a3b8; font-size: 0.78rem; margin: 0 0 0.6rem 0;">
-          Select participating managers for the mock. Checked teams marked <em>[BOT]</em> will auto-draft with random bids ($10-$20 on top 10, $0-$10 on top 11-30).
+          Checked teams marked <em>[BOT]</em> will auto-draft with random tiered bids ($10-$20 on top 10, $0-$10 on top 11-30).
         </p>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem;">
@@ -800,14 +763,14 @@
         </div>
 
         <label style="font-size: 0.75rem; font-weight: bold; color: #38bdf8; display: block; margin-bottom: 0.3rem;">Select Teams to Include:</label>
-        <div id="demoTeamsCheckboxList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; max-height: 140px; overflow-y: auto; background: rgba(11, 19, 43, 0.7); padding: 0.4rem; border-radius: 4px; margin-bottom: 0.6rem;"></div>
+        <div id="demoTeamsCheckboxList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; max-height: 140px; overflow-y: auto; background: #0b132b; padding: 0.4rem; border-radius: 4px; margin-bottom: 0.6rem;"></div>
 
         <button class="btn btn-warning" style="width: 100%; padding: 0.55rem; font-size: 0.9rem;" onclick="adminLaunchConfiguredDemo()">
           ▶️ Launch Configured Demo Mode
         </button>
       </div>
       
-      <div style="background: rgba(11, 19, 43, 0.6); padding: 0.75rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 1rem;">
+      <div style="background: #0b132b; padding: 0.75rem; border-radius: 6px; border: 1px solid #233554; margin-bottom: 1rem;">
         <h4 style="margin: 0 0 0.4rem 0;">Draft Status</h4>
         <div id="commishDraftStatusText" style="color: #ffbe0b; font-weight: bold; margin-bottom: 0.5rem;">Draft Not Started</div>
         <button id="commishStartDraftBtn" class="btn btn-success" onclick="adminStartDraft()">▶️ Start Draft Officially</button>
@@ -845,7 +808,7 @@
       <div class="admin-accordion-box">
         <h4 style="margin: 0 0 0.5rem 0; color: #ef233c;">🚨 Emergency Overrides & Adjustments</h4>
         
-        <div style="margin-bottom: 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.75rem;">
+        <div style="margin-bottom: 0.75rem; border-bottom: 1px solid #233554; padding-bottom: 0.75rem;">
           <label style="font-size: 0.78rem; font-weight: bold; color: #cbd5e1; display: block; margin-bottom: 0.25rem;">Adjust Team Budget</label>
           <div style="display: flex; gap: 0.4rem;">
             <select id="overrideTeamSelect" class="selector" style="flex: 2; margin-bottom: 0;"></select>
@@ -890,7 +853,7 @@
         
         <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem;">
           <input type="checkbox" id="prefVisualToggle" checked onchange="savePreferences()" />
-          <strong>Enable Visual Urgency (3-2-1 Screen Flash & Confetti)</strong>
+          <strong>Enable Visual Urgency (3-2-1 Screen Flash)</strong>
         </label>
       </div>
     </div>
@@ -924,9 +887,11 @@
 
   <div id="warRoomView" class="grid">
     <div id="paneAuction" class="card card-auction-center">
-      <div id="stageBadgesContainer"></div>
+      
+      <!-- Prominent Leader Bar -->
+      <div id="highBidderBanner" class="leader-other">No High Bidder</div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; background: rgba(11, 19, 43, 0.7); padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; background: #0b132b; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #233554;">
         <div style="display: flex; align-items: center; gap: 0.4rem;">
           <span id="userTeamAvatarBadge"></span>
           <span id="userTeamBadge" style="font-weight: bold; color: #48cae4;"></span>
@@ -944,10 +909,39 @@
         </div>
       </div>
 
+      <!-- Stable Dynamic Auction Stage -->
       <div id="auctionContent">
-        <div class="timer-label" id="timerLabel">Draft Status</div>
-        <div class="timer" id="timerDisplay">--</div>
-        <p id="waitingMessage" style="color: #8d99ae; font-size: 1.05rem;">Draft waiting for commissioner to start...</p>
+        <div id="stagePlayerMeta">
+          <p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to start the draft...</p>
+        </div>
+
+        <div class="timer-ring-container">
+          <svg class="timer-svg" viewBox="0 0 100 100">
+            <circle class="timer-track" cx="50" cy="50" r="45"></circle>
+            <circle id="timerRingBar" class="timer-bar" cx="50" cy="50" r="45"></circle>
+          </svg>
+          <div class="timer-text-inner">
+            <div id="timerNumberDisplay" class="timer-number">--</div>
+            <div id="timerLabelDisplay" class="timer-subtext">Clock</div>
+          </div>
+        </div>
+
+        <div id="currentBidDisplay" class="current-bid">$0</div>
+        
+        <div id="maxBidCapacityHint" style="color: #8d99ae; font-size: 0.85rem; margin-bottom: 0.5rem;">
+          Your Max Allowed Bid: <strong id="userMaxAllowedBid" style="color: #06d6a0;">$0</strong>
+        </div>
+        
+        <div class="bid-btn-group">
+          <button id="btnInc1" class="btn" onclick="bidIncrement(1)" disabled>+$1</button>
+          <button id="btnInc3" class="btn" onclick="bidIncrement(3)" disabled>+$3</button>
+          <button id="btnInc5" class="btn" onclick="bidIncrement(5)" disabled>+$5</button>
+        </div>
+
+        <div class="custom-bid-group">
+          <input type="number" id="customBidInput" class="input-inline" placeholder="$ Amount">
+          <button id="btnCustomBid" class="btn btn-secondary" onclick="bidCustom()" disabled>Custom Bid</button>
+        </div>
       </div>
 
       <h4 style="text-align: left; margin: 1rem 0 0.25rem 0; color: #48cae4;">Draft Activity Log</h4>
@@ -962,7 +956,7 @@
         </button>
       </div>
       
-      <div id="nominationQueuePanel" style="background: rgba(15, 23, 42, 0.7); border: 1px solid #0284c7; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.75rem;">
+      <div id="nominationQueuePanel" style="background: #0f1c30; border: 1px solid #0284c7; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.75rem;">
         <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.35rem;">
           <span>Drag to reorder • Top player auto-nominates</span>
         </div>
@@ -1035,39 +1029,17 @@
     let currentTab = 'warRoom';
     let currentMobilePane = 'auction';
 
-    let recentBidTimestamps = [];
+    const RING_CIRCUMFERENCE = 282.74; // 2 * PI * 45
 
     const NBA_TEAM_COLORS = {
-      ATL: { p: '#E03A3E', s: '#C1D32F' },
-      BOS: { p: '#007A33', s: '#BA9653' },
-      BKN: { p: '#777D84', s: '#000000' },
-      CHA: { p: '#1D1160', s: '#00788C' },
-      CHI: { p: '#CE1141', s: '#000000' },
-      CLE: { p: '#860038', s: '#041E42' },
-      DAL: { p: '#00538C', s: '#002B5E' },
-      DEN: { p: '#0E2240', s: '#FEC524' },
-      DET: { p: '#C8102E', s: '#1D42BA' },
-      GSW: { p: '#1D428A', s: '#FFC72C' },
-      HOU: { p: '#CE1141', s: '#000000' },
-      IND: { p: '#002D62', s: '#FDBB30' },
-      LAC: { p: '#C8102E', s: '#1D428A' },
-      LAL: { p: '#552583', s: '#FDB927' },
-      MEM: { p: '#5D76A9', s: '#12173F' },
-      MIA: { p: '#98002E', s: '#F9A01B' },
-      MIL: { p: '#00471B', s: '#EEE1C6' },
-      MIN: { p: '#0C2340', s: '#236192' },
-      NOP: { p: '#0C2340', s: '#C8102E' },
-      NYK: { p: '#006BB6', s: '#F58426' },
-      OKC: { p: '#007AC1', s: '#EF3B24' },
-      ORL: { p: '#0077C0', s: '#C4CED4' },
-      PHI: { p: '#006BB6', s: '#ED174C' },
-      PHX: { p: '#1D1160', s: '#E56020' },
-      POR: { p: '#E03A3E', s: '#000000' },
-      SAC: { p: '#5A2D81', s: '#63727A' },
-      SAS: { p: '#C4CED4', s: '#000000' },
-      TOR: { p: '#CE1141', s: '#000000' },
-      UTA: { p: '#002B5C', s: '#00471B' },
-      WAS: { p: '#002B5C', s: '#E31837' }
+      ATL: { p: '#E03A3E' }, BOS: { p: '#007A33' }, BKN: { p: '#777D84' }, CHA: { p: '#1D1160' },
+      CHI: { p: '#CE1141' }, CLE: { p: '#860038' }, DAL: { p: '#00538C' }, DEN: { p: '#0E2240' },
+      DET: { p: '#C8102E' }, GSW: { p: '#1D428A' }, HOU: { p: '#CE1141' }, IND: { p: '#002D62' },
+      LAC: { p: '#C8102E' }, LAL: { p: '#552583' }, MEM: { p: '#5D76A9' }, MIA: { p: '#98002E' },
+      MIL: { p: '#00471B' }, MIN: { p: '#0C2340' }, NOP: { p: '#0C2340' }, NYK: { p: '#006BB6' },
+      OKC: { p: '#007AC1' }, ORL: { p: '#0077C0' }, PHI: { p: '#006BB6' }, PHX: { p: '#1D1160' },
+      POR: { p: '#E03A3E' }, SAC: { p: '#5A2D81' }, SAS: { p: '#C4CED4' }, TOR: { p: '#CE1141' },
+      UTA: { p: '#002B5C' }, WAS: { p: '#002B5C' }
     };
 
     let userPrefs = { sound: true, visual: true };
@@ -1131,7 +1103,6 @@
       playTone(1046.50, 'triangle', 0.45, 0.36);
     }
 
-    // Avatar Helper
     function getTeamAvatarHTML(teamName) {
       const cleanName = (teamName || '').trim();
       const firstLetter = cleanName.charAt(0) || '?';
@@ -1143,93 +1114,6 @@
           <span class="team-avatar-fallback" style="display:none;">${firstLetter}</span>
         </span>
       `;
-    }
-
-    // Confetti Engine (100% Winning Team Images Only)
-    const canvas = document.getElementById('confettiCanvas');
-    const ctx = canvas.getContext('2d');
-    let confettiParticles = [];
-    let confettiAnimation = null;
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    function triggerConfetti(winningTeamName = null) {
-      if (!userPrefs.visual) return;
-      confettiParticles = [];
-
-      const cleanName = (winningTeamName || '').trim();
-      const img = new Image();
-      img.src = `/team_images/${encodeURIComponent(cleanName)}.png`;
-
-      const spawnBurst = (loadedImg = null) => {
-        for (let i = 0; i < 35; i++) {
-          confettiParticles.push({
-            x: canvas.width / 2,
-            y: canvas.height / 2,
-            size: Math.random() * 26 + 34,
-            vx: (Math.random() - 0.5) * 28,
-            vy: (Math.random() - 0.5) * 28 - 7,
-            rot: Math.random() * Math.PI * 2,
-            rotSpeed: (Math.random() - 0.5) * 0.18,
-            gravity: 0.32,
-            alpha: 1,
-            image: loadedImg,
-            fallbackText: cleanName.charAt(0) || '★'
-          });
-        }
-        cancelAnimationFrame(confettiAnimation);
-        renderConfetti();
-      };
-
-      img.onload = () => spawnBurst(img);
-      img.onerror = () => spawnBurst(null); // Fallback image stamp if file not uploaded yet
-    }
-
-    function renderConfetti() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      confettiParticles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += p.gravity;
-        p.alpha -= 0.007;
-
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, p.alpha);
-
-        if (p.image) {
-          p.rot += p.rotSpeed;
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rot);
-          ctx.drawImage(p.image, -p.size / 2, -p.size / 2, p.size, p.size);
-        } else {
-          // Circular fallback emblem with team initial
-          ctx.translate(p.x, p.y);
-          ctx.beginPath();
-          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
-          ctx.fillStyle = '#0077b6';
-          ctx.fill();
-          ctx.strokeStyle = '#fff';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          ctx.fillStyle = '#fff';
-          ctx.font = `bold ${p.size / 2}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(p.fallbackText, 0, 0);
-        }
-
-        ctx.restore();
-      });
-
-      confettiParticles = confettiParticles.filter(p => p.alpha > 0);
-      if (confettiParticles.length > 0) {
-        confettiAnimation = requestAnimationFrame(renderConfetti);
-      }
     }
 
     const authOverlay = document.getElementById('authOverlay');
@@ -1245,10 +1129,6 @@
 
     const playerListEl = document.getElementById('playerList');
     const teamListEl = document.getElementById('teamList');
-    const auctionContentEl = document.getElementById('auctionContent');
-    const paneAuction = document.getElementById('paneAuction');
-    const stageBadgesContainer = document.getElementById('stageBadgesContainer');
-    const outbidJoltOverlay = document.getElementById('outbidJoltOverlay');
     const logBox = document.getElementById('logBox');
     const playerSearch = document.getElementById('playerSearch');
     const statusFilter = document.getElementById('statusFilter');
@@ -1261,6 +1141,20 @@
     const countdownFlashNum = document.getElementById('countdownFlashNum');
     const demoModeBadge = document.getElementById('demoModeBadge');
     const mobileTeamPicker = document.getElementById('mobileTeamPicker');
+
+    // Live Block Stage References
+    const highBidderBanner = document.getElementById('highBidderBanner');
+    const stagePlayerMeta = document.getElementById('stagePlayerMeta');
+    const timerRingBar = document.getElementById('timerRingBar');
+    const timerNumberDisplay = document.getElementById('timerNumberDisplay');
+    const timerLabelDisplay = document.getElementById('timerLabelDisplay');
+    const currentBidDisplay = document.getElementById('currentBidDisplay');
+    const userMaxAllowedBid = document.getElementById('userMaxAllowedBid');
+    const btnInc1 = document.getElementById('btnInc1');
+    const btnInc3 = document.getElementById('btnInc3');
+    const btnInc5 = document.getElementById('btnInc5');
+    const btnCustomBid = document.getElementById('btnCustomBid');
+    const customBidInput = document.getElementById('customBidInput');
 
     const overrideTeamSelect = document.getElementById('overrideTeamSelect');
     const transferPlayerSelect = document.getElementById('transferPlayerSelect');
@@ -1297,17 +1191,23 @@
       toast.style.display = 'block';
 
       clearTimeout(easterEggTimeout);
-      easterEggTimeout = setTimeout(() => {
-        toast.style.display = 'none';
-      }, 4000);
+      easterEggTimeout = setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
+
+    function triggerWinToast(teamName, price) {
+      const banner = document.getElementById('winBannerToast');
+      banner.textContent = `🔨 ${teamName} WINS for $${price}!`;
+      banner.style.display = 'block';
+      setTimeout(() => { banner.style.display = 'none'; }, 3000);
     }
 
     function triggerOutbidJolt() {
       if (!userPrefs.visual) return;
-      outbidJoltOverlay.style.display = 'none';
-      outbidJoltOverlay.offsetHeight;
-      outbidJoltOverlay.style.display = 'block';
-      setTimeout(() => { outbidJoltOverlay.style.display = 'none'; }, 600);
+      const overlay = document.getElementById('outbidJoltOverlay');
+      overlay.style.display = 'none';
+      overlay.offsetHeight;
+      overlay.style.display = 'block';
+      setTimeout(() => { overlay.style.display = 'none'; }, 500);
     }
 
     function switchMobilePane(pane) {
@@ -1479,16 +1379,16 @@
         pauseBtn.textContent = draftState.isPaused ? "Resume Draft" : "Pause Draft";
         pauseBtn.className = draftState.isPaused ? "btn btn-danger" : "btn btn-warning";
       }
-      renderAuctionBlock();
+      renderAuctionStage();
       logMessage(draftState.isPaused ? "⏸️ <strong>Draft paused by commissioner.</strong>" : "▶️ <strong>Draft resumed.</strong>");
     });
 
     socket.on('playerNominated', ({ draftState }) => {
       localData.draftState = draftState;
-      recentBidTimestamps = [Date.now()];
       soundNewPlayerNominated();
       logMessage(`📢 <strong>${draftState.highBidder.name}</strong> nominated <strong>${draftState.nominatedPlayer.name}</strong> for $${draftState.currentBid}`);
-      renderAuctionBlock();
+      
+      renderAuctionStage();
       renderPlayers();
       updateTopBanner();
       
@@ -1505,13 +1405,10 @@
       }
     });
 
+    // Targeted DOM update on bid: No HTML re-rendering means zero visual jumping
     socket.on('bidAccepted', ({ draftState, isAutoBid }) => {
       const prevLeaderId = localData.draftState?.highBidder?.id;
       localData.draftState = draftState;
-
-      const now = Date.now();
-      recentBidTimestamps.push(now);
-      recentBidTimestamps = recentBidTimestamps.filter(t => now - t <= 5000);
 
       if (myTeam && prevLeaderId === myTeam.id && draftState.highBidder?.id !== myTeam.id) {
         triggerOutbidJolt();
@@ -1519,7 +1416,9 @@
 
       const tag = isAutoBid ? '<span class="log-auto">[AUTO]</span> ' : '';
       logMessage(`💰 ${tag}<strong>${draftState.highBidder.name}</strong> bids <strong>$${draftState.currentBid}</strong>`);
-      renderAuctionBlock();
+      
+      // Smoothly update stage without tearing down the timer
+      updateStageOnBid();
     });
 
     socket.on('capSavedConfirmation', ({ playerId, maxBid, rank }) => {
@@ -1551,24 +1450,20 @@
 
     let lastSecondFlashed = null;
     socket.on('timerTick', ({ seconds, mode }) => {
-      const numEl = document.getElementById('timerNumberDisplay');
-      const labelEl = document.getElementById('timerLabelDisplay');
-      const barEl = document.getElementById('timerRingBar');
-
-      if (numEl) {
-        numEl.textContent = seconds;
-        numEl.style.color = seconds <= 5 ? '#ef233c' : (seconds <= 10 ? '#ffbe0b' : '#38bdf8');
+      if (timerNumberDisplay) {
+        timerNumberDisplay.textContent = seconds;
+        timerNumberDisplay.style.color = seconds <= 5 ? '#ef233c' : (seconds <= 10 ? '#ffbe0b' : '#38bdf8');
       }
-      if (labelEl) {
-        labelEl.textContent = mode === 'nomination' ? 'Nomination' : 'Auction';
+      if (timerLabelDisplay) {
+        timerLabelDisplay.textContent = mode === 'nomination' ? 'Nomination' : 'Auction';
       }
 
-      if (barEl) {
+      if (timerRingBar) {
         const totalSecs = mode === 'nomination' ? timerConfig.nominationTime : timerConfig.beginningBidTime;
         const fraction = Math.max(0, seconds / totalSecs);
-        const offset = 326.72 * (1 - fraction);
-        barEl.style.strokeDashoffset = offset;
-        barEl.style.stroke = seconds <= 5 ? '#ef233c' : (seconds <= 10 ? '#ffbe0b' : '#06d6a0');
+        const offset = RING_CIRCUMFERENCE * (1 - fraction);
+        timerRingBar.style.strokeDashoffset = offset;
+        timerRingBar.style.stroke = seconds <= 5 ? '#ef233c' : (seconds <= 10 ? '#ffbe0b' : '#06d6a0');
       }
 
       if (mode === 'nomination' && seconds === timerConfig.nominationTime) {
@@ -1604,8 +1499,7 @@
         triggerEasterEgg('💵', 'KHONTRAC', "Wow, that's Khris Middleton money.");
       }
 
-      // 100% Team Image Burst (no rectangular confetti)
-      triggerConfetti(winningTeam.name);
+      triggerWinToast(winningTeam.name, price);
 
       if (myTeam && winningTeam.id === myTeam.id) {
         soundVictoryWon();
@@ -1688,7 +1582,7 @@
       updateTopBanner();
       renderPlayers();
       renderTeams();
-      renderAuctionBlock();
+      renderAuctionStage();
       if (currentTab === 'board') renderDraftBoard();
       if (myTeam.isCommish) updateCommishModalUI();
     }
@@ -1704,37 +1598,28 @@
       return '';
     }
 
+    // Queue Operations
     let draggedQueueIndex = null;
-
     function handleQueueDragStart(e, index) {
       draggedQueueIndex = index;
       e.dataTransfer.effectAllowed = 'move';
       e.target.classList.add('dragging');
     }
-
     function handleQueueDragEnd(e) {
       e.target.classList.remove('dragging');
       document.querySelectorAll('.queue-item').forEach(el => el.classList.remove('drag-over'));
       draggedQueueIndex = null;
     }
-
     function handleQueueDragOver(e) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       const item = e.target.closest('.queue-item');
       if (item) item.classList.add('drag-over');
     }
-
-    function handleQueueDragLeave(e) {
-      const item = e.target.closest('.queue-item');
-      if (item) item.classList.remove('drag-over');
-    }
-
     function handleQueueDrop(e, targetIndex) {
       e.preventDefault();
       const item = e.target.closest('.queue-item');
       if (item) item.classList.remove('drag-over');
-
       if (draggedQueueIndex === null || draggedQueueIndex === targetIndex) return;
 
       const movedItem = myQueue.splice(draggedQueueIndex, 1)[0];
@@ -1751,13 +1636,11 @@
         renderQueue();
       }
     }
-
     function removePlayerFromQueue(playerId) {
       myQueue = myQueue.filter(id => String(id) !== String(playerId));
       socket.emit('updateMyQueue', { queue: myQueue });
       renderQueue();
     }
-
     function moveQueueItem(index, direction) {
       const newIdx = index + direction;
       if (newIdx < 0 || newIdx >= myQueue.length) return;
@@ -1786,7 +1669,6 @@
                ondragstart="handleQueueDragStart(event, ${idx})" 
                ondragend="handleQueueDragEnd(event)" 
                ondragover="handleQueueDragOver(event)" 
-               ondragleave="handleQueueDragLeave(event)"
                ondrop="handleQueueDrop(event, ${idx})"
                style="cursor: grab; ${isDrafted ? 'opacity: 0.5; text-decoration: line-through;' : ''}">
             <div style="display: flex; align-items: center; gap: 0.35rem;">
@@ -1968,7 +1850,7 @@
         const pct = Math.max(0, Math.min(100, (t.budget / startB) * 100));
 
         return `
-          <div class="team-row" style="${isTurn ? 'border-left: 3px solid #ffbe0b; padding-left: 0.4rem;' : ''} ${isMe ? 'background: rgba(56, 189, 248, 0.08);' : ''}">
+          <div class="team-row" style="${isTurn ? 'border-left: 3px solid #ffbe0b; padding-left: 0.4rem;' : ''} ${isMe ? 'background: #0f2442;' : ''}">
             <div class="team-meta-row">
               <div style="display: flex; align-items: center; gap: 0.4rem;">
                 <span class="status-dot status-${t.status}"></span>
@@ -1989,83 +1871,52 @@
       }).join('');
     }
 
-    function renderAuctionBlock() {
+    // Stable Stage Render: Never tears down the timer ring on bids
+    function renderAuctionStage() {
       const state = localData.draftState;
 
       if (!state.isDraftStarted) {
-        paneAuction.className = 'card card-auction-center';
-        paneAuction.style.boxShadow = '';
-        paneAuction.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-        stageBadgesContainer.innerHTML = '';
-        auctionContentEl.innerHTML = `
-          <div class="timer-label">Draft Status</div>
-          <div class="timer">OFFLINE</div>
-          <p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to start the draft...</p>
-        `;
+        highBidderBanner.className = 'leader-other';
+        highBidderBanner.textContent = 'Draft Not Started';
+        stagePlayerMeta.innerHTML = `<p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to start the draft...</p>`;
+        timerNumberDisplay.textContent = '--';
+        timerLabelDisplay.textContent = 'Status';
+        timerRingBar.style.strokeDashoffset = '0';
+        currentBidDisplay.textContent = '$0';
+        disableBidButtons(true);
         return;
       }
 
       if (!state.nominatedPlayer) {
-        paneAuction.className = 'card card-auction-center';
-        paneAuction.style.boxShadow = '';
-        paneAuction.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-        stageBadgesContainer.innerHTML = '';
+        highBidderBanner.className = 'leader-other';
+        highBidderBanner.textContent = 'Awaiting Nomination';
         const nomTeam = localData.teams.find(t => t.id === state.nominatingTeamId);
 
-        auctionContentEl.innerHTML = `
-          <div class="timer-ring-container">
-            <svg class="timer-svg" viewBox="0 0 120 120">
-              <circle class="timer-track" cx="60" cy="60" r="52"></circle>
-              <circle id="timerRingBar" class="timer-bar" cx="60" cy="60" r="52"></circle>
-            </svg>
-            <div class="timer-text-inner">
-              <div id="timerNumberDisplay" class="timer-number">${state.timerSeconds}</div>
-              <div id="timerLabelDisplay" class="timer-subtext">Nomination</div>
-            </div>
-          </div>
-          <p style="color: #8d99ae; font-size: 1.05rem;">Waiting for <strong style="color: #ffbe0b;">${nomTeam ? getTeamAvatarHTML(nomTeam.name) + ' ' + nomTeam.name : 'Next Team'}</strong> to nominate...</p>
+        stagePlayerMeta.innerHTML = `
+          <p style="color: #8d99ae; font-size: 1.05rem;">
+            Waiting for <strong style="color: #ffbe0b;">${nomTeam ? getTeamAvatarHTML(nomTeam.name) + ' ' + nomTeam.name : 'Next Team'}</strong> to nominate...
+          </p>
         `;
+        timerLabelDisplay.textContent = 'Nomination';
+        currentBidDisplay.textContent = '$0';
+        disableBidButtons(true);
         return;
       }
 
       const p = state.nominatedPlayer;
-      const me = localData.teams.find(t => t.id === myTeam?.id);
-      const myBudget = me ? me.budget : 0;
-      const isEligibleToBid = myBudget > state.currentBid;
-      const isLeading = myTeam && state.highBidder?.id === myTeam.id;
       const hasInjury = p.news && (p.news.tag === 'OUT' || p.news.tag === 'INJURY');
-      const isHotStreak = recentBidTimestamps.length >= 3;
+      const teamColors = NBA_TEAM_COLORS[p.nbaTeam?.toUpperCase()] || { p: '#0077b6' };
 
-      const teamColors = NBA_TEAM_COLORS[p.nbaTeam?.toUpperCase()] || { p: '#0077b6', s: '#023e8a' };
-
-      if (isLeading) {
-        paneAuction.className = 'card card-auction-center high-bidder-halo';
-      } else {
-        paneAuction.className = 'card card-auction-center';
-        paneAuction.style.borderColor = teamColors.p;
-        paneAuction.style.boxShadow = `0 0 25px ${teamColors.p}33, 0 8px 32px 0 rgba(0, 0, 0, 0.45)`;
-      }
-
-      stageBadgesContainer.innerHTML = `
-        ${isLeading ? '<div class="leading-badge">★ YOU ARE HIGH BIDDER ★</div>' : ''}
-        ${isHotStreak ? '<div class="hot-streak-badge">🔥 BIDDING WAR DETECTED 🔥</div>' : ''}
-      `;
-
-      const openSpots = me ? (maxRosterSize - me.roster.length) : 0;
-      const trueMaxBid = openSpots > 0 ? (myBudget - (openSpots - 1)) : 0;
-
-      auctionContentEl.innerHTML = `
+      stagePlayerMeta.innerHTML = `
         <h1 style="color: #fff; margin-bottom: 0; font-size: clamp(1.6rem, 4vw, 2.2rem);">
           ${p.name}
           ${hasInjury ? `<span class="badge-injury" style="font-size: 0.85rem; vertical-align: middle;">${p.news.tag}</span>` : ''}
         </h1>
-        
         <div>
           <span class="nba-team-pill" style="border-left: 4px solid ${teamColors.p};">
             ${p.pos} • ${p.nbaTeam}
           </span>
         </div>
-        
         <div class="stat-strip">
           <span><strong>${p.fppg.toFixed(1)}</strong> FP/G</span>
           <span><strong>${p.fpts.toFixed(0)}</strong> FPts</span>
@@ -2073,36 +1924,63 @@
           <span><strong>${p.fullStats?.REB ?? (p.stats?.reb ?? 0)}</strong> REB</span>
           <span><strong>${p.fullStats?.AST ?? (p.stats?.ast ?? 0)}</strong> AST</span>
         </div>
-
-        <div class="timer-ring-container">
-          <svg class="timer-svg" viewBox="0 0 120 120">
-            <circle class="timer-track" cx="60" cy="60" r="52"></circle>
-            <circle id="timerRingBar" class="timer-bar" cx="60" cy="60" r="52"></circle>
-          </svg>
-          <div class="timer-text-inner">
-            <div id="timerNumberDisplay" class="timer-number">${state.isPaused ? 'PAUSE' : state.timerSeconds}</div>
-            <div id="timerLabelDisplay" class="timer-subtext">Auction</div>
-          </div>
-        </div>
-
-        <div class="current-bid">$${state.currentBid}</div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin: 0.2rem 0;">
-          <span>High Bidder:</span>
-          ${state.highBidder ? `${getTeamAvatarHTML(state.highBidder.name)} <strong>${state.highBidder.name}</strong>` : '<strong>None</strong>'}
-        </div>
-        <small style="color: #8d99ae;">Your Max Allowed Bid: <strong style="color: #06d6a0;">$${Math.max(0, trueMaxBid)}</strong></small>
-        
-        <div class="bid-btn-group">
-          <button class="btn" onclick="bidIncrement(1)" ${(!isEligibleToBid || state.isPaused) ? 'disabled' : ''}>+$1 ($${state.currentBid + 1})</button>
-          <button class="btn" onclick="bidIncrement(3)" ${(!isEligibleToBid || myBudget < state.currentBid + 3 || state.isPaused) ? 'disabled' : ''}>+$3 ($${state.currentBid + 3})</button>
-          <button class="btn" onclick="bidIncrement(5)" ${(!isEligibleToBid || myBudget < state.currentBid + 5 || state.isPaused) ? 'disabled' : ''}>+$5 ($${state.currentBid + 5})</button>
-        </div>
-
-        <div class="custom-bid-group">
-          <input type="number" id="customBidInput" class="input-inline" placeholder="$ Amount" min="${state.currentBid + 1}" max="${myBudget}">
-          <button class="btn btn-secondary" onclick="bidCustom()" ${(!isEligibleToBid || state.isPaused) ? 'disabled' : ''}>Custom Bid</button>
-        </div>
       `;
+
+      timerLabelDisplay.textContent = 'Auction';
+      updateStageOnBid();
+    }
+
+    // High Bidder & Button Refresh (Zero HTML teardown = No visual glitching)
+    function updateStageOnBid() {
+      const state = localData.draftState;
+      if (!state.nominatedPlayer) return;
+
+      const me = localData.teams.find(t => t.id === myTeam?.id);
+      const myBudget = me ? me.budget : 0;
+      const isLeading = myTeam && state.highBidder?.id === myTeam.id;
+
+      // Update High Bidder Banner
+      if (isLeading) {
+        highBidderBanner.className = 'leader-you';
+        highBidderBanner.innerHTML = `★ YOU LEAD THE BID AT $${state.currentBid} ★`;
+      } else if (state.highBidder) {
+        highBidderBanner.className = 'leader-other';
+        highBidderBanner.innerHTML = `High Bidder: ${getTeamAvatarHTML(state.highBidder.name)} <strong>${state.highBidder.name} ($${state.currentBid})</strong>`;
+      } else {
+        highBidderBanner.className = 'leader-other';
+        highBidderBanner.textContent = 'No High Bidder';
+      }
+
+      currentBidDisplay.textContent = `$${state.currentBid}`;
+
+      // Max allowable calculation
+      const openSpots = me ? (maxRosterSize - me.roster.length) : 0;
+      const trueMaxBid = openSpots > 0 ? (myBudget - (openSpots - 1)) : 0;
+      userMaxAllowedBid.textContent = `$${Math.max(0, trueMaxBid)}`;
+
+      // Update Button Text & Disables
+      btnInc1.textContent = `+$1 ($${state.currentBid + 1})`;
+      btnInc3.textContent = `+$3 ($${state.currentBid + 3})`;
+      btnInc5.textContent = `+$5 ($${state.currentBid + 5})`;
+
+      const canBid = !state.isPaused && myBudget > state.currentBid && !isLeading;
+      btnInc1.disabled = !canBid || (myBudget < state.currentBid + 1);
+      btnInc3.disabled = !canBid || (myBudget < state.currentBid + 3);
+      btnInc5.disabled = !canBid || (myBudget < state.currentBid + 5);
+      btnCustomBid.disabled = !canBid;
+      customBidInput.min = state.currentBid + 1;
+      customBidInput.max = myBudget;
+
+      // Sync Ring immediately to current second
+      const fraction = Math.max(0, state.timerSeconds / timerConfig.beginningBidTime);
+      timerRingBar.style.strokeDashoffset = RING_CIRCUMFERENCE * (1 - fraction);
+    }
+
+    function disableBidButtons(disabled) {
+      btnInc1.disabled = disabled;
+      btnInc3.disabled = disabled;
+      btnInc5.disabled = disabled;
+      btnCustomBid.disabled = disabled;
     }
 
     function renderDraftBoard() {
@@ -2128,7 +2006,7 @@
                 </div>
               `).join('')}
               ${Array.from({ length: openSpots }).map(() => `
-                <div class="board-pick" style="border: 1px dashed #334155; background: transparent; color: #475569; text-align: center;">
+                <div class="board-pick" style="border: 1px dashed #233554; background: transparent; color: #475569; text-align: center;">
                   Empty Spot
                 </div>
               `).join('')}
@@ -2140,11 +2018,10 @@
     }
 
     let bidCooldownActive = false;
-
     function bidIncrement(increment) {
       if (bidCooldownActive) return;
       bidCooldownActive = true;
-      setTimeout(() => { bidCooldownActive = false; }, 400);
+      setTimeout(() => { bidCooldownActive = false; }, 350);
 
       const targetBid = localData.draftState.currentBid + increment;
       socket.emit('placeBid', { bidAmount: targetBid });
@@ -2157,7 +2034,7 @@
       if (isNaN(val)) return;
 
       bidCooldownActive = true;
-      setTimeout(() => { bidCooldownActive = false; }, 400);
+      setTimeout(() => { bidCooldownActive = false; }, 350);
 
       socket.emit('placeBid', { bidAmount: val });
     }
@@ -2238,7 +2115,7 @@
         const isBot = currentTeam?.isAuto || false;
 
         return `
-          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(28, 37, 65, 0.5); padding: 0.25rem 0.4rem; border-radius: 4px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #162238; padding: 0.25rem 0.4rem; border-radius: 4px;">
             <label style="font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
               <input type="checkbox" class="demo-team-cb" value="${t.id}" ${isCurrent ? 'checked' : ''} />
               <span>${t.name}</span>

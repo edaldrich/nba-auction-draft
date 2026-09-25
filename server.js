@@ -459,6 +459,7 @@ function handleBidSubmission(teamId, bidAmount, isAutoBid = false) {
   }
 }
 
+// Autodraft Selection: Pure random choice among all bots eligible to bid
 function triggerAutodraftCheck() {
   clearTimeout(autoBidTimeout);
 
@@ -469,6 +470,7 @@ function triggerAutodraftCheck() {
     const currentBid = draftState.currentBid;
     const nextBidRequired = currentBid === 0 ? 1 : currentBid + 1;
 
+    // Filter bots that can legally bid the next dollar and haven't exceeded cap
     const eligibleBots = teams.filter(t => {
       if (!t.isAuto) return false;
       if (draftState.highBidder && draftState.highBidder.id === t.id) return false;
@@ -484,29 +486,13 @@ function triggerAutodraftCheck() {
 
     if (eligibleBots.length === 0) return;
 
-    eligibleBots.sort((a, b) => {
-      const capA = Math.min(player.autoCaps[a.id], a.budget);
-      const capB = Math.min(player.autoCaps[b.id], b.budget);
-      if (capB !== capA) return capB - capA;
+    // Purely random choice: no priorities, no team limits
+    const randomIndex = Math.floor(Math.random() * eligibleBots.length);
+    const chosenBot = eligibleBots[randomIndex];
 
-      const rankA = (player.autoRanks && player.autoRanks[a.id] !== undefined) ? player.autoRanks[a.id] : 9999;
-      const rankB = (player.autoRanks && player.autoRanks[b.id] !== undefined) ? player.autoRanks[b.id] : 9999;
-      return rankA - rankB;
-    });
+    handleBidSubmission(chosenBot.id, nextBidRequired, true);
 
-    const topBot = eligibleBots[0];
-    const topCap = Math.min(player.autoCaps[topBot.id], topBot.budget);
-
-    if (eligibleBots.length > 1) {
-      const secondBot = eligibleBots[1];
-      const secondCap = Math.min(player.autoCaps[secondBot.id], secondBot.budget);
-      const escalatedBid = Math.min(topCap, secondCap + 1);
-
-      handleBidSubmission(topBot.id, escalatedBid, true);
-    } else {
-      handleBidSubmission(topBot.id, nextBidRequired, true);
-    }
-
+    // Continue checking if further bots want to contest
     triggerAutodraftCheck();
   }, 1200);
 }
@@ -737,7 +723,6 @@ io.on('connection', (socket) => {
       const targetId = String(r.playerId || '').trim();
       const targetName = String(r.name || '').trim().toLowerCase();
 
-      // Dual match by ID string or Name
       const player = players.find(p => 
         (targetId && String(p.id).trim() === targetId) || 
         (targetName && p.name.toLowerCase() === targetName)
@@ -1014,7 +999,7 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Disconnect Safety Net: Switch disconnected manager to Auto-Draft
+  // Disconnect Safety Net
   socket.on('disconnect', () => {
     const teamId = socketSessions.get(socket.id);
     if (teamId) {

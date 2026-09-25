@@ -8,7 +8,6 @@
   <style>
     * { box-sizing: border-box; }
 
-    /* Locks background bounce / eliminates empty top space */
     html, body {
       height: 100%;
       margin: 0;
@@ -133,7 +132,6 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-25px); }
     }
 
-    /* Top Status Bar */
     .top-banner {
       display: flex;
       flex-wrap: wrap;
@@ -165,7 +163,6 @@
     .pool-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
     .pool-val { font-size: 1.55rem; font-weight: 800; color: #06d6a0; line-height: 1.1; }
 
-    /* Layout */
     .grid {
       display: grid;
       grid-template-columns: 400px 1fr 310px;
@@ -675,7 +672,6 @@
 </head>
 <body>
 
-  <!-- Full Height App Wrapper to block blank pull-down scroll space -->
   <div id="appWrapper">
     <canvas id="confettiCanvas"></canvas>
     <div id="outbidJoltOverlay"></div>
@@ -1748,7 +1744,7 @@
         return true;
       });
 
-      // Cap visible rendering to top 130 players for snappy scrolling
+      // Cap visible rendering to top 130 players for snappy performance
       const visibleSlice = filtered.slice(0, 130);
 
       const isMyTurnToNominate = localData.draftState.isDraftStarted && (myTeam.id === localData.draftState.nominatingTeamId);
@@ -1827,7 +1823,6 @@
       socket.emit('updateAutoCap', { playerId, maxBid, rank });
     }
 
-    // Excel formula formatted CSV export (="ID") so Excel cannot coerce IDs into numbers
     function downloadCapsTemplate() {
       let csvContent = "data:text/csv;charset=utf-8,";
       csvContent += "Player ID,Player Name,Team,FP/G,Max Bid ($),Priority Rank (1-300)\n";
@@ -1838,7 +1833,7 @@
         const cleanName = (p.name || '').replace(/[,"]/g, '').trim();
         const cleanTeam = (p.nbaTeam || '').replace(/[,"]/g, '').trim();
         
-        // Excel literal string formula representation
+        // Literal string formula representation: ="12345"
         const excelSafeId = `="` + String(p.id).replace(/"/g, '') + `"`;
 
         csvContent += `${excelSafeId},${cleanName},${cleanTeam},${p.fppg.toFixed(1)},${currentCap},${currentRank}\n`;
@@ -1853,7 +1848,6 @@
       document.body.removeChild(link);
     }
 
-    // Resilient parser stripping Excel formula characters (=, ", ')
     function handleCapsCsvUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1876,6 +1870,7 @@
           const line = lines[i].trim();
           if (!line) continue;
 
+          // Strip Excel formula wrapper tokens (=, ", ')
           const cols = line.split(',').map(c => c.trim().replace(/^="|^"|"$|^'/g, ''));
 
           const playerId = idIdx !== -1 ? cols[idIdx].trim() : null;

@@ -66,6 +66,10 @@ function getMaxAllowedBid(team) {
   return team.budget;
 }
 
+function isDraftFullyCompleted() {
+  return teams.length > 0 && teams.every(t => t.roster.length >= maxRosterSize);
+}
+
 function checkUnbeatableBid() {
   if (!draftState.nominatedPlayer || !draftState.highBidder) return;
 
@@ -225,6 +229,7 @@ function getOnDeckNominatorId(currentNominatorId) {
 let draftState = {
   isDraftStarted: false,
   isDraftActive: true,
+  isDraftCompleted: false,
   nominatedPlayer: null,
   currentBid: 0,
   highBidder: null,
@@ -241,13 +246,13 @@ let autoBidTimeout = null;
 
 function startTimer(mode, duration) {
   clearInterval(timerInterval);
-  if (!draftState.isDraftStarted) return;
+  if (!draftState.isDraftStarted || draftState.isDraftCompleted) return;
 
   draftState.timerMode = mode;
   draftState.timerSeconds = duration;
 
   timerInterval = setInterval(() => {
-    if (draftState.isPaused || !draftState.isDraftStarted) return;
+    if (draftState.isPaused || !draftState.isDraftStarted || draftState.isDraftCompleted) return;
 
     draftState.timerSeconds -= 1;
     io.emit('timerTick', { seconds: draftState.timerSeconds, mode: draftState.timerMode });
@@ -389,6 +394,28 @@ function finalizeSale() {
     });
   }
 
+  // Check if draft has completely finished
+  if (isDraftFullyCompleted()) {
+    draftState.isDraftCompleted = true;
+    draftState.isDraftActive = false;
+    draftState.nominatedPlayer = null;
+    draftState.currentBid = 0;
+    draftState.highBidder = null;
+    clearInterval(timerInterval);
+    clearTimeout(autoBidTimeout);
+
+    io.emit('draftEndedCelebration', {
+      teams: getPublicTeams()
+    });
+
+    io.emit('stateUpdate', {
+      draftState,
+      teams: getPublicTeams(),
+      players: getPublicPlayers()
+    });
+    return;
+  }
+
   const nextNom = getNextNominatorId(draftState.nominatingTeamId);
   draftState.nominatingTeamId = nextNom;
   draftState.onDeckTeamId = getOnDeckNominatorId(nextNom);
@@ -409,11 +436,11 @@ function finalizeSale() {
 }
 
 function checkIfNominatorNeedsAutoNomination() {
-  if (!draftState.nominatingTeamId) return;
+  if (!draftState.nominatingTeamId || draftState.isDraftCompleted) return;
   const nomTeam = teams.find(t => t.id === draftState.nominatingTeamId);
   if (nomTeam && nomTeam.isAuto) {
     setTimeout(() => {
-      if (!draftState.nominatedPlayer && draftState.isDraftStarted && !draftState.isPaused) {
+      if (!draftState.nominatedPlayer && draftState.isDraftStarted && !draftState.isPaused && !draftState.isDraftCompleted) {
         resolveAutoNomination();
       }
     }, 1500);
@@ -427,7 +454,7 @@ function handleBidSubmission(teamId, bidAmount, isAutoBid = false) {
   bidLock = true;
 
   try {
-    if (!draftState.isDraftStarted || !draftState.nominatedPlayer || draftState.isPaused || draftState.timerMode !== 'auction') {
+    if (!draftState.isDraftStarted || !draftState.nominatedPlayer || draftState.isPaused || draftState.timerMode !== 'auction' || draftState.isDraftCompleted) {
       return false;
     }
 
@@ -459,18 +486,18 @@ function handleBidSubmission(teamId, bidAmount, isAutoBid = false) {
   }
 }
 
-// Autodraft Selection: Pure random choice among all bots eligible to bid
+// Random Bot Contest across BOTH Prod and Demo modes
 function triggerAutodraftCheck() {
   clearTimeout(autoBidTimeout);
 
   autoBidTimeout = setTimeout(() => {
-    if (!draftState.nominatedPlayer || draftState.isPaused || draftState.timerMode !== 'auction' || !draftState.isDraftStarted) return;
+    if (!draftState.nominatedPlayer || draftState.isPaused || draftState.timerMode !== 'auction' || !draftState.isDraftStarted || draftState.isDraftCompleted) return;
 
     const player = draftState.nominatedPlayer;
     const currentBid = draftState.currentBid;
     const nextBidRequired = currentBid === 0 ? 1 : currentBid + 1;
 
-    // Filter bots that can legally bid the next dollar and haven't exceeded cap
+    // Filter bots that can legally bid the next dollar and have not exceeded their cap
     const eligibleBots = teams.filter(t => {
       if (!t.isAuto) return false;
       if (draftState.highBidder && draftState.highBidder.id === t.id) return false;
@@ -492,7 +519,6 @@ function triggerAutodraftCheck() {
 
     handleBidSubmission(chosenBot.id, nextBidRequired, true);
 
-    // Continue checking if further bots want to contest
     triggerAutodraftCheck();
   }, 1200);
 }
@@ -561,6 +587,7 @@ function initDynamicDemoMode({ selectedTeamIds, demoBudget, demoRosterLimit, bot
   draftState = {
     isDraftStarted: false,
     isDraftActive: true,
+    isDraftCompleted: false,
     nominatedPlayer: null,
     currentBid: 0,
     highBidder: null,
@@ -589,6 +616,7 @@ function initProdMode() {
   draftState = {
     isDraftStarted: false,
     isDraftActive: true,
+    isDraftCompleted: false,
     nominatedPlayer: null,
     currentBid: 0,
     highBidder: null,
@@ -658,14 +686,14 @@ io.on('connection', (socket) => {
     if (team.isAuto) {
       if (draftState.nominatedPlayer) {
         triggerAutodraftCheck();
-      } else if (draftState.nominatingTeamId === team.id && draftState.isDraftStarted && !draftState.isPaused) {
+      } else if (draftState.nominatingTeamId === team.id && draftState.isDraftStarted && !draftState.isPaused && !draftState.isDraftCompleted) {
         resolveAutoNomination();
       }
     }
   });
 
   socket.on('nominatePlayer', ({ playerId }) => {
-    if (!draftState.isDraftStarted) return;
+    if (!draftState.isDraftStarted || draftState.isDraftCompleted) return;
     const teamId = socketSessions.get(socket.id);
     if (!teamId || draftState.nominatedPlayer || draftState.isPaused) return;
     if (teamId !== draftState.nominatingTeamId) return;
@@ -869,6 +897,7 @@ io.on('connection', (socket) => {
   socket.on('adminStartDraft', () => {
     if (!isCommishSocket()) return;
     draftState.isDraftStarted = true;
+    draftState.isDraftCompleted = false;
     startTimer('nomination', timerConfig.nominationTime);
     io.emit('draftStartedNotice', { draftState });
     io.emit('stateUpdate', {
@@ -899,7 +928,7 @@ io.on('connection', (socket) => {
     if (team.isAuto) {
       if (draftState.nominatedPlayer) {
         triggerAutodraftCheck();
-      } else if (draftState.nominatingTeamId === team.id && draftState.isDraftStarted && !draftState.isPaused) {
+      } else if (draftState.nominatingTeamId === team.id && draftState.isDraftStarted && !draftState.isPaused && !draftState.isDraftCompleted) {
         resolveAutoNomination();
       }
     }
@@ -945,6 +974,7 @@ io.on('connection', (socket) => {
 
       draftState.nominatingTeamId = lastSale.previousNominatorId;
       draftState.onDeckTeamId = getOnDeckNominatorId(draftState.nominatingTeamId);
+      draftState.isDraftCompleted = false;
 
       saveStateToDisk();
       startTimer('nomination', timerConfig.nominationTime);
@@ -980,6 +1010,7 @@ io.on('connection', (socket) => {
     draftState = {
       isDraftStarted: false,
       isDraftActive: true,
+      isDraftCompleted: false,
       nominatedPlayer: null,
       currentBid: 0,
       highBidder: null,
@@ -999,7 +1030,6 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Disconnect Safety Net
   socket.on('disconnect', () => {
     const teamId = socketSessions.get(socket.id);
     if (teamId) {
@@ -1014,7 +1044,7 @@ io.on('connection', (socket) => {
 
         if (draftState.nominatedPlayer) {
           triggerAutodraftCheck();
-        } else if (draftState.nominatingTeamId === team.id && draftState.isDraftStarted && !draftState.isPaused) {
+        } else if (draftState.nominatingTeamId === team.id && draftState.isDraftStarted && !draftState.isPaused && !draftState.isDraftCompleted) {
           resolveAutoNomination();
         }
       }

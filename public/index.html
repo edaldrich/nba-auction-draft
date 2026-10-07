@@ -333,6 +333,22 @@
       font-size: 16px;
     }
 
+    /* Cap Quick Buttons */
+    .cap-btn-stepper {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      border-radius: 3px;
+      padding: 0.2rem 0.35rem;
+      font-size: 0.72rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .cap-btn-stepper:hover {
+      background: #334155;
+      color: #fff;
+    }
+
     #playerListContainer { max-height: 50vh; overflow-y: auto; padding-right: 0.2rem; }
     .player-row {
       display: flex;
@@ -691,6 +707,22 @@
       </div>
     </div>
 
+    <!-- Grand Finale Celebration Modal -->
+    <div id="draftEndCelebrationModal" class="modal-overlay" style="display: none;">
+      <div class="modal-box" style="text-align: center; border: 2px solid #06d6a0;">
+        <h1 style="font-size: 2.5rem; color: #ffbe0b; margin-bottom: 0.5rem;">🏆 DRAFT COMPLETE! 🏆</h1>
+        <p style="font-size: 1.15rem; color: #cbd5e1; margin-top: 0;">
+          All rosters are officially set. Congratulations managers on a great draft!
+        </p>
+        <div style="margin: 1.5rem 0;">
+          <button class="btn btn-success" style="padding: 0.8rem 1.5rem; font-size: 1.1rem;" onclick="exportDraftResultsCSV()">
+            📥 Download Final Results CSV
+          </button>
+        </div>
+        <button class="btn btn-secondary" onclick="closeDraftEndModal()">View Final Draft Board</button>
+      </div>
+    </div>
+
     <div id="floatingPlayerCard">
       <div class="card-header-bar">
         <div>
@@ -748,7 +780,7 @@
         <div style="background: rgba(6, 214, 160, 0.15); border: 1px solid #06d6a0; border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
           <div>
             <strong style="color: #06d6a0;">Final Draft Results</strong>
-            <div style="font-size: 0.75rem; color: #cbd5e1;">Export all team rosters & purchase prices to CSV</div>
+            <div style="font-size: 0.75rem; color: #cbd5e1;">Clean CSV (ID, Player, Owner, Price)</div>
           </div>
           <button class="btn btn-success" onclick="exportDraftResultsCSV()">📥 Export Results CSV</button>
         </div>
@@ -852,8 +884,9 @@
 
     <input type="file" id="capsCsvFileInput" accept=".csv" style="display: none;" onchange="handleCapsCsvUpload(event)" />
 
+    <!-- Preferences Modal with 3s vs 5s Countdown Setting -->
     <div id="settingsModal" class="modal-overlay" style="display: none;">
-      <div class="modal-box" style="max-width: 400px;">
+      <div class="modal-box" style="max-width: 420px;">
         <button class="modal-close" onclick="closeSettingsModal()">✕</button>
         <h2>⚙️ Experience Preferences</h2>
         
@@ -865,8 +898,22 @@
           
           <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem;">
             <input type="checkbox" id="prefVisualToggle" checked onchange="savePreferences()" />
-            <strong>Enable Visual Urgency (3-2-1 Screen Flash)</strong>
+            <strong>Enable Visual Urgency Screen Flash</strong>
           </label>
+
+          <div style="background: #0f1c30; padding: 0.75rem; border-radius: 6px; border: 1px solid #233554;">
+            <label style="font-size: 0.82rem; font-weight: bold; color: #38bdf8; display: block; margin-bottom: 0.35rem;">
+              Auction Countdown Urgency Alert Window
+            </label>
+            <div style="display: flex; gap: 1rem;">
+              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; cursor: pointer;">
+                <input type="radio" name="prefAlertWindow" value="3" checked onchange="savePreferences()" /> 3 Seconds (Default)
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; cursor: pointer;">
+                <input type="radio" name="prefAlertWindow" value="5" onchange="savePreferences()" /> 5 Seconds
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1053,7 +1100,7 @@
       UTA: { p: '#002B5C' }, WAS: { p: '#002B5C' }
     };
 
-    let userPrefs = { sound: true, visual: true };
+    let userPrefs = { sound: true, visual: true, alertWindow: 3 };
 
     let audioCtx = null;
     function getAudioContext() {
@@ -1185,15 +1232,20 @@
     }
     document.getElementById('prefSoundToggle').checked = userPrefs.sound;
     document.getElementById('prefVisualToggle').checked = userPrefs.visual;
+    const alertRadio = document.querySelector(`input[name="prefAlertWindow"][value="${userPrefs.alertWindow || 3}"]`);
+    if (alertRadio) alertRadio.checked = true;
 
     function savePreferences() {
       userPrefs.sound = document.getElementById('prefSoundToggle').checked;
       userPrefs.visual = document.getElementById('prefVisualToggle').checked;
+      const selectedRadio = document.querySelector('input[name="prefAlertWindow"]:checked');
+      userPrefs.alertWindow = selectedRadio ? parseInt(selectedRadio.value, 10) : 3;
       localStorage.setItem('user_draft_prefs', JSON.stringify(userPrefs));
     }
 
     function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
     function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
+    function closeDraftEndModal() { document.getElementById('draftEndCelebrationModal').style.display = 'none'; }
 
     let easterEggTimeout = null;
     function triggerEasterEgg(icon, title, subtitle) {
@@ -1469,6 +1521,13 @@
       renderQueue();
     });
 
+    // Final Celebration Modal Event
+    socket.on('draftEndedCelebration', ({ teams }) => {
+      soundVictoryWon();
+      document.getElementById('draftEndCelebrationModal').style.display = 'flex';
+      logMessage("🎉 <strong>THE DRAFT HAS OFFICIALLY CONCLUDED! All rosters are locked.</strong>");
+    });
+
     let lastSecondFlashed = null;
     socket.on('timerTick', ({ seconds, mode }) => {
       if (timerNumberDisplay) {
@@ -1499,7 +1558,9 @@
         }
       }
 
-      if (mode === 'auction' && seconds >= 1 && seconds <= 3 && lastSecondFlashed !== seconds) {
+      // Configurable 3-Second vs 5-Second Alert Trigger
+      const alertThreshold = userPrefs.alertWindow || 3;
+      if (mode === 'auction' && seconds >= 1 && seconds <= alertThreshold && lastSecondFlashed !== seconds) {
         lastSecondFlashed = seconds;
         soundCountdownTick(seconds);
         if (userPrefs.visual) {
@@ -1577,6 +1638,12 @@
 
       if (!state.isDraftStarted) {
         currentNomDisplay.textContent = "Waiting to Start";
+        onDeckNomDisplay.textContent = "-";
+        return;
+      }
+
+      if (state.isDraftCompleted) {
+        currentNomDisplay.textContent = "Draft Complete";
         onDeckNomDisplay.textContent = "-";
         return;
       }
@@ -1724,6 +1791,13 @@
       return (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     }
 
+    function stepPlayerCap(playerId, delta) {
+      const currentVal = parseInt(myCaps[playerId], 10) || 0;
+      const newVal = Math.max(0, currentVal + delta);
+      const currentRank = myRanks[playerId] || '';
+      saveCap(playerId, newVal, currentRank);
+    }
+
     function renderPlayers() {
       if (!myTeam) return;
       const query = cleanNormalize(playerSearch.value);
@@ -1744,10 +1818,8 @@
         return true;
       });
 
-      // Cap visible rendering to top 130 players for snappy performance
       const visibleSlice = filtered.slice(0, 130);
-
-      const isMyTurnToNominate = localData.draftState.isDraftStarted && (myTeam.id === localData.draftState.nominatingTeamId);
+      const isMyTurnToNominate = localData.draftState.isDraftStarted && (myTeam.id === localData.draftState.nominatingTeamId) && !localData.draftState.isDraftCompleted;
 
       playerListEl.innerHTML = visibleSlice.map(p => {
         const myCap = (myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
@@ -1781,13 +1853,23 @@
 
             ${!isDrafted ? (
               capEditMode ? `
-                <div style="display: flex; gap: 0.25rem; align-items: center;" onclick="event.stopPropagation();">
-                  <input type="number" class="input-inline" placeholder="Max $" value="${myCap}" 
-                    title="Max Bid ($)"
-                    onchange="saveCap('${p.id}', this.value, document.getElementById('rankInput_${p.id}').value)" />
-                  <input type="number" id="rankInput_${p.id}" class="input-inline" placeholder="Rank" value="${myRank}" 
-                    title="Priority Rank (1 = Top preference)"
-                    onchange="saveCap('${p.id}', this.previousElementSibling.value, this.value)" />
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;" onclick="event.stopPropagation();">
+                  <div style="display: flex; gap: 0.2rem; align-items: center;">
+                    <button class="cap-btn-stepper" onclick="stepPlayerCap('${p.id}', -5)">-5</button>
+                    <button class="cap-btn-stepper" onclick="stepPlayerCap('${p.id}', -1)">-1</button>
+                    <input type="number" class="input-inline" placeholder="Max $" value="${myCap}" 
+                      title="Max Bid ($)"
+                      onchange="saveCap('${p.id}', this.value, document.getElementById('rankInput_${p.id}').value)" />
+                    <button class="cap-btn-stepper" onclick="stepPlayerCap('${p.id}', 1)">+1</button>
+                    <button class="cap-btn-stepper" onclick="stepPlayerCap('${p.id}', 5)">+5</button>
+                  </div>
+                  <div style="display: flex; gap: 0.2rem; align-items: center;">
+                    <span style="font-size: 0.7rem; color: #8d99ae;">Rank:</span>
+                    <input type="number" id="rankInput_${p.id}" class="input-inline" placeholder="#" value="${myRank}" 
+                      style="width: 48px;"
+                      title="Priority Rank (1 = Top preference)"
+                      onchange="saveCap('${p.id}', myCaps['${p.id}'] || '', this.value)" />
+                  </div>
                 </div>
               ` : `
                 <div style="display: flex; gap: 0.2rem; align-items: center;">
@@ -1832,8 +1914,6 @@
         const currentRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
         const cleanName = (p.name || '').replace(/[,"]/g, '').trim();
         const cleanTeam = (p.nbaTeam || '').replace(/[,"]/g, '').trim();
-        
-        // Literal string formula representation: ="12345"
         const excelSafeId = `="` + String(p.id).replace(/"/g, '') + `"`;
 
         csvContent += `${excelSafeId},${cleanName},${cleanTeam},${p.fppg.toFixed(1)},${currentCap},${currentRank}\n`;
@@ -1870,7 +1950,6 @@
           const line = lines[i].trim();
           if (!line) continue;
 
-          // Strip Excel formula wrapper tokens (=, ", ')
           const cols = line.split(',').map(c => c.trim().replace(/^="|^"|"$|^'/g, ''));
 
           const playerId = idIdx !== -1 ? cols[idIdx].trim() : null;
@@ -1895,7 +1974,7 @@
       const startB = localData.draftState.isDemoMode ? 50 : 200;
       teamListEl.innerHTML = localData.teams.map(t => {
         const isFull = t.roster.length >= maxRosterSize;
-        const isTurn = localData.draftState.isDraftStarted && (t.id === localData.draftState.nominatingTeamId);
+        const isTurn = localData.draftState.isDraftStarted && (t.id === localData.draftState.nominatingTeamId) && !localData.draftState.isDraftCompleted;
         const isMe = myTeam && t.id === myTeam.id;
         const pct = Math.max(0, Math.min(100, (t.budget / startB) * 100));
 
@@ -1929,6 +2008,18 @@
         highBidderBanner.textContent = 'Draft Not Started';
         stagePlayerMeta.innerHTML = `<p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to start the draft...</p>`;
         timerNumberDisplay.textContent = '--';
+        timerLabelDisplay.textContent = 'Status';
+        timerRingBar.style.strokeDashoffset = '0';
+        currentBidDisplay.textContent = '$0';
+        disableBidButtons(true);
+        return;
+      }
+
+      if (state.isDraftCompleted) {
+        highBidderBanner.className = 'leader-you';
+        highBidderBanner.textContent = '🏆 DRAFT COMPLETED';
+        stagePlayerMeta.innerHTML = `<h2 style="color: #06d6a0;">The Draft Has Finished!</h2><p style="color: #cbd5e1;">All team rosters are full.</p>`;
+        timerNumberDisplay.textContent = 'DONE';
         timerLabelDisplay.textContent = 'Status';
         timerRingBar.style.strokeDashoffset = '0';
         currentBidDisplay.textContent = '$0';
@@ -2008,7 +2099,7 @@
       btnInc3.textContent = `+$3 ($${state.currentBid + 3})`;
       btnInc5.textContent = `+$5 ($${state.currentBid + 5})`;
 
-      const canBid = !state.isPaused && myBudget > state.currentBid && !isLeading;
+      const canBid = !state.isPaused && myBudget > state.currentBid && !isLeading && !state.isDraftCompleted;
       btnInc1.disabled = !canBid || (myBudget < state.currentBid + 1);
       btnInc3.disabled = !canBid || (myBudget < state.currentBid + 3);
       btnInc5.disabled = !canBid || (myBudget < state.currentBid + 5);
@@ -2251,22 +2342,23 @@
       }
     }
 
+    // Clean, Comma-Safe Final Results CSV Export (ID, Name, Fantasy Team, Price)
     function exportDraftResultsCSV() {
-      let csv = "Winning Team,Player Name,Position,NBA Team,Price Paid,FP/G\n";
+      let csv = "Player ID,Player Name,Fantasy Team,Price ($)\n";
 
       localData.teams.forEach(team => {
         team.roster.forEach(p => {
-          const matched = localData.players.find(x => x.id === p.id);
-          const fppg = matched?.fppg ? matched.fppg.toFixed(1) : '0.0';
           const cleanName = (p.name || '').replace(/[,"]/g, '').trim();
-          csv += `"${team.name}","${cleanName}",${p.pos},${p.nbaTeam},${p.price},${fppg}\n`;
+          const cleanTeam = (team.name || '').replace(/[,"]/g, '').trim();
+          const excelSafeId = `="` + String(p.id).replace(/[,"]/g, '').trim() + `"`;
+          csv += `${excelSafeId},${cleanName},${cleanTeam},${p.price}\n`;
         });
       });
 
       const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csv);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `final-draft-results-${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute("download", `draft-results-${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

@@ -508,11 +508,14 @@
       cursor: pointer;
     }
 
+    /* Floating Player Inspector: Expanded to accommodate Career Table */
     #floatingPlayerCard {
       position: fixed;
-      bottom: 15px;
+      top: 15px;
       right: 15px;
-      width: 360px;
+      width: 580px;
+      max-height: 92vh;
+      overflow-y: auto;
       background: #101c30;
       border: 2px solid #0284c7;
       border-radius: 10px;
@@ -533,6 +536,51 @@
       border-bottom: 1px solid #233554;
       padding-bottom: 0.45rem;
       margin-bottom: 0.65rem;
+    }
+    .history-table-container {
+      max-height: 240px;
+      overflow-y: auto;
+      overflow-x: auto;
+      margin-top: 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.6);
+    } 
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.73rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .history-table th, .history-table td {
+      padding: 5px 7px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .history-table th {
+      position: sticky;
+      top: 0;
+      background: #1e293b;
+      color: #94a3b8;
+      font-weight: 700;
+      text-transform: uppercase;
+      z-index: 10;
+    }
+    .history-table td.text-left, .history-table th.text-left {
+      text-align: left;
+    }
+    .history-table .highlight-fp {
+      color: #f59e0b;
+      font-weight: 700;
+    }
+    .history-table tfoot tr {
+      position: sticky;
+      bottom: 0;
+      background: #0f172a;
+      font-weight: bold;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 10;
     }
     .card-stat-pill-grid {
       display: grid;
@@ -555,7 +603,7 @@
       border: 1px solid #233554;
       border-radius: 6px;
       padding: 0.5rem;
-      margin-top: 0.4rem;
+      margin-top: 0.6rem;
       font-size: 0.76rem;
       line-height: 1.35;
       display: none;
@@ -671,10 +719,11 @@
       #floatingPlayerCard {
         width: 100vw !important;
         right: 0 !important;
+        top: auto !important;
         bottom: 0 !important;
         border-radius: 16px 16px 0 0 !important;
         border-bottom: none !important;
-        max-height: 80vh;
+        max-height: 85vh;
         overflow-y: auto;
       }
 
@@ -723,6 +772,7 @@
       </div>
     </div>
 
+    <!-- Floating Player Inspector -->
     <div id="floatingPlayerCard">
       <div class="card-header-bar">
         <div>
@@ -748,6 +798,41 @@
         <button id="floatCardAddToQueueBtn" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; padding: 0.45rem;" onclick="addCurrentPlayerToQueue()">
           + Add To My Nomination Queue
         </button>
+      </div>
+
+      <!-- Career History Log Table -->
+      <div style="font-size: 0.78rem; font-weight: bold; color: #38bdf8; margin-top: 0.6rem;">Career History Log</div>
+      <div class="history-table-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th class="text-left">Season</th>
+              <th class="text-left">Team</th>
+              <th>FPts</th>
+              <th>FP/G</th>
+              <th>GP</th>
+              <th>GS</th>
+              <th>MIN</th>
+              <th>FGM</th>
+              <th>FGA</th>
+              <th>FG%</th>
+              <th>3PTM</th>
+              <th>3PTA</th>
+              <th>3PT%</th>
+              <th>FTM</th>
+              <th>FTA</th>
+              <th>FT%</th>
+              <th>PTS</th>
+              <th>REB</th>
+              <th>AST</th>
+              <th>ST</th>
+              <th>BLK</th>
+              <th>TO</th>
+            </tr>
+          </thead>
+          <tbody id="floatCardHistoryBody"></tbody>
+          <tfoot id="floatCardHistoryFoot"></tfoot>
+        </table>
       </div>
 
       <div id="floatCardNewsBox" class="player-news-box">
@@ -884,7 +969,7 @@
 
     <input type="file" id="capsCsvFileInput" accept=".csv" style="display: none;" onchange="handleCapsCsvUpload(event)" />
 
-    <!-- Preferences Modal with 3s vs 5s Countdown Setting -->
+    <!-- Preferences Modal -->
     <div id="settingsModal" class="modal-overlay" style="display: none;">
       <div class="modal-box" style="max-width: 420px;">
         <button class="modal-close" onclick="closeSettingsModal()">✕</button>
@@ -1558,7 +1643,6 @@
         }
       }
 
-      // Configurable 3-Second vs 5-Second Alert Trigger
       const alertThreshold = userPrefs.alertWindow || 3;
       if (mode === 'auction' && seconds >= 1 && seconds <= alertThreshold && lastSecondFlashed !== seconds) {
         lastSecondFlashed = seconds;
@@ -1874,7 +1958,7 @@
               ` : `
                 <div style="display: flex; gap: 0.2rem; align-items: center;">
                   <button class="btn btn-secondary" style="padding: 0.3rem 0.5rem; font-size: 0.8rem;" 
-                    onclick="event.stopPropagation(); addPlayerToQueue('${p.id}')"
+                    onclick="event.stopPropagation(); addPlayerToQueue('${p.id}')" 
                     ${isOnBlock ? 'disabled' : ''}
                     title="Add to Queue">
                     +Q
@@ -2135,7 +2219,7 @@
               ${t.roster.map(p => `
                 <div class="board-pick">
                   <div style="display: flex; justify-content: space-between;">
-                    <strong>${p.name}</strong>                     <span style="color: #06d6a0; font-weight: bold;">$${p.price}</span>
+                    <strong>${p.name}</strong> <span style="color: #06d6a0; font-weight: bold;">$${p.price}</span>
                   </div>
                   <div style="color: #8d99ae; font-size: 0.75rem;">${p.pos} •${p.nbaTeam}</div>
                 </div>
@@ -2180,10 +2264,12 @@
       if (!p) return;
       currentInspectedPlayerId = playerId;
 
+      // Card Header
       document.getElementById('floatCardName').textContent = p.name;
       document.getElementById('floatCardTeamPos').textContent = `${p.pos} • ${p.nbaTeam}`;
       document.getElementById('floatCardRank').textContent = p.rank ? `Rank #${p.rank}` : '';
 
+      // 8 Headline Stat Pills
       document.getElementById('pillFPPG').textContent = p.fppg ? p.fppg.toFixed(1) : '-';
       document.getElementById('pillFPTS').textContent = p.fpts ? p.fpts.toFixed(0) : '-';
       document.getElementById('pillPTS').textContent = p.fullStats?.PTS ?? (p.stats?.pts ?? '-');
@@ -2193,6 +2279,65 @@
       document.getElementById('pillBLK').textContent = p.fullStats?.BLK ?? (p.stats?.blk ?? '-');
       document.getElementById('pill3PT').textContent = p.fullStats?.['3PTM'] ?? (p.stats?.threes ?? '-');
 
+      // Populate Career History Log
+      const tbody = document.getElementById('floatCardHistoryBody');
+      const tfoot = document.getElementById('floatCardHistoryFoot');
+      tbody.innerHTML = '';
+      tfoot.innerHTML = '';
+
+      const history = p.history || [];
+      if (history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="22" style="text-align:center; padding: 12px; color: #64748b;">No historical career data available</td></tr>`;
+      } else {
+        let totFpts = 0, totGp = 0, totGs = 0;
+
+        history.forEach(row => {
+          totFpts += (row.fpts || 0);
+          totGp += (row.gp || 0);
+          totGs += (row.gs || 0);
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="text-left">${row.season || '-'}</td>
+            <td class="text-left">${row.team || '-'}</td>
+            <td class="highlight-fp">${row.fpts !== undefined ? row.fpts.toFixed(0) : '-'}</td>
+            <td class="highlight-fp">${row.fppg !== undefined ? row.fppg.toFixed(1) : '-'}</td>
+            <td>${row.gp ?? '-'}</td>
+            <td>${row.gs ?? '-'}</td>
+            <td>${row.min !== undefined ? row.min.toFixed(1) : '-'}</td>
+            <td>${row.fgm !== undefined ? row.fgm.toFixed(1) : '-'}</td>
+            <td>${row.fga !== undefined ? row.fga.toFixed(1) : '-'}</td>
+            <td>${row.fgPct !== undefined ? '.' + Math.round(row.fgPct * 1000).toString().padStart(3, '0') : '-'}</td>
+            <td>${row.tpm !== undefined ? row.tpm.toFixed(1) : '-'}</td>
+            <td>${row.tpa !== undefined ? row.tpa.toFixed(1) : '-'}</td>
+            <td>${row.tpPct !== undefined ? '.' + Math.round(row.tpPct * 1000).toString().padStart(3, '0') : '-'}</td>
+            <td>${row.ftm !== undefined ? row.ftm.toFixed(1) : '-'}</td>
+            <td>${row.fta !== undefined ? row.fta.toFixed(1) : '-'}</td>
+            <td>${row.ftPct !== undefined ? '.' + Math.round(row.ftPct * 1000).toString().padStart(3, '0') : '-'}</td>
+            <td>${row.pts !== undefined ? row.pts.toFixed(1) : '-'}</td>
+            <td>${row.reb !== undefined ? row.reb.toFixed(1) : '-'}</td>
+            <td>${row.ast !== undefined ? row.ast.toFixed(1) : '-'}</td>
+            <td>${row.stl !== undefined ? row.stl.toFixed(1) : '-'}</td>
+            <td>${row.blk !== undefined ? row.blk.toFixed(1) : '-'}</td>
+            <td>${row.to !== undefined ? row.to.toFixed(1) : '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        const careerFppg = totGp > 0 ? (totFpts / totGp).toFixed(1) : '-';
+        tfoot.innerHTML = `
+          <tr>
+            <td class="text-left" colspan="2">Career Total</td>
+            <td class="highlight-fp">${totFpts.toFixed(0)}</td>
+            <td class="highlight-fp">${careerFppg}</td>
+            <td>${totGp}</td>
+            <td>${totGs}</td>
+            <td colspan="16"></td>
+          </tr>
+        `;
+      }
+
+      // News & Injury Updates
       const newsBox = document.getElementById('floatCardNewsBox');
       if (p.news) {
         document.getElementById('floatCardNewsDate').textContent = p.news.date || 'Recent';
@@ -2342,7 +2487,6 @@
       }
     }
 
-    // Clean, Comma-Safe Final Results CSV Export (ID, Name, Fantasy Team, Price)
     function exportDraftResultsCSV() {
       let csv = "Player ID,Player Name,Fantasy Team,Price ($)\n";
 

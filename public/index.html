@@ -1998,9 +1998,12 @@
         const currentRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
         const cleanName = (p.name || '').replace(/[,"]/g, '').trim();
         const cleanTeam = (p.nbaTeam || '').replace(/[,"]/g, '').trim();
-        const excelSafeId = `="` + String(p.id).replace(/"/g, '') + `"`;
+        
+        // Escape ID as ="ID" to force Excel to treat it as string
+        const cleanId = String(p.id).replace(/["=]/g, '').trim();
+        const excelSafeId = `="` + cleanId + `"`;
 
-        csvContent += `${excelSafeId},${cleanName},${cleanTeam},${p.fppg.toFixed(1)},${currentCap},${currentRank}\n`;
+        csvContent += `${excelSafeId},"${cleanName}","${cleanTeam}",${p.fppg.toFixed(1)},${currentCap},${currentRank}\n`;
       });
 
       const encodedUri = encodeURI(csvContent);
@@ -2022,7 +2025,7 @@
         const lines = text.split(/\r\n|\n/);
         if (lines.length < 2) return;
 
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z]/g, ''));
         const idIdx = headers.findIndex(h => h.includes('id'));
         const nameIdx = headers.findIndex(h => h.includes('name') || h.includes('player'));
         const capIdx = headers.findIndex(h => h.includes('max') || h.includes('bid') || h.includes('cap') || h.includes('dollar'));
@@ -2034,15 +2037,16 @@
           const line = lines[i].trim();
           if (!line) continue;
 
-          const cols = line.split(',').map(c => c.trim().replace(/^="|^"|"$|^'/g, ''));
+          // Split columns while stripping surrounding formula quotes/equals
+          const cols = line.split(',').map(c => c.trim().replace(/^="|^"|"$|^'=|'$/g, '').replace(/^[="']+\vert{}[="']+$/g, '').trim());
 
-          const playerId = idIdx !== -1 ? cols[idIdx].trim() : null;
-          const playerName = nameIdx !== -1 ? cols[nameIdx].trim() : null;
+          const rawId = idIdx !== -1 ? cols[idIdx] : null;
+          const playerName = nameIdx !== -1 ? cols[nameIdx] : null;
           const maxBid = capIdx !== -1 ? cols[capIdx] : '';
           const rank = rankIdx !== -1 ? cols[rankIdx] : '';
 
-          if (playerId || playerName) {
-            records.push({ playerId, name: playerName, maxBid, rank });
+          if (rawId || playerName) {
+            records.push({ playerId: rawId, name: playerName, maxBid, rank });
           }
         }
 
@@ -2279,13 +2283,16 @@
       document.getElementById('pillBLK').textContent = p.fullStats?.BLK ?? (p.stats?.blk ?? '-');
       document.getElementById('pill3PT').textContent = p.fullStats?.['3PTM'] ?? (p.stats?.threes ?? '-');
 
-      // Populate Career History Log
+      // Populate Career Multi-Year History (Sorted Descending)
       const tbody = document.getElementById('floatCardHistoryBody');
       const tfoot = document.getElementById('floatCardHistoryFoot');
       tbody.innerHTML = '';
       tfoot.innerHTML = '';
 
-      const history = p.history || [];
+      let history = (p.history || []).slice();
+      // Sort most recent season first
+      history.sort((a, b) => String(b.season || '').localeCompare(String(a.season || '')));
+
       if (history.length === 0) {
         tbody.innerHTML = `<tr><td colspan="22" style="text-align:center; padding: 12px; color: #64748b;">No historical career data available</td></tr>`;
       } else {
@@ -2307,13 +2314,13 @@
             <td>${row.min !== undefined ? row.min.toFixed(1) : '-'}</td>
             <td>${row.fgm !== undefined ? row.fgm.toFixed(1) : '-'}</td>
             <td>${row.fga !== undefined ? row.fga.toFixed(1) : '-'}</td>
-            <td>${row.fgPct !== undefined ? '.' + Math.round(row.fgPct * 1000).toString().padStart(3, '0') : '-'}</td>
+            <td>.${Math.round((row.fgPct || 0) * 1000).toString().padStart(3, '0')}</td>
             <td>${row.tpm !== undefined ? row.tpm.toFixed(1) : '-'}</td>
             <td>${row.tpa !== undefined ? row.tpa.toFixed(1) : '-'}</td>
-            <td>${row.tpPct !== undefined ? '.' + Math.round(row.tpPct * 1000).toString().padStart(3, '0') : '-'}</td>
+            <td>.${Math.round((row.tpPct || 0) * 1000).toString().padStart(3, '0')}</td>
             <td>${row.ftm !== undefined ? row.ftm.toFixed(1) : '-'}</td>
             <td>${row.fta !== undefined ? row.fta.toFixed(1) : '-'}</td>
-            <td>${row.ftPct !== undefined ? '.' + Math.round(row.ftPct * 1000).toString().padStart(3, '0') : '-'}</td>
+            <td>.${Math.round((row.ftPct || 0) * 1000).toString().padStart(3, '0')}</td>
             <td>${row.pts !== undefined ? row.pts.toFixed(1) : '-'}</td>
             <td>${row.reb !== undefined ? row.reb.toFixed(1) : '-'}</td>
             <td>${row.ast !== undefined ? row.ast.toFixed(1) : '-'}</td>

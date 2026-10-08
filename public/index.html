@@ -508,7 +508,6 @@
       cursor: pointer;
     }
 
-    /* Floating Player Inspector: Expanded to accommodate Career Table */
     #floatingPlayerCard {
       position: fixed;
       top: 15px;
@@ -670,6 +669,19 @@
       border-radius: 6px;
       padding: 0.75rem;
       margin-top: 0.75rem;
+    }
+
+    /* Custom Bid Validation Feedback */
+    .custom-bid-error-msg {
+      color: #ef476f;
+      font-size: 0.78rem;
+      font-weight: bold;
+      margin-top: 0.35rem;
+      display: none;
+    }
+    .input-error {
+      border: 2px solid #ef476f !important;
+      background: rgba(239, 71, 111, 0.15) !important;
     }
 
     @media (max-width: 900px) {
@@ -1081,9 +1093,10 @@
           </div>
 
           <div class="custom-bid-group">
-            <input type="number" id="customBidInput" class="input-inline" placeholder="$ Amount">
+            <input type="number" id="customBidInput" class="input-inline" placeholder="$ Amount" oninput="validateCustomBidInput()">
             <button id="btnCustomBid" class="btn btn-secondary" onclick="bidCustom()" disabled>Custom Bid</button>
           </div>
+          <div id="customBidErrorMsg" class="custom-bid-error-msg"></div>
         </div>
 
         <h4 style="text-align: left; margin: 1rem 0 0.25rem 0; color: #48cae4;">Draft Activity Log</h4>
@@ -1130,7 +1143,7 @@
           </select>
         </div>
 
-        <input type="text" id="playerSearch" class="selector" placeholder="Search player name..." oninput="renderPlayers()" />
+        <input type="text" id="playerSearch" class="selector" placeholder="Search player name..." oninput="debouncedRenderPlayers()" />
 
         <div id="playerListContainer">
           <div id="playerList"></div>
@@ -1305,6 +1318,7 @@
     const btnInc5 = document.getElementById('btnInc5');
     const btnCustomBid = document.getElementById('btnCustomBid');
     const customBidInput = document.getElementById('customBidInput');
+    const customBidErrorMsg = document.getElementById('customBidErrorMsg');
 
     const overrideTeamSelect = document.getElementById('overrideTeamSelect');
     const transferPlayerSelect = document.getElementById('transferPlayerSelect');
@@ -1331,6 +1345,37 @@
     function openSettingsModal() { document.getElementById('settingsModal').style.display = 'flex'; }
     function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
     function closeDraftEndModal() { document.getElementById('draftEndCelebrationModal').style.display = 'none'; }
+
+    // Desktop Escape Modal Listener
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeFloatingPlayerCard();
+        closeSettingsModal();
+        if (myTeam?.isCommish) closeCommishModal();
+      }
+    });
+
+    // Dynamic Tab Title Flash for Background Tab Alerts
+    let titleFlashTimer = null;
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && titleFlashTimer) {
+        clearInterval(titleFlashTimer);
+        titleFlashTimer = null;
+        document.title = "NBA Draft War Room";
+      }
+    });
+
+    function checkBackgroundNominationAlert() {
+      if (!document.hidden) return;
+      const isMyTurn = myTeam && localData.draftState.nominatingTeamId === myTeam.id && !localData.draftState.nominatedPlayer && localData.draftState.isDraftStarted;
+      if (isMyTurn && !titleFlashTimer) {
+        let toggle = false;
+        titleFlashTimer = setInterval(() => {
+          document.title = toggle ? "🚨 YOUR TURN TO NOMINATE! 🚨" : "⏰ NBA DRAFT ROOM";
+          toggle = !toggle;
+        }, 800);
+      }
+    }
 
     let easterEggTimeout = null;
     function triggerEasterEgg(icon, title, subtitle) {
@@ -1425,6 +1470,11 @@
       localData.draftState = data.draftState;
       allLeagueTeams = data.allLeagueTeams || [];
 
+      // Pre-compute normalized search indices for instant keyboard response
+      localData.players.forEach(p => {
+        p._searchKey = cleanNormalize(`${p.name} ${p.nbaTeam || ''}`);
+      });
+
       localStorage.setItem('draft_passcode', passcodeInput.value.trim() || localStorage.getItem('draft_passcode'));
       authOverlay.style.display = 'none';
 
@@ -1510,14 +1560,21 @@
       localData.draftState = data.draftState;
       localData.teams = data.teams;
       localData.players = data.players;
+      localData.players.forEach(p => {
+        p._searchKey = cleanNormalize(`${p.name} ${p.nbaTeam || ''}`);
+      });
       renderAll();
       renderQueue();
+      checkBackgroundNominationAlert();
     });
 
     socket.on('modeSwitched', (data) => {
       localData.draftState = data.draftState;
       localData.teams = data.teams;
       localData.players = data.players;
+      localData.players.forEach(p => {
+        p._searchKey = cleanNormalize(`${p.name} ${p.nbaTeam || ''}`);
+      });
       maxRosterSize = data.maxRosterSize;
       myQueue = [];
       populateMobileTeamPicker();
@@ -1606,7 +1663,6 @@
       renderQueue();
     });
 
-    // Final Celebration Modal Event
     socket.on('draftEndedCelebration', ({ teams }) => {
       soundVictoryWon();
       document.getElementById('draftEndCelebrationModal').style.display = 'flex';
@@ -1875,6 +1931,12 @@
       return (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     }
 
+    let renderDebounceTimer = null;
+    function debouncedRenderPlayers() {
+      clearTimeout(renderDebounceTimer);
+      renderDebounceTimer = setTimeout(renderPlayers, 150);
+    }
+
     function stepPlayerCap(playerId, delta) {
       const currentVal = parseInt(myCaps[playerId], 10) || 0;
       const newVal = Math.max(0, currentVal + delta);
@@ -1890,7 +1952,8 @@
       const onBlockPlayerId = localData.draftState?.nominatedPlayer?.id;
 
       const filtered = localData.players.filter(p => {
-        if (query && !cleanNormalize(p.name).includes(query)) return false;
+        // Fast instant search using pre-indexed search key
+        if (query && p._searchKey && !p._searchKey.includes(query)) return false;
         if (teamSelected !== 'ALL' && (p.nbaTeam || '').toUpperCase() !== teamSelected) return false;
 
         const isCurrentlyOnBlock = (onBlockPlayerId && String(p.id) === String(onBlockPlayerId));
@@ -1937,28 +2000,32 @@
 
             ${!isDrafted ? (
               capEditMode ? `
-                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;" onclick="event.stopPropagation();">
-                  <div style="display: flex; gap: 0.2rem; align-items: center;">
-                    <button class="cap-btn-stepper" onclick="stepPlayerCap('${p.id}', -5)">-5</button>
-                    <button class="cap-btn-stepper" onclick="stepPlayerCap('${p.id}', -1)">-1</button>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;" onclick="event.stopPropagation();" ondblclick="event.stopPropagation();">
+                  <div style="display: flex; gap: 0.2rem; align-items: center;" onclick="event.stopPropagation();" ondblclick="event.stopPropagation();">
+                    <button class="cap-btn-stepper" onclick="event.stopPropagation(); stepPlayerCap('${p.id}', -5)" ondblclick="event.stopPropagation(); stepPlayerCap('${p.id}', -5)">-5</button>
+                    <button class="cap-btn-stepper" onclick="event.stopPropagation(); stepPlayerCap('${p.id}', -1)" ondblclick="event.stopPropagation(); stepPlayerCap('${p.id}', -1)">-1</button>
                     <input type="number" class="input-inline" placeholder="Max $" value="${myCap}" 
                       title="Max Bid ($)"
+                      onclick="event.stopPropagation();"
+                      ondblclick="event.stopPropagation();"
                       onchange="saveCap('${p.id}', this.value, document.getElementById('rankInput_${p.id}').value)" />
-                    <button class="cap-btn-stepper" onclick="stepPlayerCap('${p.id}', 1)">+1</button>
-                    <button class="cap-btn-stepper" onclick="stepPlayerCap('${p.id}', 5)">+5</button>
+                    <button class="cap-btn-stepper" onclick="event.stopPropagation(); stepPlayerCap('${p.id}', 1)" ondblclick="event.stopPropagation(); stepPlayerCap('${p.id}', 1)">+1</button>
+                    <button class="cap-btn-stepper" onclick="event.stopPropagation(); stepPlayerCap('${p.id}', 5)" ondblclick="event.stopPropagation(); stepPlayerCap('${p.id}', 5)">+5</button>
                   </div>
-                  <div style="display: flex; gap: 0.2rem; align-items: center;">
+                  <div style="display: flex; gap: 0.2rem; align-items: center;" onclick="event.stopPropagation();" ondblclick="event.stopPropagation();">
                     <span style="font-size: 0.7rem; color: #8d99ae;">Rank:</span>
                     <input type="number" id="rankInput_${p.id}" class="input-inline" placeholder="#" value="${myRank}" 
                       style="width: 48px;"
                       title="Priority Rank (1 = Top preference)"
+                      onclick="event.stopPropagation();"
+                      ondblclick="event.stopPropagation();"
                       onchange="saveCap('${p.id}', myCaps['${p.id}'] || '', this.value)" />
                   </div>
                 </div>
               ` : `
                 <div style="display: flex; gap: 0.2rem; align-items: center;">
                   <button class="btn btn-secondary" style="padding: 0.3rem 0.5rem; font-size: 0.8rem;" 
-                    onclick="event.stopPropagation(); addPlayerToQueue('${p.id}')" 
+                    onclick="event.stopPropagation(); addPlayerToQueue('${p.id}')"
                     ${isOnBlock ? 'disabled' : ''}
                     title="Add to Queue">
                     +Q
@@ -1999,7 +2066,6 @@
         const cleanName = (p.name || '').replace(/[,"]/g, '').trim();
         const cleanTeam = (p.nbaTeam || '').replace(/[,"]/g, '').trim();
         
-        // Escape ID as ="ID" to force Excel to treat it as string
         const cleanId = String(p.id).replace(/["=]/g, '').trim();
         const excelSafeId = `="` + cleanId + `"`;
 
@@ -2037,7 +2103,6 @@
           const line = lines[i].trim();
           if (!line) continue;
 
-          // Split columns while stripping surrounding formula quotes/equals
           const cols = line.split(',').map(c => c.trim().replace(/^="|^"|"$|^'=|'$/g, '').replace(/^[="']+\vert{}[="']+$/g, '').trim());
 
           const rawId = idIdx !== -1 ? cols[idIdx] : null;
@@ -2158,6 +2223,56 @@
       updateStageOnBid();
     }
 
+    function validateCustomBidInput() {
+      const state = localData.draftState;
+      if (!state.nominatedPlayer) return;
+
+      const me = localData.teams.find(t => t.id === myTeam?.id);
+      const myBudget = me ? me.budget : 0;
+      const isLeading = myTeam && state.highBidder?.id === myTeam.id;
+
+      const val = parseInt(customBidInput.value, 10);
+
+      if (isNaN(val) || customBidInput.value === '') {
+        customBidInput.classList.remove('input-error');
+        customBidErrorMsg.style.display = 'none';
+        btnCustomBid.disabled = true;
+        return;
+      }
+
+      // Check 1: Cannot bid if already high bidder
+      if (isLeading) {
+        customBidInput.classList.add('input-error');
+        customBidErrorMsg.textContent = '⚠️ You already hold the high bid!';
+        customBidErrorMsg.style.display = 'block';
+        btnCustomBid.disabled = true;
+        return;
+      }
+
+      // Check 2: Exceeds team budget
+      if (val > myBudget) {
+        customBidInput.classList.add('input-error');
+        customBidErrorMsg.textContent = `⚠️ Bid ($${val}) exceeds your available budget ($${myBudget})!`;
+        customBidErrorMsg.style.display = 'block';
+        btnCustomBid.disabled = true;
+        return;
+      }
+
+      // Check 3: Must beat the current high bid
+      if (val <= state.currentBid) {
+        customBidInput.classList.add('input-error');
+        customBidErrorMsg.textContent = `⚠️ Bid must be at least $${state.currentBid + 1} to beat current bid.`;
+        customBidErrorMsg.style.display = 'block';
+        btnCustomBid.disabled = true;
+        return;
+      }
+
+      // Valid bid
+      customBidInput.classList.remove('input-error');
+      customBidErrorMsg.style.display = 'none';
+      btnCustomBid.disabled = state.isPaused || state.isDraftCompleted;
+    }
+
     function updateStageOnBid() {
       const state = localData.draftState;
       if (!state.nominatedPlayer) return;
@@ -2179,9 +2294,8 @@
 
       currentBidDisplay.textContent = `$${state.currentBid}`;
 
-      const openSpots = me ? (maxRosterSize - me.roster.length) : 0;
-      const trueMaxBid = openSpots > 0 ? (myBudget - (openSpots - 1)) : 0;
-      userMaxAllowedBid.textContent = `$${Math.max(0, trueMaxBid)}`;
+      // Max allowed bid equals entire available budget
+      userMaxAllowedBid.textContent = `$${myBudget}`;
 
       btnInc1.textContent = `+$1 ($${state.currentBid + 1})`;
       btnInc3.textContent = `+$3 ($${state.currentBid + 3})`;
@@ -2191,9 +2305,10 @@
       btnInc1.disabled = !canBid || (myBudget < state.currentBid + 1);
       btnInc3.disabled = !canBid || (myBudget < state.currentBid + 3);
       btnInc5.disabled = !canBid || (myBudget < state.currentBid + 5);
-      btnCustomBid.disabled = !canBid;
+
       customBidInput.min = state.currentBid + 1;
       customBidInput.max = myBudget;
+      validateCustomBidInput();
 
       const fraction = Math.max(0, state.timerSeconds / timerConfig.beginningBidTime);
       timerRingBar.style.strokeDashoffset = RING_CIRCUMFERENCE * (1 - fraction);
@@ -2204,6 +2319,8 @@
       btnInc3.disabled = disabled;
       btnInc5.disabled = disabled;
       btnCustomBid.disabled = disabled;
+      customBidErrorMsg.style.display = 'none';
+      customBidInput.classList.remove('input-error');
     }
 
     function renderDraftBoard() {
@@ -2252,14 +2369,22 @@
 
     function bidCustom() {
       if (bidCooldownActive) return;
-      const input = document.getElementById('customBidInput');
-      const val = parseInt(input.value, 10);
+      const val = parseInt(customBidInput.value, 10);
       if (isNaN(val)) return;
+
+      const me = localData.teams.find(t => t.id === myTeam?.id);
+      const myBudget = me ? me.budget : 0;
+      if (val > myBudget || val <= localData.draftState.currentBid) {
+        validateCustomBidInput();
+        return;
+      }
 
       bidCooldownActive = true;
       setTimeout(() => { bidCooldownActive = false; }, 350);
 
       socket.emit('placeBid', { bidAmount: val });
+      customBidInput.value = '';
+      validateCustomBidInput();
     }
 
     let currentInspectedPlayerId = null;
@@ -2290,7 +2415,6 @@
       tfoot.innerHTML = '';
 
       let history = (p.history || []).slice();
-      // Sort most recent season first
       history.sort((a, b) => String(b.season || '').localeCompare(String(a.season || '')));
 
       if (history.length === 0) {

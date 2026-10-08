@@ -103,7 +103,7 @@
     "name": "Clyde",
     "budget": 200,
     "roster": [],
-    "isAuto": true,
+    "isAuto": false,
     "passcode": "clyde666",
     "isCommish": false
   }

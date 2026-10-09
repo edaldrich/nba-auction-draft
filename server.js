@@ -93,7 +93,7 @@ function checkUnbeatableBid() {
   }
 }
 
-// RSS Ingestion
+// RSS News Ingestion
 async function fetchPlayerNews() {
   const feedUrls = [
     'https://www.espn.com/espn/rss/nba/news',
@@ -137,7 +137,6 @@ async function fetchPlayerNews() {
       });
 
       if (matchesFound > 0) {
-        console.log(`[News Feed] Updated ${matchesFound} player notes.`);
         io.emit('stateUpdate', {
           draftState,
           teams: getPublicTeams(),
@@ -243,6 +242,22 @@ let draftState = {
 
 let timerInterval = null;
 let autoBidTimeout = null;
+
+// Michael Jackson Random Sound Engine
+let mjSoundTimeout = null;
+let isMJActive = false;
+
+function scheduleNextMJSound() {
+  if (!isMJActive) return;
+  // Random silence interval between 35 and 90 seconds
+  const delay = Math.floor(Math.random() * (90000 - 35000 + 1)) + 35000;
+  mjSoundTimeout = setTimeout(() => {
+    if (isMJActive) {
+      io.emit('mjTriggerSound');
+      scheduleNextMJSound();
+    }
+  }, delay);
+}
 
 function startTimer(mode, duration) {
   clearInterval(timerInterval);
@@ -394,7 +409,6 @@ function finalizeSale() {
     });
   }
 
-  // Check if draft has completely finished
   if (isDraftFullyCompleted()) {
     draftState.isDraftCompleted = true;
     draftState.isDraftActive = false;
@@ -477,7 +491,6 @@ function handleBidSubmission(teamId, bidAmount, isAutoBid = false) {
     }
 
     io.emit('bidAccepted', { draftState, isAutoBid });
-
     checkUnbeatableBid();
 
     return true;
@@ -486,7 +499,6 @@ function handleBidSubmission(teamId, bidAmount, isAutoBid = false) {
   }
 }
 
-// Random Bot Contest across BOTH Prod and Demo modes
 function triggerAutodraftCheck() {
   clearTimeout(autoBidTimeout);
 
@@ -497,7 +509,6 @@ function triggerAutodraftCheck() {
     const currentBid = draftState.currentBid;
     const nextBidRequired = currentBid === 0 ? 1 : currentBid + 1;
 
-    // Filter bots that can legally bid the next dollar and have not exceeded their cap
     const eligibleBots = teams.filter(t => {
       if (!t.isAuto) return false;
       if (draftState.highBidder && draftState.highBidder.id === t.id) return false;
@@ -513,12 +524,10 @@ function triggerAutodraftCheck() {
 
     if (eligibleBots.length === 0) return;
 
-    // Purely random choice: no priorities, no team limits
     const randomIndex = Math.floor(Math.random() * eligibleBots.length);
     const chosenBot = eligibleBots[randomIndex];
 
     handleBidSubmission(chosenBot.id, nextBidRequired, true);
-
     triggerAutodraftCheck();
   }, 1200);
 }
@@ -784,6 +793,20 @@ io.on('connection', (socket) => {
     return team && team.isCommish;
   }
 
+  // MJ Soundtrack Toggle Event
+  socket.on('adminToggleMJSoundtrack', ({ active }) => {
+    if (!isCommishSocket()) return;
+    isMJActive = !!active;
+    clearTimeout(mjSoundTimeout);
+
+    if (isMJActive) {
+      io.emit('commishActionLogged', { message: "🕺 Commissioner activated random Michael Jackson noises soundtrack!" });
+      scheduleNextMJSound();
+    } else {
+      io.emit('commishActionLogged', { message: "🔇 Commissioner stopped Michael Jackson soundtrack." });
+    }
+  });
+
   socket.on('adminSwitchConfiguredDemo', (config) => {
     if (!isCommishSocket()) return;
     clearInterval(timerInterval);
@@ -791,6 +814,7 @@ io.on('connection', (socket) => {
 
     initDynamicDemoMode(config);
 
+    io.emit('commishActionLogged', { message: `Switched draft to Demo/Mock Mode (${teams.length} teams, ${maxRosterSize} roster spots).` });
     io.emit('modeSwitched', {
       isDemoMode,
       maxRosterSize,
@@ -807,6 +831,7 @@ io.on('connection', (socket) => {
 
     initProdMode();
 
+    io.emit('commishActionLogged', { message: "Restored official Production Draft Mode." });
     io.emit('modeSwitched', {
       isDemoMode,
       maxRosterSize,
@@ -823,9 +848,12 @@ io.on('connection', (socket) => {
 
     const b = parseInt(newBudget, 10);
     if (!isNaN(b) && b >= 0) {
+      const prevBudget = team.budget;
       team.budget = b;
       teamBaseBudgets[team.id] = b;
       saveStateToDisk();
+
+      io.emit('commishActionLogged', { message: `Adjusted budget for <strong>${team.name}</strong> from $${prevBudget} to <strong>$${b}</strong>.` });
       io.emit('stateUpdate', {
         draftState,
         teams: getPublicTeams(),
@@ -863,6 +891,11 @@ io.on('connection', (socket) => {
     player.price = cleanPrice;
 
     saveStateToDisk();
+
+    const fromText = oldTeam ? oldTeam.name : 'Unknown';
+    io.emit('commishActionLogged', { 
+      message: `Reassigned <strong>${player.name}</strong> from ${fromText} to <strong>${newTeam.name}</strong> for <strong>$${cleanPrice}</strong>.` 
+    });
     io.emit('stateUpdate', {
       draftState,
       teams: getPublicTeams(),
@@ -876,6 +909,7 @@ io.on('connection', (socket) => {
     if (!player || player.status !== 'drafted') return;
 
     const oldTeam = teams.find(t => t.id === player.draftedByTeamId);
+    const prevPrice = player.price;
     if (oldTeam) {
       oldTeam.roster = oldTeam.roster.filter(p => p.id !== player.id);
       recalculateTeamBudget(oldTeam);
@@ -887,6 +921,11 @@ io.on('connection', (socket) => {
     player.price = 0;
 
     saveStateToDisk();
+
+    const teamText = oldTeam ? oldTeam.name : 'Team';
+    io.emit('commishActionLogged', { 
+      message: `Released <strong>${player.name}</strong> back to the available pool. Refunded $${prevPrice} to ${teamText}.` 
+    });
     io.emit('stateUpdate', {
       draftState,
       teams: getPublicTeams(),
@@ -899,6 +938,8 @@ io.on('connection', (socket) => {
     draftState.isDraftStarted = true;
     draftState.isDraftCompleted = false;
     startTimer('nomination', timerConfig.nominationTime);
+
+    io.emit('commishActionLogged', { message: "Official draft clock started!" });
     io.emit('draftStartedNotice', { draftState });
     io.emit('stateUpdate', {
       draftState,
@@ -913,6 +954,8 @@ io.on('connection', (socket) => {
     timerConfig.nominationTime = parseInt(nominationTime, 10) || 45;
     timerConfig.beginningBidTime = parseInt(beginningBidTime, 10) || 45;
     timerConfig.additionalBidTime = parseInt(additionalBidTime, 10) || 10;
+
+    io.emit('commishActionLogged', { message: `Timers updated (Nom: ${timerConfig.nominationTime}s, Bid: ${timerConfig.beginningBidTime}s, Reset: ${timerConfig.additionalBidTime}s).` });
     io.emit('timersUpdated', { timerConfig });
   });
 
@@ -924,6 +967,8 @@ io.on('connection', (socket) => {
     team.isAuto = !team.isAuto;
     saveStateToDisk();
     io.emit('presenceUpdate', { teams: getPublicTeams() });
+
+    io.emit('commishActionLogged', { message: `Toggled <strong>${team.name}</strong> Auto-Draft to <strong>${team.isAuto ? 'ON' : 'OFF'}</strong>.` });
 
     if (team.isAuto) {
       if (draftState.nominatedPlayer) {
@@ -937,6 +982,7 @@ io.on('connection', (socket) => {
   socket.on('adminTogglePause', () => {
     if (!isCommishSocket()) return;
     draftState.isPaused = !draftState.isPaused;
+    io.emit('commishActionLogged', { message: draftState.isPaused ? "Draft PAUSED by Commissioner." : "Draft RESUMED by Commissioner." });
     io.emit('adminStateChanged', { draftState });
   });
 
@@ -944,11 +990,14 @@ io.on('connection', (socket) => {
     if (!isCommishSocket()) return;
     clearInterval(timerInterval);
     clearTimeout(autoBidTimeout);
+    const nomName = draftState.nominatedPlayer ? draftState.nominatedPlayer.name : 'player';
     draftState.nominatedPlayer = null;
     draftState.currentBid = 0;
     draftState.highBidder = null;
     draftState.isPaused = false;
     startTimer('nomination', timerConfig.nominationTime);
+
+    io.emit('commishActionLogged', { message: `Cancelled active block for ${nomName}. Returned to nomination phase.` });
     io.emit('stateUpdate', {
       draftState,
       teams: getPublicTeams(),
@@ -979,6 +1028,7 @@ io.on('connection', (socket) => {
       saveStateToDisk();
       startTimer('nomination', timerConfig.nominationTime);
 
+      io.emit('commishActionLogged', { message: `Undid sale of <strong>${player.name}</strong> to ${team.name}. Budget restored to $${team.budget}.` });
       io.emit('saleUndone', { player, team, price: lastSale.price });
       io.emit('stateUpdate', {
         draftState,
@@ -992,6 +1042,8 @@ io.on('connection', (socket) => {
     if (!isCommishSocket()) return;
     clearInterval(timerInterval);
     clearTimeout(autoBidTimeout);
+    clearTimeout(mjSoundTimeout);
+    isMJActive = false;
     draftHistory = [];
 
     teams.forEach(t => {
@@ -1023,6 +1075,8 @@ io.on('connection', (socket) => {
     };
 
     saveStateToDisk();
+    io.emit('draftLogReset');
+    io.emit('commishActionLogged', { message: "⚠️ Commissioner performed a complete draft reset. All rosters, budgets, and logs cleared." });
     io.emit('stateUpdate', {
       draftState,
       teams: getPublicTeams(),

@@ -13,13 +13,13 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background-color: #080d1a;
+      background-color: #060a14;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: radial-gradient(circle at 50% 0%, #152244 0%, #080d1a 100%);
-      color: #e0e1dd;
+      background: radial-gradient(circle at 50% 0%, #111a33 0%, #060a14 100%);
+      color: #e2e8f0;
       position: relative;
     }
 
@@ -41,8 +41,8 @@
     #outbidJoltOverlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      border: 6px solid #ef233c;
-      box-shadow: inset 0 0 40px rgba(239, 35, 60, 0.5);
+      border: 8px solid #ef233c;
+      box-shadow: inset 0 0 50px rgba(239, 35, 60, 0.6);
       pointer-events: none;
       z-index: 4500;
       display: none;
@@ -57,7 +57,7 @@
     #urgencyOverlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(circle, rgba(239,35,60,0.15) 0%, rgba(239,35,60,0.45) 100%);
+      background: radial-gradient(circle, rgba(239,35,60,0.2) 0%, rgba(239,35,60,0.55) 100%);
       pointer-events: none;
       z-index: 5000;
       display: none;
@@ -68,7 +68,7 @@
       font-size: clamp(8rem, 25vw, 15rem);
       font-weight: 900;
       color: #ffbe0b;
-      text-shadow: 0 0 30px rgba(255, 190, 11, 0.8);
+      text-shadow: 0 0 35px rgba(255, 190, 11, 0.9);
       animation: pulsePop 0.8s ease-out;
     }
     @keyframes pulsePop {
@@ -138,7 +138,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 0.5rem;
-      background: #162238;
+      background: #131d31;
       border: 1px solid #233554;
       border-radius: 8px;
       padding: 0.65rem 1.25rem;
@@ -146,11 +146,11 @@
     }
     .nom-indicator { flex: 1 1 200px; }
     .nom-current { color: #ffbe0b; font-weight: bold; }
-    .nom-ondeck { color: #8d99ae; font-size: 0.82rem; margin-top: 0.15rem; }
+    .nom-ondeck { color: #94a3b8; font-size: 0.82rem; margin-top: 0.15rem; }
     .tab-nav { display: flex; gap: 0.4rem; }
     .tab-btn {
-      background: #0b132b;
-      color: #8d99ae;
+      background: #090e1c;
+      color: #94a3b8;
       border: 1px solid #233554;
       padding: 0.45rem 1rem;
       border-radius: 6px;
@@ -158,28 +158,31 @@
       font-weight: bold;
       cursor: pointer;
     }
-    .tab-btn.active { background: #0077b6; color: white; border-color: #0077b6; }
+    .tab-btn.active { background: #0284c7; color: white; border-color: #0284c7; }
     .pool-stat { text-align: right; }
-    .pool-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: #8d99ae; }
+    .pool-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; }
     .pool-val { font-size: 1.55rem; font-weight: 800; color: #06d6a0; line-height: 1.1; }
 
     .grid {
       display: grid;
-      grid-template-columns: 400px 1fr 310px;
+      grid-template-columns: 410px 1fr 310px;
       gap: 0.9rem;
-      max-width: 1640px;
+      max-width: 1680px;
       margin: 0 auto;
     }
     .card {
-      background: #162238;
+      background: #121c2e;
       border-radius: 8px;
       padding: 1rem;
-      border: 1px solid #233554;
+      border: 1px solid #1e2c44;
       position: relative;
     }
-    h2, h3, h4 { margin-top: 0; color: #48cae4; }
+    h2, h3, h4 { margin-top: 0; color: #38bdf8; }
 
-    .card-auction-center { text-align: center; }
+    .card-auction-center { 
+      text-align: center;
+      transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    }
 
     #highBidderBanner {
       padding: 0.65rem 1rem;
@@ -195,12 +198,13 @@
     }
     .leader-you {
       background: #06d6a0;
-      color: #0b132b;
+      color: #06111f;
       border: 2px solid #05b386;
+      box-shadow: 0 0 15px rgba(6, 214, 160, 0.4);
     }
     .leader-other {
-      background: #0f1c30;
-      color: #e0e1dd;
+      background: #090e1c;
+      color: #e2e8f0;
       border: 1px solid #233554;
     }
 
@@ -215,7 +219,7 @@
     }
     .timer-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
     .timer-svg circle { fill: none; stroke-width: 7; }
-    .timer-track { stroke: #233554; }
+    .timer-track { stroke: #1e293b; }
     .timer-bar {
       stroke: #06d6a0;
       stroke-linecap: round;
@@ -234,7 +238,7 @@
     .timer-number { font-size: 2.1rem; font-weight: 800; color: #ffbe0b; }
     .timer-subtext {
       font-size: 0.62rem;
-      color: #8d99ae;
+      color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-top: 0.2rem;
@@ -245,6 +249,7 @@
       font-weight: 900;
       color: #06d6a0;
       margin: 0.2rem 0;
+      text-shadow: 0 0 20px rgba(6, 214, 160, 0.25);
     }
 
     .avatar-wrapper {
@@ -259,7 +264,7 @@
       border-radius: 50%;
       object-fit: cover;
       border: 1px solid rgba(255, 255, 255, 0.3);
-      background: #0b132b;
+      background: #090e1c;
       display: inline-block;
     }
     .team-avatar-fallback {
@@ -269,29 +274,30 @@
       width: 24px;
       height: 24px;
       border-radius: 50%;
-      background: #0077b6;
+      background: #0284c7;
       color: #fff;
       font-size: 0.68rem;
       font-weight: 800;
       text-transform: uppercase;
     }
 
-    .nba-team-pill {
+    .nba-stage-pill {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 800;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.95rem;
+      font-weight: 900;
       letter-spacing: 0.5px;
-      background: #0f1c30;
-      border: 1px solid #233554;
-      margin-top: 0.2rem;
+      background: #080d1a;
+      border: 2px solid #233554;
+      margin-top: 0.35rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
     }
 
     .btn {
-      background: #0077b6;
+      background: #0284c7;
       color: white;
       border: none;
       padding: 0.55rem 0.9rem;
@@ -302,11 +308,11 @@
       margin: 0.15rem;
       touch-action: manipulation;
     }
-    .btn:hover { background: #023e8a; }
+    .btn:hover { background: #0369a1; }
     .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
-    .btn-success { background: #06d6a0; color: #0b132b; }
-    .btn-secondary { background: #233554; }
-    .btn-secondary:hover { background: #2f456c; }
+    .btn-success { background: #06d6a0; color: #06111f; }
+    .btn-secondary { background: #1e293b; border: 1px solid #334155; }
+    .btn-secondary:hover { background: #293950; }
     .btn-danger { background: #d90429; }
     .btn-warning { background: #f77f00; }
     .btn-toggle-auto { background: #5a189a; border: 1px solid #9d4edd; }
@@ -315,7 +321,7 @@
     .selector {
       width: 100%;
       padding: 0.5rem;
-      background: #0b132b;
+      background: #080d1a;
       color: white;
       border: 1px solid #233554;
       border-radius: 6px;
@@ -325,7 +331,7 @@
     .input-inline {
       width: 65px;
       padding: 0.35rem 0.4rem;
-      background: #0b132b;
+      background: #080d1a;
       color: white;
       border: 1px solid #233554;
       border-radius: 6px;
@@ -333,57 +339,89 @@
       font-size: 16px;
     }
 
-    /* Cap Quick Buttons */
     .cap-btn-stepper {
       background: #1e293b;
       border: 1px solid #334155;
       color: #94a3b8;
       border-radius: 3px;
-      padding: 0.2rem 0.35rem;
-      font-size: 0.72rem;
-      font-weight: bold;
+      padding: 0.25rem 0.45rem;
+      font-size: 0.76rem;
+      font-weight: 800;
       cursor: pointer;
     }
     .cap-btn-stepper:hover {
-      background: #334155;
-      color: #fff;
+      background: #38bdf8;
+      color: #06111f;
+      border-color: #38bdf8;
     }
 
-    #playerListContainer { max-height: 50vh; overflow-y: auto; padding-right: 0.2rem; }
+    #playerListContainer { max-height: 52vh; overflow-y: auto; padding-right: 0.2rem; }
+    
+    /* Loud, High-Contrast Player Rows & Positional Badges */
     .player-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.45rem 0.6rem;
+      padding: 0.55rem 0.7rem;
       border-radius: 6px;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.35rem;
       user-select: none;
       cursor: pointer;
-      border-left: 4px solid transparent;
-      background: #0f1c30;
-      border: 1px solid #1a2942;
+      background: #090f1d;
+      border: 1px solid #182338;
+      border-left: 6px solid #475569;
+      transition: background 0.15s, transform 0.1s;
     }
-    .player-row:hover { background: #162846; }
-    .pos-guard { border-left-color: #38bdf8; }
-    .pos-forward { border-left-color: #10b981; }
-    .pos-center { border-left-color: #c084fc; }
+    .player-row:hover { background: #111a30; transform: translateX(2px); }
+
+    .pos-guard {
+      border-left-color: #00b4d8 !important;
+      box-shadow: inset 4px 0 12px rgba(0, 180, 216, 0.18);
+    }
+    .pos-forward {
+      border-left-color: #10b981 !important;
+      box-shadow: inset 4px 0 12px rgba(16, 185, 129, 0.18);
+    }
+    .pos-center {
+      border-left-color: #c084fc !important;
+      box-shadow: inset 4px 0 12px rgba(192, 132, 252, 0.18);
+    }
+
+    .pos-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.18rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 900;
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+      margin-right: 0.35rem;
+      color: #000;
+    }
+    .badge-g { background: #00b4d8; color: #041021; }
+    .badge-f { background: #10b981; color: #03170f; }
+    .badge-c { background: #c084fc; color: #160424; }
+
     .player-row-drafted {
       background: rgba(217, 4, 41, 0.1) !important;
       border-left-color: #ef233c !important;
       opacity: 0.65;
+      box-shadow: none !important;
     }
 
     .badge-fppg {
       display: inline-block;
-      background: #0b132b;
+      background: #040813;
       color: #38bdf8;
-      font-weight: 700;
+      font-weight: 800;
       border-radius: 4px;
-      padding: 0.12rem 0.35rem;
+      padding: 0.12rem 0.4rem;
       font-size: 0.74rem;
+      border: 1px solid rgba(56, 189, 248, 0.2);
     }
-    .badge-total { color: #8d99ae; font-size: 0.72rem; margin-left: 0.2rem; }
-    .drafted-tag { color: #ef476f; font-weight: 700; font-size: 0.8rem; margin-top: 0.2rem; }
+    .badge-total { color: #94a3b8; font-size: 0.72rem; margin-left: 0.3rem; }
+    .drafted-tag { color: #ef476f; font-weight: 800; font-size: 0.8rem; margin-top: 0.2rem; }
     
     .badge-injury {
       display: inline-block;
@@ -391,7 +429,7 @@
       color: #ffffff;
       font-weight: 800;
       border-radius: 4px;
-      padding: 0.1rem 0.3rem;
+      padding: 0.1rem 0.35rem;
       font-size: 0.68rem;
       margin-left: 0.3rem;
     }
@@ -413,8 +451,8 @@
       border-radius: 50%;
       margin-right: 0.4rem;
     }
-    .status-online { background-color: #10b981; }
-    .status-auto { background-color: #ffbe0b; }
+    .status-online { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
+    .status-auto { background-color: #ffbe0b; box-shadow: 0 0 8px #ffbe0b; }
     .status-offline { background-color: #ef233c; }
 
     .stat-strip {
@@ -422,30 +460,30 @@
       justify-content: center;
       flex-wrap: wrap;
       gap: 0.75rem 1.2rem;
-      background: #0b132b;
+      background: #080d1a;
       border: 1px solid #233554;
-      padding: 0.45rem 0.8rem;
+      padding: 0.5rem 0.85rem;
       border-radius: 6px;
-      margin: 0.5rem auto;
-      max-width: 500px;
+      margin: 0.6rem auto 0.4rem auto;
+      max-width: 520px;
       font-size: 0.88rem;
     }
-    .stat-strip span strong { color: #48cae4; }
+    .stat-strip span strong { color: #38bdf8; font-weight: 800; }
 
     .team-row {
-      padding: 0.45rem 0;
+      padding: 0.5rem 0;
       border-bottom: 1px solid #1a2942;
     }
     .team-meta-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.3rem;
     }
     .budget-bar-track {
       width: 100%;
       height: 4px;
-      background: #0b132b;
+      background: #080d1a;
       border-radius: 2px;
       overflow: hidden;
     }
@@ -457,39 +495,40 @@
     }
 
     #logBox {
-      background: #0b132b;
-      height: 120px;
+      background: #080d1a;
+      height: 125px;
       overflow-y: auto;
-      border: 1px solid #233554;
+      border: 1px solid #1e2c44;
       border-radius: 6px;
-      padding: 0.5rem;
-      font-family: monospace;
+      padding: 0.55rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.82rem;
       text-align: left;
       margin-top: 0.75rem;
     }
-    .log-item { margin: 0.2rem 0; }
-    .log-auto { color: #ffbe0b; }
+    .log-item { margin: 0.25rem 0; line-height: 1.35; }
+    .log-auto { color: #ffbe0b; font-weight: bold; }
     .log-sold { color: #06d6a0; font-weight: bold; }
+    .log-commish { color: #f43f5e; font-weight: bold; }
 
     #draftBoardView {
       display: none;
-      background: #162238;
+      background: #121c2e;
       border-radius: 8px;
       border: 1px solid #233554;
       padding: 1rem;
     }
     .board-grid { display: grid; grid-template-columns: repeat(12, minmax(160px, 1fr)); gap: 0.75rem; overflow-x: auto; }
-    .board-col { background: #0b132b; border: 1px solid #233554; border-radius: 6px; padding: 0.5rem; min-height: 480px; }
-    .board-col-header { border-bottom: 2px solid #0077b6; padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: center; }
-    .board-pick { background: #1a2942; border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.35rem; font-size: 0.8rem; }
+    .board-col { background: #080d1a; border: 1px solid #1e2c44; border-radius: 6px; padding: 0.5rem; min-height: 480px; }
+    .board-col-header { border-bottom: 2px solid #0284c7; padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: center; }
+    .board-pick { background: #131d31; border-radius: 4px; padding: 0.35rem 0.5rem; margin-bottom: 0.35rem; font-size: 0.8rem; }
 
     .queue-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #0b132b;
-      border: 1px solid #233554;
+      background: #080d1a;
+      border: 1px solid #1e2c44;
       border-radius: 5px;
       padding: 0.35rem 0.55rem;
       margin-bottom: 0.3rem;
@@ -499,7 +538,7 @@
     .queue-item.drag-over { border-top: 2px solid #06d6a0; }
     .queue-btn-group { display: flex; gap: 0.2rem; }
     .queue-btn {
-      background: #1a2942;
+      background: #131d31;
       border: 1px solid #233554;
       color: #94a3b8;
       border-radius: 3px;
@@ -515,10 +554,10 @@
       width: 580px;
       max-height: 92vh;
       overflow-y: auto;
-      background: #101c30;
+      background: #0d1526;
       border: 2px solid #0284c7;
       border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.85);
       padding: 1rem;
       z-index: 4000;
       display: none;
@@ -532,7 +571,7 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      border-bottom: 1px solid #233554;
+      border-bottom: 1px solid #1e2c44;
       padding-bottom: 0.45rem;
       margin-bottom: 0.65rem;
     }
@@ -543,7 +582,7 @@
       margin-top: 8px;
       border-radius: 6px;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(8, 13, 26, 0.8);
     } 
     .history-table {
       width: 100%;
@@ -566,17 +605,12 @@
       text-transform: uppercase;
       z-index: 10;
     }
-    .history-table td.text-left, .history-table th.text-left {
-      text-align: left;
-    }
-    .history-table .highlight-fp {
-      color: #f59e0b;
-      font-weight: 700;
-    }
+    .history-table td.text-left, .history-table th.text-left { text-align: left; }
+    .history-table .highlight-fp { color: #f59e0b; font-weight: 700; }
     .history-table tfoot tr {
       position: sticky;
       bottom: 0;
-      background: #0f172a;
+      background: #080d1a;
       font-weight: bold;
       border-top: 1px solid rgba(255, 255, 255, 0.2);
       z-index: 10;
@@ -589,8 +623,8 @@
       text-align: center;
     }
     .stat-pill {
-      background: #0b132b;
-      border: 1px solid #233554;
+      background: #080d1a;
+      border: 1px solid #1e2c44;
       border-radius: 6px;
       padding: 0.3rem 0.15rem;
     }
@@ -598,8 +632,8 @@
     .stat-pill-val { font-size: 1rem; font-weight: 800; color: #38bdf8; }
     
     .player-news-box {
-      background: #0b132b;
-      border: 1px solid #233554;
+      background: #080d1a;
+      border: 1px solid #1e2c44;
       border-radius: 6px;
       padding: 0.5rem;
       margin-top: 0.6rem;
@@ -612,18 +646,18 @@
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(8, 13, 26, 0.85);
+      background: rgba(6, 10, 20, 0.88);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 6000;
     }
     .modal-box {
-      background: #162238;
+      background: #121c2e;
       padding: 1.5rem;
       border-radius: 8px;
       border: 1px solid #233554;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
       max-width: 650px;
       width: 92%;
       max-height: 85vh;
@@ -636,7 +670,7 @@
       right: 1rem;
       background: none;
       border: none;
-      color: #8d99ae;
+      color: #94a3b8;
       font-size: 1.4rem;
       cursor: pointer;
     }
@@ -650,8 +684,8 @@
       margin-bottom: 0.75rem;
     }
     .mobile-tab-btn {
-      background: #162238;
-      color: #8d99ae;
+      background: #121c2e;
+      color: #94a3b8;
       border: 1px solid #233554;
       border-radius: 6px;
       padding: 0.55rem;
@@ -660,18 +694,17 @@
       text-align: center;
       cursor: pointer;
     }
-    .mobile-tab-btn.active { background: #0077b6; color: #ffffff; border-color: #0077b6; }
+    .mobile-tab-btn.active { background: #0284c7; color: #ffffff; border-color: #0284c7; }
 
     #mobileTeamSelectBox { display: none; margin-bottom: 0.75rem; }
     .admin-accordion-box {
-      background: #0b132b;
+      background: #080d1a;
       border: 1px solid #233554;
       border-radius: 6px;
       padding: 0.75rem;
       margin-top: 0.75rem;
     }
 
-    /* Custom Bid Validation Feedback */
     .custom-bid-error-msg {
       color: #ef476f;
       font-size: 0.78rem;
@@ -812,7 +845,6 @@
         </button>
       </div>
 
-      <!-- Career History Log Table -->
       <div style="font-size: 0.78rem; font-weight: bold; color: #38bdf8; margin-top: 0.6rem;">Career History Log</div>
       <div class="history-table-container">
         <table class="history-table">
@@ -882,7 +914,18 @@
           <button class="btn btn-success" onclick="exportDraftResultsCSV()">📥 Export Results CSV</button>
         </div>
 
-        <div style="background: #0f172a; padding: 0.85rem; border-radius: 6px; border: 1px solid #f77f00; margin-bottom: 1rem;">
+        <!-- MJ Soundtrack Control -->
+        <div style="background: rgba(168, 85, 247, 0.15); border: 1px solid #a855f7; border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong style="color: #c084fc;">🕺 Michael Jackson Random Soundtrack</strong>
+            <div style="font-size: 0.75rem; color: #cbd5e1;">Periodic vocal sounds (Hee-Hee / Shamone / Ow!) across the league</div>
+          </div>
+          <button id="mjAudioCommishBtn" class="btn btn-secondary" onclick="toggleMJSoundtrack()">
+            MJ Noises: OFF
+          </button>
+        </div>
+
+        <div style="background: #080d1a; padding: 0.85rem; border-radius: 6px; border: 1px solid #f77f00; margin-bottom: 1rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
             <h4 style="margin: 0; color: #fcbf49;">⚙️ Dynamic Demo / Mock Mode Builder</h4>
             <button id="btnSwitchProd" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="adminSwitchProd()">Restore Production Mode</button>
@@ -904,14 +947,14 @@
           </div>
 
           <label style="font-size: 0.75rem; font-weight: bold; color: #38bdf8; display: block; margin-bottom: 0.3rem;">Select Teams to Include:</label>
-          <div id="demoTeamsCheckboxList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; max-height: 140px; overflow-y: auto; background: #0b132b; padding: 0.4rem; border-radius: 4px; margin-bottom: 0.6rem;"></div>
+          <div id="demoTeamsCheckboxList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; max-height: 140px; overflow-y: auto; background: #040813; padding: 0.4rem; border-radius: 4px; margin-bottom: 0.6rem;"></div>
 
           <button class="btn btn-warning" style="width: 100%; padding: 0.55rem; font-size: 0.9rem;" onclick="adminLaunchConfiguredDemo()">
             ▶️ Launch Configured Demo Mode
           </button>
         </div>
         
-        <div style="background: #0b132b; padding: 0.75rem; border-radius: 6px; border: 1px solid #233554; margin-bottom: 1rem;">
+        <div style="background: #080d1a; padding: 0.75rem; border-radius: 6px; border: 1px solid #233554; margin-bottom: 1rem;">
           <h4 style="margin: 0 0 0.4rem 0;">Draft Status</h4>
           <div id="commishDraftStatusText" style="color: #ffbe0b; font-weight: bold; margin-bottom: 0.5rem;">Draft Not Started</div>
           <button id="commishStartDraftBtn" class="btn btn-success" onclick="adminStartDraft()">▶️ Start Draft Officially</button>
@@ -998,7 +1041,16 @@
             <strong>Enable Visual Urgency Screen Flash</strong>
           </label>
 
-          <div style="background: #0f1c30; padding: 0.75rem; border-radius: 6px; border: 1px solid #233554;">
+          <!-- Spacebar to Bid Option (Default OFF) -->
+          <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 1rem; border-top: 1px solid #1e2c44; padding-top: 0.75rem;">
+            <input type="checkbox" id="prefSpacebarToggle" onchange="savePreferences()" />
+            <div>
+              <strong>Enable Spacebar to Bid (+$1)</strong>
+              <div style="font-size: 0.72rem; color: #94a3b8;">When enabled, tapping spacebar clicks the +$1 bid button</div>
+            </div>
+          </label>
+
+          <div style="background: #080d1a; padding: 0.75rem; border-radius: 6px; border: 1px solid #233554;">
             <label style="font-size: 0.82rem; font-weight: bold; color: #38bdf8; display: block; margin-bottom: 0.35rem;">
               Auction Countdown Urgency Alert Window
             </label>
@@ -1046,10 +1098,10 @@
         
         <div id="highBidderBanner" class="leader-other">No High Bidder</div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; background: #0b132b; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #233554;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; background: #080d1a; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #1e2c44;">
           <div style="display: flex; align-items: center; gap: 0.4rem;">
             <span id="userTeamAvatarBadge"></span>
-            <span id="userTeamBadge" style="font-weight: bold; color: #48cae4;"></span>
+            <span id="userTeamBadge" style="font-weight: bold; color: #38bdf8;"></span>
             <button class="btn btn-secondary" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; margin-left: 0.25rem;" onclick="logout()">Logout</button>
           </div>
           
@@ -1099,19 +1151,19 @@
           <div id="customBidErrorMsg" class="custom-bid-error-msg"></div>
         </div>
 
-        <h4 style="text-align: left; margin: 1rem 0 0.25rem 0; color: #48cae4;">Draft Activity Log</h4>
+        <h4 style="text-align: left; margin: 1rem 0 0.25rem 0; color: #38bdf8;">Draft Activity Log</h4>
         <div id="logBox"></div>
       </div>
 
       <div id="panePlayers" class="card card-players">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-          <h3 style="margin: 0; color: #48cae4; font-size: 1.05rem;">My Nomination Queue (<span id="queueCountBadge">0</span>)</h3>
+          <h3 style="margin: 0; color: #38bdf8; font-size: 1.05rem;">My Nomination Queue (<span id="queueCountBadge">0</span>)</h3>
           <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="toggleCapMode()">
             Set My Caps
           </button>
         </div>
         
-        <div id="nominationQueuePanel" style="background: #0f1c30; border: 1px solid #0284c7; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.75rem;">
+        <div id="nominationQueuePanel" style="background: #080d1a; border: 1px solid #0284c7; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.75rem;">
           <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.35rem;">
             <span>Drag to reorder • Top player auto-nominates</span>
           </div>
@@ -1128,8 +1180,8 @@
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-          <h4 style="margin: 0; color: #e0e1dd; font-size: 0.95rem;">Player Pool</h4>
-          <small style="color: #8d99ae; font-size: 0.72rem;">(Double-click for stats)</small>
+          <h4 style="margin: 0; color: #e2e8f0; font-size: 0.95rem;">Player Pool</h4>
+          <small style="color: #94a3b8; font-size: 0.72rem;">(Double-click for stats)</small>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.3rem;">
@@ -1159,7 +1211,7 @@
     <div id="draftBoardView">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h2 style="margin: 0;">League Draft Board</h2>
-        <button class="btn btn-secondary" onclick="switchTab('warRoom')">&larr; Back to War Room</button>
+        <button class="btn btn-secondary" onclick="switchTab('warRoom')">← Back to War Room</button>
       </div>
 
       <div id="mobileTeamSelectBox">
@@ -1170,8 +1222,7 @@
       <div class="board-grid" id="boardColumns"></div>
     </div>
   </div>
-
-  <script>
+<script>
     const socket = io();
     let localData = { teams: [], players: [], draftState: {} };
     let allLeagueTeams = [];
@@ -1184,21 +1235,45 @@
     let capEditMode = false;
     let currentTab = 'warRoom';
     let currentMobilePane = 'auction';
+    let isMJSoundtrackActive = false;
 
     const RING_CIRCUMFERENCE = 282.74;
 
+    // High-Contrast Official Franchise Palettes
     const NBA_TEAM_COLORS = {
-      ATL: { p: '#E03A3E' }, BOS: { p: '#007A33' }, BKN: { p: '#777D84' }, CHA: { p: '#1D1160' },
-      CHI: { p: '#CE1141' }, CLE: { p: '#860038' }, DAL: { p: '#00538C' }, DEN: { p: '#0E2240' },
-      DET: { p: '#C8102E' }, GSW: { p: '#1D428A' }, HOU: { p: '#CE1141' }, IND: { p: '#002D62' },
-      LAC: { p: '#C8102E' }, LAL: { p: '#552583' }, MEM: { p: '#5D76A9' }, MIA: { p: '#98002E' },
-      MIL: { p: '#00471B' }, MIN: { p: '#0C2340' }, NOP: { p: '#0C2340' }, NYK: { p: '#006BB6' },
-      OKC: { p: '#007AC1' }, ORL: { p: '#0077C0' }, PHI: { p: '#006BB6' }, PHX: { p: '#1D1160' },
-      POR: { p: '#E03A3E' }, SAC: { p: '#5A2D81' }, SAS: { p: '#C4CED4' }, TOR: { p: '#CE1141' },
-      UTA: { p: '#002B5C' }, WAS: { p: '#002B5C' }
+      ATL: { p: '#E03A3E', s: '#C1D32F', name: 'Hawks' },
+      BOS: { p: '#007A33', s: '#BA9653', name: 'Celtics' },
+      BKN: { p: '#000000', s: '#FFFFFF', name: 'Nets' },
+      CHA: { p: '#1D1160', s: '#00788C', name: 'Hornets' },
+      CHI: { p: '#CE1141', s: '#000000', name: 'Bulls' },
+      CLE: { p: '#860038', s: '#FDBB30', name: 'Cavaliers' },
+      DAL: { p: '#00538C', s: '#002B5E', name: 'Mavericks' },
+      DEN: { p: '#0E2240', s: '#FEC524', name: 'Nuggets' },
+      DET: { p: '#C8102E', s: '#1D42BA', name: 'Pistons' },
+      GSW: { p: '#1D428A', s: '#FFC72C', name: 'Warriors' },
+      HOU: { p: '#CE1141', s: '#000000', name: 'Rockets' },
+      IND: { p: '#002D62', s: '#FDBB30', name: 'Pacers' },
+      LAC: { p: '#C8102E', s: '#1D428A', name: 'Clippers' },
+      LAL: { p: '#552583', s: '#FDB927', name: 'Lakers' },
+      MEM: { p: '#5D76A9', s: '#12173F', name: 'Grizzlies' },
+      MIA: { p: '#98002E', s: '#F9A01B', name: 'Heat' },
+      MIL: { p: '#00471B', s: '#EEE1C6', name: 'Bucks' },
+      MIN: { p: '#0C2340', s: '#236192', name: 'Timberwolves' },
+      NOP: { p: '#0C2340', s: '#C8102E', name: 'Pelicans' },
+      NYK: { p: '#006BB6', s: '#F58426', name: 'Knicks' },
+      OKC: { p: '#007AC1', s: '#EF3B24', name: 'Thunder' },
+      ORL: { p: '#0077C0', s: '#C4CED4', name: 'Magic' },
+      PHI: { p: '#006BB6', s: '#ED174C', name: '76ers' },
+      PHX: { p: '#1D1160', s: '#E56020', name: 'Suns' },
+      POR: { p: '#E03A3E', s: '#000000', name: 'Trail Blazers' },
+      SAC: { p: '#5A2D81', s: '#63727A', name: 'Kings' },
+      SAS: { p: '#C4CED4', s: '#000000', name: 'Spurs' },
+      TOR: { p: '#CE1141', s: '#000000', name: 'Raptors' },
+      UTA: { p: '#002B5C', s: '#00471B', name: 'Jazz' },
+      WAS: { p: '#002B5C', s: '#E31837', name: 'Wizards' }
     };
 
-    let userPrefs = { sound: true, visual: true, alertWindow: 3 };
+    let userPrefs = { sound: true, visual: true, alertWindow: 3, spacebarBid: false };
 
     let audioCtx = null;
     function getAudioContext() {
@@ -1238,6 +1313,58 @@
           osc.stop(ctx.currentTime + duration);
         }, delay * 1000);
       } catch (e) {}
+    }
+
+    // Synthesized MJ Vocal Soundbites (Hee-Hee / Shamone / Ow!)
+    function playMJSoundEffect() {
+      if (!userPrefs.sound) return;
+      const r = Math.random();
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      if (r < 0.34) {
+        // "HEE-HEE!" - High-pitched dual falsetto glissando
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc1.type = 'sawtooth';
+        osc2.type = 'sine';
+        
+        osc1.frequency.setValueAtTime(880, now);
+        osc1.frequency.exponentialRampToValueAtTime(1400, now + 0.12);
+        osc2.frequency.setValueAtTime(880, now + 0.15);
+        osc2.frequency.exponentialRampToValueAtTime(1550, now + 0.32);
+
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+        osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
+        osc1.start(now); osc1.stop(now + 0.14);
+        osc2.start(now + 0.15); osc2.stop(now + 0.35);
+      } else if (r < 0.67) {
+        // "OWWW!" - Snappy vocal shout
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1320, now);
+        osc.frequency.exponentialRampToValueAtTime(950, now + 0.28);
+        gain.gain.setValueAtTime(0.28, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.3);
+      } else {
+        // "CH'MON / SHAMONE!" - Guttural punch
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(740, now + 0.12);
+        osc.frequency.exponentialRampToValueAtTime(450, now + 0.24);
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now); osc.stop(now + 0.26);
+      }
     }
 
     function soundNominationTurn() {
@@ -1319,6 +1446,7 @@
     const btnCustomBid = document.getElementById('btnCustomBid');
     const customBidInput = document.getElementById('customBidInput');
     const customBidErrorMsg = document.getElementById('customBidErrorMsg');
+    const paneAuction = document.getElementById('paneAuction');
 
     const overrideTeamSelect = document.getElementById('overrideTeamSelect');
     const transferPlayerSelect = document.getElementById('transferPlayerSelect');
@@ -1331,12 +1459,14 @@
     }
     document.getElementById('prefSoundToggle').checked = userPrefs.sound;
     document.getElementById('prefVisualToggle').checked = userPrefs.visual;
+    document.getElementById('prefSpacebarToggle').checked = !!userPrefs.spacebarBid;
     const alertRadio = document.querySelector(`input[name="prefAlertWindow"][value="${userPrefs.alertWindow || 3}"]`);
     if (alertRadio) alertRadio.checked = true;
 
     function savePreferences() {
       userPrefs.sound = document.getElementById('prefSoundToggle').checked;
       userPrefs.visual = document.getElementById('prefVisualToggle').checked;
+      userPrefs.spacebarBid = document.getElementById('prefSpacebarToggle').checked;
       const selectedRadio = document.querySelector('input[name="prefAlertWindow"]:checked');
       userPrefs.alertWindow = selectedRadio ? parseInt(selectedRadio.value, 10) : 3;
       localStorage.setItem('user_draft_prefs', JSON.stringify(userPrefs));
@@ -1346,16 +1476,22 @@
     function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
     function closeDraftEndModal() { document.getElementById('draftEndCelebrationModal').style.display = 'none'; }
 
-    // Desktop Escape Modal Listener
+    // Desktop Keyboard Shortcuts: ESC for Modals & Spacebar to Bid
     window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
       if (e.key === 'Escape') {
         closeFloatingPlayerCard();
         closeSettingsModal();
         if (myTeam?.isCommish) closeCommishModal();
+      } else if (e.code === 'Space' && userPrefs.spacebarBid) {
+        e.preventDefault();
+        if (!btnInc1.disabled) {
+          bidIncrement(1);
+        }
       }
     });
 
-    // Dynamic Tab Title Flash for Background Tab Alerts
     let titleFlashTimer = null;
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && titleFlashTimer) {
@@ -1470,7 +1606,6 @@
       localData.draftState = data.draftState;
       allLeagueTeams = data.allLeagueTeams || [];
 
-      // Pre-compute normalized search indices for instant keyboard response
       localData.players.forEach(p => {
         p._searchKey = cleanNormalize(`${p.name} ${p.nbaTeam || ''}`);
       });
@@ -1524,11 +1659,27 @@
       const me = teams.find(t => t.id === myTeam?.id);
       if (me) updateMyAutoBtn(me.isAuto);
       renderTeams();
-      if (myTeam?.isCommish) renderCommishAutoList();
+      if (myTeam?.isCommish) {
+        renderCommishAutoList();
+        populateOverrideDropdowns();
+      }
     });
 
     socket.on('chatNotification', ({ message }) => {
       logMessage(message);
+    });
+
+    socket.on('commishActionLogged', ({ message }) => {
+      logMessage(`<span class="log-commish">[COMMISH]</span> ${message}`);
+    });
+
+    socket.on('draftLogReset', () => {
+      logBox.innerHTML = '';
+      logMessage("🧹 <strong>Draft log reset by Commissioner.</strong>");
+    });
+
+    socket.on('mjTriggerSound', () => {
+      playMJSoundEffect();
     });
 
     socket.on('myAutoDraftChanged', ({ isAuto }) => {
@@ -1566,6 +1717,7 @@
       renderAll();
       renderQueue();
       checkBackgroundNominationAlert();
+      if (myTeam?.isCommish) populateOverrideDropdowns();
     });
 
     socket.on('modeSwitched', (data) => {
@@ -1726,10 +1878,12 @@
       if (myTeam && winningTeam.id === myTeam.id) {
         soundVictoryWon();
       }
+      if (myTeam?.isCommish) populateOverrideDropdowns();
     });
 
     socket.on('saleUndone', ({ player, team, price }) => {
       logMessage(`↩️ <strong>COMMISSIONER UNDO:</strong> Returned <strong>${player.name}</strong> to pool. Refunded $${price} to ${team.name}.`);
+      if (myTeam?.isCommish) populateOverrideDropdowns();
     });
 
     function logout() {
@@ -1815,18 +1969,18 @@
       if (myTeam.isCommish) updateCommishModalUI();
     }
 
-    function getPositionClass(posStr) {
-      if (!posStr) return '';
+    // High-Visibility Positional Class & Badge Helpers
+    function getPositionInfo(posStr) {
+      if (!posStr) return { cls: '', badge: '', text: 'UTIL' };
       const tokens = posStr.toUpperCase().split(/[,/ ]+/);
       for (let t of tokens) {
-        if (t === 'PG' || t === 'SG') return 'pos-guard';
-        if (t === 'SF' || t === 'PF') return 'pos-forward';
-        if (t === 'C') return 'pos-center';
+        if (t === 'PG' || t === 'SG') return { cls: 'pos-guard', badge: 'badge-g', text: t };
+        if (t === 'SF' || t === 'PF') return { cls: 'pos-forward', badge: 'badge-f', text: t };
+        if (t === 'C') return { cls: 'pos-center', badge: 'badge-c', text: 'C' };
       }
-      return '';
+      return { cls: '', badge: '', text: posStr };
     }
 
-    // Queue Operations
     let draggedQueueIndex = null;
     function handleQueueDragStart(e, index) {
       draggedQueueIndex = index;
@@ -1952,7 +2106,6 @@
       const onBlockPlayerId = localData.draftState?.nominatedPlayer?.id;
 
       const filtered = localData.players.filter(p => {
-        // Fast instant search using pre-indexed search key
         if (query && p._searchKey && !p._searchKey.includes(query)) return false;
         if (teamSelected !== 'ALL' && (p.nbaTeam || '').toUpperCase() !== teamSelected) return false;
 
@@ -1973,26 +2126,27 @@
         const myRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
         const isDrafted = p.status === 'drafted';
         const isOnBlock = (onBlockPlayerId && String(p.id) === String(onBlockPlayerId));
-        const posClass = getPositionClass(p.pos);
+        const posInfo = getPositionInfo(p.pos);
         const hasInjury = p.news && (p.news.tag === 'OUT' || p.news.tag === 'INJURY');
         const inQueue = myQueue.includes(p.id);
 
         return `
-          <div class="player-row ${posClass} ${isDrafted ? 'player-row-drafted' : ''}" 
+          <div class="player-row ${posInfo.cls} ${isDrafted ? 'player-row-drafted' : ''}" 
                ondblclick="openFloatingPlayerCard('${p.id}')">
             <div style="flex: 1; padding-right: 0.3rem;">
+              <span class="pos-badge ${posInfo.badge}">${posInfo.text}</span>
               <strong style="${isDrafted ? 'color:#ef476f;' : (isOnBlock ? 'color:#ffbe0b;' : '')}">${p.name}</strong> 
-              <small>(${p.pos} • ${p.nbaTeam})</small>
+              <small style="color: #94a3b8; font-weight: bold;">(${p.nbaTeam})</small>
               ${hasInjury ? `<span class="badge-injury">${p.news.tag}</span>` : ''}
               ${isOnBlock ? `<span style="color:#ffbe0b; font-size:0.75rem; font-weight:bold; margin-left:0.25rem;">[ON BLOCK]</span>` : ''}
               ${(!isOnBlock && inQueue) ? `<span style="color:#06d6a0; font-size:0.75rem; font-weight:bold; margin-left:0.25rem;">[QUEUED]</span>` : ''}
-              <div>
+              <div style="margin-top: 0.2rem;">
                 <span class="badge-fppg">${p.fppg.toFixed(1)} FP/G</span>
                 <span class="badge-total">${p.fpts.toFixed(0)} FPts</span>
               </div>
               ${isDrafted ? `<div class="drafted-tag">Drafted: ${getTeamAvatarHTML(p.draftedBy)} ${p.draftedBy} ($${p.price})</div>` : ''}
               ${(!isDrafted && (myCap !== '' || myRank !== '')) ? `
-                <div style="font-size:0.75rem; color:#ffbe0b;">
+                <div style="font-size:0.75rem; color:#ffbe0b; margin-top: 0.15rem;">
                   ${myCap !== '' ? `Cap: $${myCap}` : ''} ${myRank !== '' ? `• Priority: #${myRank}` : ''}
                 </div>
               ` : ''}
@@ -2157,6 +2311,10 @@
       const state = localData.draftState;
 
       if (!state.isDraftStarted) {
+        paneAuction.style.background = '#121c2e';
+        paneAuction.style.borderColor = '#1e2c44';
+        paneAuction.style.boxShadow = 'none';
+
         highBidderBanner.className = 'leader-other';
         highBidderBanner.textContent = 'Draft Not Started';
         stagePlayerMeta.innerHTML = `<p style="color: #ffbe0b; font-size: 1.1rem; font-weight: bold;">Waiting for Commissioner to start the draft...</p>`;
@@ -2169,6 +2327,10 @@
       }
 
       if (state.isDraftCompleted) {
+        paneAuction.style.background = '#121c2e';
+        paneAuction.style.borderColor = '#06d6a0';
+        paneAuction.style.boxShadow = '0 0 25px rgba(6, 214, 160, 0.2)';
+
         highBidderBanner.className = 'leader-you';
         highBidderBanner.textContent = '🏆 DRAFT COMPLETED';
         stagePlayerMeta.innerHTML = `<h2 style="color: #06d6a0;">The Draft Has Finished!</h2><p style="color: #cbd5e1;">All team rosters are full.</p>`;
@@ -2181,6 +2343,10 @@
       }
 
       if (!state.nominatedPlayer) {
+        paneAuction.style.background = '#121c2e';
+        paneAuction.style.borderColor = '#1e2c44';
+        paneAuction.style.boxShadow = 'none';
+
         highBidderBanner.className = 'leader-other';
         highBidderBanner.textContent = 'Awaiting Nomination';
         const nomTeam = localData.teams.find(t => t.id === state.nominatingTeamId);
@@ -2198,16 +2364,22 @@
 
       const p = state.nominatedPlayer;
       const hasInjury = p.news && (p.news.tag === 'OUT' || p.news.tag === 'INJURY');
-      const teamColors = NBA_TEAM_COLORS[p.nbaTeam?.toUpperCase()] || { p: '#0077b6' };
+      const teamColors = NBA_TEAM_COLORS[p.nbaTeam?.toUpperCase()] || { p: '#0284c7', s: '#38bdf8', name: p.nbaTeam };
+
+      // Apply Loud Franchise Color Themes to Central Auction Card
+      paneAuction.style.background = `radial-gradient(circle at 50% 0%, ${teamColors.p}33 0%, #121c2e 85%)`;
+      paneAuction.style.borderColor = teamColors.p;
+      paneAuction.style.boxShadow = `0 0 35px ${teamColors.p}26, inset 0 0 20px ${teamColors.p}1a`;
 
       stagePlayerMeta.innerHTML = `
-        <h1 style="color: #fff; margin-bottom: 0; font-size: clamp(1.6rem, 4vw, 2.2rem);">
+        <h1 style="color: #fff; margin-bottom: 0; font-size: clamp(1.6rem, 4vw, 2.3rem); text-shadow: 0 2px 12px rgba(0,0,0,0.8);">
           ${p.name}
           ${hasInjury ? `<span class="badge-injury" style="font-size: 0.85rem; vertical-align: middle;">${p.news.tag}</span>` : ''}
         </h1>
         <div>
-          <span class="nba-team-pill" style="border-left: 4px solid ${teamColors.p};">
-            ${p.pos} • ${p.nbaTeam}
+          <span class="nba-stage-pill" style="border-color: ${teamColors.p}; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
+            <span style="background: ${teamColors.p}; color: #fff; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.8rem; font-weight: 900;">${p.pos}</span>
+            <span style="color: ${teamColors.s || '#fff'}; font-weight: 800;">${teamColors.name || p.nbaTeam}</span>
           </span>
         </div>
         <div class="stat-strip">
@@ -2240,7 +2412,6 @@
         return;
       }
 
-      // Check 1: Cannot bid if already high bidder
       if (isLeading) {
         customBidInput.classList.add('input-error');
         customBidErrorMsg.textContent = '⚠️ You already hold the high bid!';
@@ -2249,7 +2420,6 @@
         return;
       }
 
-      // Check 2: Exceeds team budget
       if (val > myBudget) {
         customBidInput.classList.add('input-error');
         customBidErrorMsg.textContent = `⚠️ Bid ($${val}) exceeds your available budget ($${myBudget})!`;
@@ -2258,7 +2428,6 @@
         return;
       }
 
-      // Check 3: Must beat the current high bid
       if (val <= state.currentBid) {
         customBidInput.classList.add('input-error');
         customBidErrorMsg.textContent = `⚠️ Bid must be at least $${state.currentBid + 1} to beat current bid.`;
@@ -2267,7 +2436,6 @@
         return;
       }
 
-      // Valid bid
       customBidInput.classList.remove('input-error');
       customBidErrorMsg.style.display = 'none';
       btnCustomBid.disabled = state.isPaused || state.isDraftCompleted;
@@ -2293,8 +2461,6 @@
       }
 
       currentBidDisplay.textContent = `$${state.currentBid}`;
-
-      // Max allowed bid equals entire available budget
       userMaxAllowedBid.textContent = `$${myBudget}`;
 
       btnInc1.textContent = `+$1 ($${state.currentBid + 1})`;
@@ -2332,7 +2498,7 @@
             <div class="board-col-header">
               <div style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; margin-bottom: 0.2rem;">
                 ${getTeamAvatarHTML(t.name)}
-                <strong style="color: #48cae4; font-size: 0.95rem;">${t.name}</strong> ${isMe ? '<small style="color:#38bdf8;">(YOU)</small>' : ''}
+                <strong style="color: #38bdf8; font-size: 0.95rem;">${t.name}</strong> ${isMe ? '<small style="color:#0284c7;">(YOU)</small>' : ''}
               </div>
               <div style="font-size: 0.8rem; color: #06d6a0; font-weight: bold;">$${t.budget} left • ${t.roster.length}/${maxRosterSize}</div>
             </div>
@@ -2342,7 +2508,7 @@
                   <div style="display: flex; justify-content: space-between;">
                     <strong>${p.name}</strong> <span style="color: #06d6a0; font-weight: bold;">$${p.price}</span>
                   </div>
-                  <div style="color: #8d99ae; font-size: 0.75rem;">${p.pos} •${p.nbaTeam}</div>
+                  <div style="color: #94a3b8; font-size: 0.75rem;">${p.pos} •${p.nbaTeam}</div>
                 </div>
               `).join('')}
               ${Array.from({ length: openSpots }).map(() => `
@@ -2393,12 +2559,10 @@
       if (!p) return;
       currentInspectedPlayerId = playerId;
 
-      // Card Header
       document.getElementById('floatCardName').textContent = p.name;
       document.getElementById('floatCardTeamPos').textContent = `${p.pos} • ${p.nbaTeam}`;
       document.getElementById('floatCardRank').textContent = p.rank ? `Rank #${p.rank}` : '';
 
-      // 8 Headline Stat Pills
       document.getElementById('pillFPPG').textContent = p.fppg ? p.fppg.toFixed(1) : '-';
       document.getElementById('pillFPTS').textContent = p.fpts ? p.fpts.toFixed(0) : '-';
       document.getElementById('pillPTS').textContent = p.fullStats?.PTS ?? (p.stats?.pts ?? '-');
@@ -2408,7 +2572,6 @@
       document.getElementById('pillBLK').textContent = p.fullStats?.BLK ?? (p.stats?.blk ?? '-');
       document.getElementById('pill3PT').textContent = p.fullStats?.['3PTM'] ?? (p.stats?.threes ?? '-');
 
-      // Populate Career Multi-Year History (Sorted Descending)
       const tbody = document.getElementById('floatCardHistoryBody');
       const tfoot = document.getElementById('floatCardHistoryFoot');
       tbody.innerHTML = '';
@@ -2468,7 +2631,6 @@
         `;
       }
 
-      // News & Injury Updates
       const newsBox = document.getElementById('floatCardNewsBox');
       if (p.news) {
         document.getElementById('floatCardNewsDate').textContent = p.news.date || 'Recent';
@@ -2526,7 +2688,7 @@
         const isBot = currentTeam?.isAuto || false;
 
         return `
-          <div style="display: flex; align-items: center; justify-content: space-between; background: #162238; padding: 0.25rem 0.4rem; border-radius: 4px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #080d1a; padding: 0.25rem 0.4rem; border-radius: 4px;">
             <label style="font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
               <input type="checkbox" class="demo-team-cb" value="${t.id}" ${isCurrent ? 'checked' : ''} />
               <span>${t.name}</span>
@@ -2569,18 +2731,23 @@
       }
     }
 
+    // Dynamic Self-Updating Overrides Dropdown Populator
     function populateOverrideDropdowns() {
       if (!overrideTeamSelect || !transferPlayerSelect || !transferNewTeamSelect) return;
 
-      overrideTeamSelect.innerHTML = localData.teams.map(t => `<option value="${t.id}">${t.name} (Current: $${t.budget})</option>`).join('');
-      transferNewTeamSelect.innerHTML = localData.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+      const currentTeamVal = overrideTeamSelect.value;
+      const currentTransPlayerVal = transferPlayerSelect.value;
+      const currentTransTeamVal = transferNewTeamSelect.value;
+
+      overrideTeamSelect.innerHTML = localData.teams.map(t => `<option value="${t.id}" ${t.id == currentTeamVal ? 'selected' : ''}>${t.name} (Current: $${t.budget})</option>`).join('');
+      transferNewTeamSelect.innerHTML = localData.teams.map(t => `<option value="${t.id}" ${t.id == currentTransTeamVal ? 'selected' : ''}>${t.name}</option>`).join('');
 
       const draftedPlayers = localData.players.filter(p => p.status === 'drafted');
       if (draftedPlayers.length === 0) {
-        transferPlayerSelect.innerHTML = '<option value="">No drafted players yet</option>';
+        transferPlayerSelect.innerHTML = '<option value="">No drafted players</option>';
       } else {
         transferPlayerSelect.innerHTML = draftedPlayers.map(p => 
-          `<option value="${p.id}">${p.name} ($${p.price} - ${p.draftedBy})</option>`
+          `<option value="${p.id}" ${p.id == currentTransPlayerVal ? 'selected' : ''}>${p.name} ($${p.price} - ${p.draftedBy})</option>`
         ).join('');
       }
     }
@@ -2618,6 +2785,14 @@
       }
     }
 
+    function toggleMJSoundtrack() {
+      isMJSoundtrackActive = !isMJSoundtrackActive;
+      const btn = document.getElementById('mjAudioCommishBtn');
+      btn.textContent = isMJSoundtrackActive ? 'MJ Noises: ACTIVE (ON)' : 'MJ Noises: OFF';
+      btn.className = isMJSoundtrackActive ? 'btn btn-warning' : 'btn btn-secondary';
+      socket.emit('adminToggleMJSoundtrack', { active: isMJSoundtrackActive });
+    }
+
     function exportDraftResultsCSV() {
       let csv = "Player ID,Player Name,Fantasy Team,Price ($)\n";
 
@@ -2651,7 +2826,7 @@
       if (!container) return;
 
       container.innerHTML = localData.teams.map(t => `
-        <div style="display: flex; justify-content: space-between; align-items: center; background: #0b132b; padding: 0.4rem 0.6rem; border-radius: 4px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #080d1a; padding: 0.4rem 0.6rem; border-radius: 4px;">
           <span>${t.name}</span>
           <button class="btn ${t.isAuto ? 'btn-danger' : 'btn-secondary'}" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;" onclick="adminToggleTeamAuto(${t.id})">
             ${t.isAuto ? 'Disable Auto' : 'Set Auto'}
@@ -2681,7 +2856,7 @@
       if (confirm("Undo the most recent player sale?")) socket.emit('adminUndoLastSale');
     }
     function adminResetDraft() {
-      if (confirm("Reset all budgets, rosters, and players back to clean state?")) {
+      if (confirm("Reset all budgets, rosters, players, AND clear draft activity log?")) {
         socket.emit('adminResetAllDraftData');
       }
     }

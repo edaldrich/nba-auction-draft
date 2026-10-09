@@ -249,11 +249,12 @@ let isMJActive = false;
 
 function scheduleNextMJSound() {
   if (!isMJActive) return;
-  // Random silence interval between 35 and 90 seconds
-  const delay = Math.floor(Math.random() * (90000 - 35000 + 1)) + 35000;
+  // Interval between 30 and 75 seconds
+  const delay = Math.floor(Math.random() * (75000 - 30000 + 1)) + 30000;
   mjSoundTimeout = setTimeout(() => {
     if (isMJActive) {
-      io.emit('mjTriggerSound');
+      const clipNumber = Math.floor(Math.random() * 3) + 1; // mj1, mj2, or mj3
+      io.emit('mjTriggerSound', { clip: `/audio/mj${clipNumber}.mp3` });
       scheduleNextMJSound();
     }
   }, delay);
@@ -418,10 +419,7 @@ function finalizeSale() {
     clearInterval(timerInterval);
     clearTimeout(autoBidTimeout);
 
-    io.emit('draftEndedCelebration', {
-      teams: getPublicTeams()
-    });
-
+    io.emit('draftEndedCelebration', { teams: getPublicTeams() });
     io.emit('stateUpdate', {
       draftState,
       teams: getPublicTeams(),
@@ -793,7 +791,6 @@ io.on('connection', (socket) => {
     return team && team.isCommish;
   }
 
-  // MJ Soundtrack Toggle Event
   socket.on('adminToggleMJSoundtrack', ({ active }) => {
     if (!isCommishSocket()) return;
     isMJActive = !!active;
@@ -862,21 +859,27 @@ io.on('connection', (socket) => {
     }
   });
 
+  // FIXED: Reassigning a player now fully refunds the original team
   socket.on('adminOverrideTransferSale', ({ playerId, targetTeamId, newPrice }) => {
     if (!isCommishSocket()) return;
-    const player = players.find(p => p.id === playerId);
+    const player = players.find(p => String(p.id) === String(playerId));
     const newTeam = teams.find(t => t.id === targetTeamId);
     if (!player || !newTeam || player.status !== 'drafted') return;
 
-    const oldTeam = teams.find(t => t.id === player.draftedByTeamId);
     const cleanPrice = parseInt(newPrice, 10);
     if (isNaN(cleanPrice) || cleanPrice < 0) return;
 
+    const oldTeam = teams.find(t => t.id === player.draftedByTeamId) || teams.find(t => t.roster.some(r => String(r.id) === String(player.id)));
+    const prevPricePaid = player.price || 0;
+
+    // Refund original team
     if (oldTeam) {
-      oldTeam.roster = oldTeam.roster.filter(p => p.id !== player.id);
+      oldTeam.roster = oldTeam.roster.filter(p => String(p.id) !== String(player.id));
       recalculateTeamBudget(oldTeam);
     }
 
+    // Debit target team
+    newTeam.roster = newTeam.roster.filter(p => String(p.id) !== String(player.id));
     newTeam.roster.push({
       id: player.id,
       name: player.name,
@@ -894,7 +897,7 @@ io.on('connection', (socket) => {
 
     const fromText = oldTeam ? oldTeam.name : 'Unknown';
     io.emit('commishActionLogged', { 
-      message: `Reassigned <strong>${player.name}</strong> from ${fromText} to <strong>${newTeam.name}</strong> for <strong>$${cleanPrice}</strong>.` 
+      message: `Transferred <strong>${player.name}</strong> from <strong>${fromText}</strong> (refunded $${prevPricePaid}) to <strong>${newTeam.name}</strong> for <strong>$${cleanPrice}</strong>.` 
     });
     io.emit('stateUpdate', {
       draftState,
@@ -905,13 +908,14 @@ io.on('connection', (socket) => {
 
   socket.on('adminReleasePlayerToPool', ({ playerId }) => {
     if (!isCommishSocket()) return;
-    const player = players.find(p => p.id === playerId);
+    const player = players.find(p => String(p.id) === String(playerId));
     if (!player || player.status !== 'drafted') return;
 
-    const oldTeam = teams.find(t => t.id === player.draftedByTeamId);
-    const prevPrice = player.price;
+    const oldTeam = teams.find(t => t.id === player.draftedByTeamId) || teams.find(t => t.roster.some(r => String(r.id) === String(player.id)));
+    const prevPrice = player.price || 0;
+
     if (oldTeam) {
-      oldTeam.roster = oldTeam.roster.filter(p => p.id !== player.id);
+      oldTeam.roster = oldTeam.roster.filter(p => String(p.id) !== String(player.id));
       recalculateTeamBudget(oldTeam);
     }
 
@@ -924,7 +928,7 @@ io.on('connection', (socket) => {
 
     const teamText = oldTeam ? oldTeam.name : 'Team';
     io.emit('commishActionLogged', { 
-      message: `Released <strong>${player.name}</strong> back to the available pool. Refunded $${prevPrice} to ${teamText}.` 
+      message: `Released <strong>${player.name}</strong> back to available pool. Refunded $${prevPrice} to <strong>${teamText}</strong>.` 
     });
     io.emit('stateUpdate', {
       draftState,
@@ -1005,30 +1009,47 @@ io.on('connection', (socket) => {
     });
   });
 
+  // FIXED: Robust Undo Last Sale that works even if nomination clock has resumed
   socket.on('adminUndoLastSale', () => {
-    if (!isCommishSocket() || draftHistory.length === 0 || draftState.nominatedPlayer) return;
+    if (!isCommishSocket()) return;
+
+    // If an auction is actively underway, don't allow undoing the previous one until block is cleared
+    if (draftState.nominatedPlayer) {
+      socket.emit('chatNotification', { message: "⚠️ Cannot undo previous sale while another player is currently on the block. Cancel block first." });
+      return;
+    }
+
+    if (draftHistory.length === 0) {
+      socket.emit('chatNotification', { message: "⚠️ No sales in history to undo." });
+      return;
+    }
 
     const lastSale = draftHistory.pop();
     const team = teams.find(t => t.id === lastSale.teamId);
-    const player = players.find(p => p.id === lastSale.playerId);
+    const player = players.find(p => String(p.id) === String(lastSale.playerId));
 
-    if (team && player) {
-      team.roster = team.roster.filter(p => p.id !== player.id);
-      recalculateTeamBudget(team);
+    if (player) {
+      if (team) {
+        team.roster = team.roster.filter(p => String(p.id) !== String(player.id));
+        recalculateTeamBudget(team);
+      }
 
       player.status = 'available';
       player.draftedBy = null;
       player.draftedByTeamId = null;
       player.price = 0;
 
-      draftState.nominatingTeamId = lastSale.previousNominatorId;
-      draftState.onDeckTeamId = getOnDeckNominatorId(draftState.nominatingTeamId);
+      if (lastSale.previousNominatorId) {
+        draftState.nominatingTeamId = lastSale.previousNominatorId;
+        draftState.onDeckTeamId = getOnDeckNominatorId(draftState.nominatingTeamId);
+      }
       draftState.isDraftCompleted = false;
 
       saveStateToDisk();
       startTimer('nomination', timerConfig.nominationTime);
 
-      io.emit('commishActionLogged', { message: `Undid sale of <strong>${player.name}</strong> to ${team.name}. Budget restored to $${team.budget}.` });
+      const teamName = team ? team.name : 'Owner';
+      io.emit('commishActionLogged', { message: `Undid sale of <strong>${player.name}</strong> to <strong>${teamName}</strong>. Budget restored to $${team ? team.budget : 0}.` });
       io.emit('saleUndone', { player, team, price: lastSale.price });
       io.emit('stateUpdate', {
         draftState,

@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/team_images', express.static(path.join(__dirname, 'team_images')));
+app.use('/audio', express.static(path.join(__dirname, 'public', 'audio')));
 app.use(express.json());
 
 const PROD_ROSTER_SIZE = 13;
@@ -249,12 +250,12 @@ let isMJActive = false;
 
 function scheduleNextMJSound() {
   if (!isMJActive) return;
-  // Interval between 30 and 75 seconds
-  const delay = Math.floor(Math.random() * (75000 - 30000 + 1)) + 30000;
+  // Interval between 30 and 70 seconds
+  const delay = Math.floor(Math.random() * (70000 - 30000 + 1)) + 30000;
   mjSoundTimeout = setTimeout(() => {
     if (isMJActive) {
-      const clipNumber = Math.floor(Math.random() * 3) + 1; // mj1, mj2, or mj3
-      io.emit('mjTriggerSound', { clip: `/audio/mj${clipNumber}.mp3` });
+      const clipIdx = Math.floor(Math.random() * 3); // 0 = hee-hee, 1 = ow, 2 = shamone
+      io.emit('mjTriggerSound', { clipIdx });
       scheduleNextMJSound();
     }
   }, delay);
@@ -791,16 +792,17 @@ io.on('connection', (socket) => {
     return team && team.isCommish;
   }
 
+  // Toggle MJ Soundtrack
   socket.on('adminToggleMJSoundtrack', ({ active }) => {
     if (!isCommishSocket()) return;
     isMJActive = !!active;
     clearTimeout(mjSoundTimeout);
 
     if (isMJActive) {
-      io.emit('commishActionLogged', { message: "🕺 Commissioner activated random Michael Jackson noises soundtrack!" });
+      io.emit('commishActionLogged', { message: "🕺 Commissioner turned ON real Michael Jackson noises!" });
       scheduleNextMJSound();
     } else {
-      io.emit('commishActionLogged', { message: "🔇 Commissioner stopped Michael Jackson soundtrack." });
+      io.emit('commishActionLogged', { message: "🔇 Commissioner turned OFF Michael Jackson noises." });
     }
   });
 
@@ -859,7 +861,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // FIXED: Reassigning a player now fully refunds the original team
+  // Reassign player and REFUND previous owner
   socket.on('adminOverrideTransferSale', ({ playerId, targetTeamId, newPrice }) => {
     if (!isCommishSocket()) return;
     const player = players.find(p => String(p.id) === String(playerId));
@@ -872,13 +874,13 @@ io.on('connection', (socket) => {
     const oldTeam = teams.find(t => t.id === player.draftedByTeamId) || teams.find(t => t.roster.some(r => String(r.id) === String(player.id)));
     const prevPricePaid = player.price || 0;
 
-    // Refund original team
+    // Fully refund previous team
     if (oldTeam) {
       oldTeam.roster = oldTeam.roster.filter(p => String(p.id) !== String(player.id));
       recalculateTeamBudget(oldTeam);
     }
 
-    // Debit target team
+    // Assign to new team
     newTeam.roster = newTeam.roster.filter(p => String(p.id) !== String(player.id));
     newTeam.roster.push({
       id: player.id,
@@ -897,7 +899,7 @@ io.on('connection', (socket) => {
 
     const fromText = oldTeam ? oldTeam.name : 'Unknown';
     io.emit('commishActionLogged', { 
-      message: `Transferred <strong>${player.name}</strong> from <strong>${fromText}</strong> (refunded $${prevPricePaid}) to <strong>${newTeam.name}</strong> for <strong>$${cleanPrice}</strong>.` 
+      message: `Reassigned <strong>${player.name}</strong> from <strong>${fromText}</strong> (refunded $${prevPricePaid}) to <strong>${newTeam.name}</strong> for <strong>$${cleanPrice}</strong>.` 
     });
     io.emit('stateUpdate', {
       draftState,
@@ -906,6 +908,7 @@ io.on('connection', (socket) => {
     });
   });
 
+  // Release player to pool and REFUND owner
   socket.on('adminReleasePlayerToPool', ({ playerId }) => {
     if (!isCommishSocket()) return;
     const player = players.find(p => String(p.id) === String(playerId));
@@ -928,7 +931,7 @@ io.on('connection', (socket) => {
 
     const teamText = oldTeam ? oldTeam.name : 'Team';
     io.emit('commishActionLogged', { 
-      message: `Released <strong>${player.name}</strong> back to available pool. Refunded $${prevPrice} to <strong>${teamText}</strong>.` 
+      message: `Released <strong>${player.name}</strong> back to pool. Refunded $${prevPrice} to <strong>${teamText}</strong>.` 
     });
     io.emit('stateUpdate', {
       draftState,
@@ -1009,11 +1012,10 @@ io.on('connection', (socket) => {
     });
   });
 
-  // FIXED: Robust Undo Last Sale that works even if nomination clock has resumed
+  // Undo Last Sale: works seamlessly regardless of nomination timer state
   socket.on('adminUndoLastSale', () => {
     if (!isCommishSocket()) return;
 
-    // If an auction is actively underway, don't allow undoing the previous one until block is cleared
     if (draftState.nominatedPlayer) {
       socket.emit('chatNotification', { message: "⚠️ Cannot undo previous sale while another player is currently on the block. Cancel block first." });
       return;
@@ -1049,7 +1051,7 @@ io.on('connection', (socket) => {
       startTimer('nomination', timerConfig.nominationTime);
 
       const teamName = team ? team.name : 'Owner';
-      io.emit('commishActionLogged', { message: `Undid sale of <strong>${player.name}</strong> to <strong>${teamName}</strong>. Budget restored to $${team ? team.budget : 0}.` });
+      io.emit('commishActionLogged', { message: `Undid sale of <strong>${player.name}</strong> to <strong>${teamName}</strong>. Budget refunded to $${team ? team.budget : 0}.` });
       io.emit('saleUndone', { player, team, price: lastSale.price });
       io.emit('stateUpdate', {
         draftState,

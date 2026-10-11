@@ -244,23 +244,6 @@ let draftState = {
 let timerInterval = null;
 let autoBidTimeout = null;
 
-// Michael Jackson Random Sound Engine
-let mjSoundTimeout = null;
-let isMJActive = false;
-
-function scheduleNextMJSound() {
-  if (!isMJActive) return;
-  // Interval between 30 and 70 seconds
-  const delay = Math.floor(Math.random() * (70000 - 30000 + 1)) + 30000;
-  mjSoundTimeout = setTimeout(() => {
-    if (isMJActive) {
-      const clipIdx = Math.floor(Math.random() * 3); // 0 = hee-hee, 1 = ow, 2 = shamone
-      io.emit('mjTriggerSound', { clipIdx });
-      scheduleNextMJSound();
-    }
-  }, delay);
-}
-
 function startTimer(mode, duration) {
   clearInterval(timerInterval);
   if (!draftState.isDraftStarted || draftState.isDraftCompleted) return;
@@ -807,20 +790,6 @@ io.on('connection', (socket) => {
     return team && team.isCommish;
   }
 
-  // Toggle MJ Soundtrack
-  socket.on('adminToggleMJSoundtrack', ({ active }) => {
-    if (!isCommishSocket()) return;
-    isMJActive = !!active;
-    clearTimeout(mjSoundTimeout);
-
-    if (isMJActive) {
-      io.emit('commishActionLogged', { message: "🕺 Commissioner turned ON real Michael Jackson noises!" });
-      scheduleNextMJSound();
-    } else {
-      io.emit('commishActionLogged', { message: "🔇 Commissioner turned OFF Michael Jackson noises." });
-    }
-  });
-
   socket.on('adminSwitchConfiguredDemo', (config) => {
     if (!isCommishSocket()) return;
     clearInterval(timerInterval);
@@ -1080,8 +1049,6 @@ io.on('connection', (socket) => {
     if (!isCommishSocket()) return;
     clearInterval(timerInterval);
     clearTimeout(autoBidTimeout);
-    clearTimeout(mjSoundTimeout);
-    isMJActive = false;
     draftHistory = [];
 
     teams.forEach(t => {

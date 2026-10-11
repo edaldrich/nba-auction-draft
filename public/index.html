@@ -894,11 +894,16 @@
       <div class="modal-box" style="max-width: 360px; text-align: center;">
         <h2 style="margin-bottom: 0.5rem;">League Draft Sign-In</h2>
         <p style="color: #8d99ae; font-size: 0.85rem; margin-top: 0;">Enter your team passcode</p>
-        <input type="password" id="passcodeInput" class="selector" placeholder="Team Passcode" style="text-align: center; font-size: 16px; margin-bottom: 1rem;" />
-        <button class="btn" style="width: 100%; padding: 0.75rem; font-size: 1rem;" onclick="submitAuth()">Enter Draft Room</button>
+        <input type="password" id="passcodeInput" class="selector" placeholder="Team Passcode" style="text-align: center; font-size: 16px; margin-bottom: 0.75rem;" />
+        <button class="btn" style="width: 100%; padding: 0.75rem; font-size: 1rem; margin-bottom: 0.6rem;" onclick="submitAuth()">Enter Draft Room</button>
+        
+        <div style="border-top: 1px solid #233554; padding-top: 0.6rem; margin-top: 0.2rem;">
+          <button class="btn btn-secondary" style="width: 100%; padding: 0.6rem; font-size: 0.9rem;" onclick="enterAsSpectator()">👁️ Enter as Spectator (View-Only)</button>
+        </div>
+
         <p id="authErrorMsg" style="color: #ef233c; font-size: 0.85rem; margin-top: 0.75rem; display: none;"></p>
       </div>
-    </div>
+    </div>  
 
     <!-- Commissioner Command Modal -->
     <div id="commishModal" class="modal-overlay" style="display: none;">
@@ -914,16 +919,7 @@
           <button class="btn btn-success" onclick="exportDraftResultsCSV()">📥 Export Results CSV</button>
         </div>
 
-        <!-- MJ Soundtrack Control -->
-        <div style="background: rgba(168, 85, 247, 0.15); border: 1px solid #a855f7; border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <strong style="color: #c084fc;">🕺 Michael Jackson Random Soundtrack</strong>
-            <div style="font-size: 0.75rem; color: #cbd5e1;">Periodic vocal sounds (Hee-Hee / Shamone / Ow!) across the league</div>
-          </div>
-          <button id="mjAudioCommishBtn" class="btn btn-secondary" onclick="toggleMJSoundtrack()">
-            MJ Noises: OFF
-          </button>
-        </div>
+
 
         <div style="background: #080d1a; padding: 0.85rem; border-radius: 6px; border: 1px solid #f77f00; margin-bottom: 1rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">

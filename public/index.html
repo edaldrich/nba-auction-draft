@@ -1227,6 +1227,7 @@
     let localData = { teams: [], players: [], draftState: {} };
     let allLeagueTeams = [];
     let myTeam = null;
+    let isSpectator = false;
     let myCaps = {};
     let myRanks = {};
     let myQueue = [];
@@ -1235,11 +1236,9 @@
     let capEditMode = false;
     let currentTab = 'warRoom';
     let currentMobilePane = 'auction';
-    let isMJSoundtrackActive = false;
 
     const RING_CIRCUMFERENCE = 282.74;
 
-    // High-Contrast Official Franchise Palettes
     const NBA_TEAM_COLORS = {
       ATL: { p: '#E03A3E', s: '#C1D32F', name: 'Hawks' },
       BOS: { p: '#007A33', s: '#BA9653', name: 'Celtics' },
@@ -1313,58 +1312,6 @@
           osc.stop(ctx.currentTime + duration);
         }, delay * 1000);
       } catch (e) {}
-    }
-
-    // Synthesized MJ Vocal Soundbites (Hee-Hee / Shamone / Ow!)
-    function playMJSoundEffect() {
-      if (!userPrefs.sound) return;
-      const r = Math.random();
-      const ctx = getAudioContext();
-      const now = ctx.currentTime;
-
-      if (r < 0.34) {
-        // "HEE-HEE!" - High-pitched dual falsetto glissando
-        const osc1 = ctx.createOscillator();
-        const osc2 = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc1.type = 'sawtooth';
-        osc2.type = 'sine';
-        
-        osc1.frequency.setValueAtTime(880, now);
-        osc1.frequency.exponentialRampToValueAtTime(1400, now + 0.12);
-        osc2.frequency.setValueAtTime(880, now + 0.15);
-        osc2.frequency.exponentialRampToValueAtTime(1550, now + 0.32);
-
-        gain.gain.setValueAtTime(0.25, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-
-        osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
-        osc1.start(now); osc1.stop(now + 0.14);
-        osc2.start(now + 0.15); osc2.stop(now + 0.35);
-      } else if (r < 0.67) {
-        // "OWWW!" - Snappy vocal shout
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(1320, now);
-        osc.frequency.exponentialRampToValueAtTime(950, now + 0.28);
-        gain.gain.setValueAtTime(0.28, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(now); osc.stop(now + 0.3);
-      } else {
-        // "CH'MON / SHAMONE!" - Guttural punch
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(320, now);
-        osc.frequency.exponentialRampToValueAtTime(740, now + 0.12);
-        osc.frequency.exponentialRampToValueAtTime(450, now + 0.24);
-        gain.gain.setValueAtTime(0.22, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(now); osc.stop(now + 0.26);
-      }
     }
 
     function soundNominationTurn() {
@@ -1476,7 +1423,7 @@
     function closeSettingsModal() { document.getElementById('settingsModal').style.display = 'none'; }
     function closeDraftEndModal() { document.getElementById('draftEndCelebrationModal').style.display = 'none'; }
 
-    // Desktop Keyboard Shortcuts: ESC for Modals & Spacebar to Bid
+    // Desktop Keyboard Shortcuts: ESC for Modals & Spacebar to Bid (when enabled and not spectator)
     window.addEventListener('keydown', (e) => {
       if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
@@ -1484,7 +1431,7 @@
         closeFloatingPlayerCard();
         closeSettingsModal();
         if (myTeam?.isCommish) closeCommishModal();
-      } else if (e.code === 'Space' && userPrefs.spacebarBid) {
+      } else if (e.code === 'Space' && userPrefs.spacebarBid && !isSpectator) {
         e.preventDefault();
         if (!btnInc1.disabled) {
           bidIncrement(1);
@@ -1502,7 +1449,7 @@
     });
 
     function checkBackgroundNominationAlert() {
-      if (!document.hidden) return;
+      if (!document.hidden || isSpectator) return;
       const isMyTurn = myTeam && localData.draftState.nominatingTeamId === myTeam.id && !localData.draftState.nominatedPlayer && localData.draftState.isDraftStarted;
       if (isMyTurn && !titleFlashTimer) {
         let toggle = false;
@@ -1538,7 +1485,7 @@
     }
 
     function triggerOutbidJolt() {
-      if (!userPrefs.visual) return;
+      if (!userPrefs.visual || isSpectator) return;
       const overlay = document.getElementById('outbidJoltOverlay');
       overlay.style.display = 'none';
       overlay.offsetHeight;
@@ -1573,7 +1520,11 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       const savedPass = localStorage.getItem('draft_passcode');
-      if (savedPass) socket.emit('authTeam', { passcode: savedPass });
+      if (savedPass === '__SPECTATOR__') {
+        enterAsSpectator();
+      } else if (savedPass) {
+        socket.emit('authTeam', { passcode: savedPass });
+      }
       if (window.innerWidth <= 900) switchMobilePane('auction');
     });
 
@@ -1588,6 +1539,27 @@
       socket.emit('authTeam', { passcode: pass });
     }
 
+    // View-Only Spectator Authentication
+    function enterAsSpectator() {
+      isSpectator = true;
+      myTeam = null;
+      localStorage.setItem('draft_passcode', '__SPECTATOR__');
+      authOverlay.style.display = 'none';
+
+      userTeamAvatarBadge.innerHTML = '👁️';
+      userTeamBadge.textContent = 'Spectator (View-Only)';
+      userTeamBadge.style.color = '#94a3b8';
+      myAutoDraftBtn.style.display = 'none';
+      openCommishBtn.style.display = 'none';
+      
+      const capToggle = document.getElementById('toggleCapModeBtn');
+      if (capToggle) capToggle.style.display = 'none';
+
+      getAudioContext();
+      socket.emit('authSpectator');
+      logMessage("👁️ Joined as <strong>Spectator</strong> (Live View-Only).");
+    }
+
     socket.on('authError', ({ message }) => {
       authErrorMsg.textContent = message;
       authErrorMsg.style.display = 'block';
@@ -1595,6 +1567,7 @@
     });
 
     socket.on('authSuccess', (data) => {
+      isSpectator = !!data.isSpectator;
       myTeam = data.myTeam;
       myCaps = data.myCaps || {};
       myRanks = data.myRanks || {};
@@ -1610,19 +1583,20 @@
         p._searchKey = cleanNormalize(`${p.name} ${p.nbaTeam || ''}`);
       });
 
-      localStorage.setItem('draft_passcode', passcodeInput.value.trim() || localStorage.getItem('draft_passcode'));
+      if (!isSpectator) {
+        localStorage.setItem('draft_passcode', passcodeInput.value.trim() || localStorage.getItem('draft_passcode'));
+        userTeamAvatarBadge.innerHTML = getTeamAvatarHTML(myTeam.name);
+        userTeamBadge.textContent = `${myTeam.name} ${myTeam.isCommish ? '🛡️' : ''}`;
+        if (myTeam.isCommish) openCommishBtn.style.display = 'inline-block';
+        updateMyAutoBtn(myTeam.isAuto);
+        logMessage(`Welcome, <strong>${myTeam.name}</strong>! Ready.`);
+      }
+
       authOverlay.style.display = 'none';
-
-      userTeamAvatarBadge.innerHTML = getTeamAvatarHTML(myTeam.name);
-      userTeamBadge.textContent = `${myTeam.name} ${myTeam.isCommish ? '🛡️' : ''}`;
-      if (myTeam.isCommish) openCommishBtn.style.display = 'inline-block';
-
-      updateMyAutoBtn(myTeam.isAuto);
       populateTeamFilterOptions();
       populateMobileTeamPicker();
       renderAll();
       renderQueue();
-      logMessage(`Welcome, <strong>${myTeam.name}</strong>! Ready.`);
     });
 
     function populateTeamFilterOptions() {
@@ -1656,8 +1630,10 @@
 
     socket.on('presenceUpdate', ({ teams }) => {
       localData.teams = teams;
-      const me = teams.find(t => t.id === myTeam?.id);
-      if (me) updateMyAutoBtn(me.isAuto);
+      if (!isSpectator) {
+        const me = teams.find(t => t.id === myTeam?.id);
+        if (me) updateMyAutoBtn(me.isAuto);
+      }
       renderTeams();
       if (myTeam?.isCommish) {
         renderCommishAutoList();
@@ -1678,16 +1654,13 @@
       logMessage("🧹 <strong>Draft log reset by Commissioner.</strong>");
     });
 
-    socket.on('mjTriggerSound', () => {
-      playMJSoundEffect();
-    });
-
     socket.on('myAutoDraftChanged', ({ isAuto }) => {
       if (myTeam) myTeam.isAuto = isAuto;
       updateMyAutoBtn(isAuto);
     });
 
     function updateMyAutoBtn(isAuto) {
+      if (isSpectator) return;
       if (isAuto) {
         myAutoDraftBtn.textContent = 'Auto: ON';
         myAutoDraftBtn.className = 'btn btn-toggle-auto active';
@@ -1698,6 +1671,7 @@
     }
 
     function toggleMyAutoDraft() {
+      if (isSpectator) return;
       socket.emit('toggleMyAutoDraft');
     }
 
@@ -1778,7 +1752,7 @@
       const prevLeaderId = localData.draftState?.highBidder?.id;
       localData.draftState = draftState;
 
-      if (myTeam && prevLeaderId === myTeam.id && draftState.highBidder?.id !== myTeam.id) {
+      if (!isSpectator && myTeam && prevLeaderId === myTeam.id && draftState.highBidder?.id !== myTeam.id) {
         triggerOutbidJolt();
       }
 
@@ -1839,13 +1813,13 @@
         timerRingBar.style.stroke = seconds <= 5 ? '#ef233c' : (seconds <= 10 ? '#ffbe0b' : '#06d6a0');
       }
 
-      if (mode === 'nomination' && seconds === timerConfig.nominationTime) {
+      if (!isSpectator && mode === 'nomination' && seconds === timerConfig.nominationTime) {
         if (myTeam && localData.draftState.nominatingTeamId === myTeam.id) {
           soundNominationTurn();
         }
       }
 
-      if (mode === 'nomination' && seconds === 10) {
+      if (!isSpectator && mode === 'nomination' && seconds === 10) {
         if (myTeam && localData.draftState.nominatingTeamId === myTeam.id) {
           soundNominationTenSecondsRemaining();
         }
@@ -1855,7 +1829,7 @@
       if (mode === 'auction' && seconds >= 1 && seconds <= alertThreshold && lastSecondFlashed !== seconds) {
         lastSecondFlashed = seconds;
         soundCountdownTick(seconds);
-        if (userPrefs.visual) {
+        if (userPrefs.visual && !isSpectator) {
           countdownFlashNum.textContent = seconds;
           urgencyOverlay.style.display = 'flex';
           setTimeout(() => { urgencyOverlay.style.display = 'none'; }, 700);
@@ -1875,7 +1849,7 @@
 
       triggerWinToast(winningTeam.name, price);
 
-      if (myTeam && winningTeam.id === myTeam.id) {
+      if (!isSpectator && myTeam && winningTeam.id === myTeam.id) {
         soundVictoryWon();
       }
       if (myTeam?.isCommish) populateOverrideDropdowns();
@@ -1953,6 +1927,7 @@
     }
 
     function toggleCapMode() {
+      if (isSpectator) return;
       capEditMode = !capEditMode;
       document.getElementById('toggleCapModeBtn').textContent = capEditMode ? 'Done' : 'Set My Caps';
       capToolbar.style.display = capEditMode ? 'flex' : 'none';
@@ -1960,16 +1935,15 @@
     }
 
     function renderAll() {
-      if (!myTeam) return;
+      if (!myTeam && !isSpectator) return;
       updateTopBanner();
       renderPlayers();
       renderTeams();
       renderAuctionStage();
       if (currentTab === 'board') renderDraftBoard();
-      if (myTeam.isCommish) updateCommishModalUI();
+      if (myTeam?.isCommish) updateCommishModalUI();
     }
 
-    // High-Visibility Positional Class & Badge Helpers
     function getPositionInfo(posStr) {
       if (!posStr) return { cls: '', badge: '', text: 'UTIL' };
       const tokens = posStr.toUpperCase().split(/[,/ ]+/);
@@ -1983,6 +1957,7 @@
 
     let draggedQueueIndex = null;
     function handleQueueDragStart(e, index) {
+      if (isSpectator) return;
       draggedQueueIndex = index;
       e.dataTransfer.effectAllowed = 'move';
       e.target.classList.add('dragging');
@@ -2002,7 +1977,7 @@
       e.preventDefault();
       const item = e.target.closest('.queue-item');
       if (item) item.classList.remove('drag-over');
-      if (draggedQueueIndex === null || draggedQueueIndex === targetIndex) return;
+      if (draggedQueueIndex === null || draggedQueueIndex === targetIndex || isSpectator) return;
 
       const movedItem = myQueue.splice(draggedQueueIndex, 1)[0];
       myQueue.splice(targetIndex, 0, movedItem);
@@ -2012,6 +1987,7 @@
     }
 
     function addPlayerToQueue(playerId) {
+      if (isSpectator) return;
       if (localData.draftState?.nominatedPlayer && String(localData.draftState.nominatedPlayer.id) === String(playerId)) {
         return;
       }
@@ -2022,11 +1998,13 @@
       }
     }
     function removePlayerFromQueue(playerId) {
+      if (isSpectator) return;
       myQueue = myQueue.filter(id => String(id) !== String(playerId));
       socket.emit('updateMyQueue', { queue: myQueue });
       renderQueue();
     }
     function moveQueueItem(index, direction) {
+      if (isSpectator) return;
       const newIdx = index + direction;
       if (newIdx < 0 || newIdx >= myQueue.length) return;
       const temp = myQueue[index];
@@ -2037,6 +2015,12 @@
     }
 
     function renderQueue() {
+      if (isSpectator) {
+        queueCountBadge.textContent = '0';
+        queueListContainer.innerHTML = `<small style="color: #64748b; display: block; padding: 0.35rem 0;">Spectators cannot use nomination queues.</small>`;
+        return;
+      }
+
       const onBlockId = localData.draftState?.nominatedPlayer?.id;
       if (onBlockId) {
         myQueue = myQueue.filter(id => String(id) !== String(onBlockId));
@@ -2076,6 +2060,7 @@
     }
 
     function addCurrentPlayerToQueue() {
+      if (isSpectator) return;
       if (currentInspectedPlayerId) {
         addPlayerToQueue(currentInspectedPlayerId);
       }
@@ -2092,6 +2077,7 @@
     }
 
     function stepPlayerCap(playerId, delta) {
+      if (isSpectator) return;
       const currentVal = parseInt(myCaps[playerId], 10) || 0;
       const newVal = Math.max(0, currentVal + delta);
       const currentRank = myRanks[playerId] || '';
@@ -2099,7 +2085,7 @@
     }
 
     function renderPlayers() {
-      if (!myTeam) return;
+      if (!myTeam && !isSpectator) return;
       const query = cleanNormalize(playerSearch.value);
       const filter = statusFilter.value;
       const teamSelected = teamFilter.value;
@@ -2119,16 +2105,16 @@
       });
 
       const visibleSlice = filtered.slice(0, 130);
-      const isMyTurnToNominate = localData.draftState.isDraftStarted && (myTeam.id === localData.draftState.nominatingTeamId) && !localData.draftState.isDraftCompleted;
+      const isMyTurnToNominate = !isSpectator && localData.draftState.isDraftStarted && (myTeam?.id === localData.draftState.nominatingTeamId) && !localData.draftState.isDraftCompleted;
 
       playerListEl.innerHTML = visibleSlice.map(p => {
-        const myCap = (myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
-        const myRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
+        const myCap = (!isSpectator && myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
+        const myRank = (!isSpectator && myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
         const isDrafted = p.status === 'drafted';
         const isOnBlock = (onBlockPlayerId && String(p.id) === String(onBlockPlayerId));
         const posInfo = getPositionInfo(p.pos);
         const hasInjury = p.news && (p.news.tag === 'OUT' || p.news.tag === 'INJURY');
-        const inQueue = myQueue.includes(p.id);
+        const inQueue = !isSpectator && myQueue.includes(p.id);
 
         return `
           <div class="player-row ${posInfo.cls} ${isDrafted ? 'player-row-drafted' : ''}" 
@@ -2153,7 +2139,7 @@
             </div>
 
             ${!isDrafted ? (
-              capEditMode ? `
+              (!isSpectator && capEditMode) ? `
                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;" onclick="event.stopPropagation();" ondblclick="event.stopPropagation();">
                   <div style="display: flex; gap: 0.2rem; align-items: center;" onclick="event.stopPropagation();" ondblclick="event.stopPropagation();">
                     <button class="cap-btn-stepper" onclick="event.stopPropagation(); stepPlayerCap('${p.id}', -5)" ondblclick="event.stopPropagation(); stepPlayerCap('${p.id}', -5)">-5</button>
@@ -2176,22 +2162,24 @@
                       onchange="saveCap('${p.id}', myCaps['${p.id}'] || '', this.value)" />
                   </div>
                 </div>
-              ` : `
-                <div style="display: flex; gap: 0.2rem; align-items: center;">
-                  <button class="btn btn-secondary" style="padding: 0.3rem 0.5rem; font-size: 0.8rem;" 
-                    onclick="event.stopPropagation(); addPlayerToQueue('${p.id}')"
-                    ${isOnBlock ? 'disabled' : ''}
-                    title="Add to Queue">
-                    +Q
-                  </button>
-                  <button class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;" 
-                    onclick="event.stopPropagation(); directNominate('${p.id}')" 
-                    ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate || !localData.draftState.isDraftStarted || isOnBlock) ? 'disabled' : ''}
-                    title="${!localData.draftState.isDraftStarted ? 'Draft not started' : (!isMyTurnToNominate ? 'Not your turn' : 'Nominate')}">
-                    Nominate
-                  </button>
-                </div>
-              `
+              ` : (
+                isSpectator ? '' : `
+                  <div style="display: flex; gap: 0.2rem; align-items: center;">
+                    <button class="btn btn-secondary" style="padding: 0.3rem 0.5rem; font-size: 0.8rem;" 
+                      onclick="event.stopPropagation(); addPlayerToQueue('${p.id}')"
+                      ${isOnBlock ? 'disabled' : ''}
+                      title="Add to Queue">
+                      +Q
+                    </button>
+                    <button class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;" 
+                      onclick="event.stopPropagation(); directNominate('${p.id}')" 
+                      ${(localData.draftState.nominatedPlayer || !isMyTurnToNominate || !localData.draftState.isDraftStarted || isOnBlock) ? 'disabled' : ''}
+                      title="${!localData.draftState.isDraftStarted ? 'Draft not started' : (!isMyTurnToNominate ? 'Not your turn' : 'Nominate')}">
+                      Nominate
+                    </button>
+                  </div>
+                `
+              )
             ) : ''}
           </div>
         `;
@@ -2203,10 +2191,12 @@
     }
 
     function directNominate(playerId) {
+      if (isSpectator) return;
       socket.emit('nominatePlayer', { playerId });
     }
 
     function saveCap(playerId, maxBid, rank) {
+      if (isSpectator) return;
       socket.emit('updateAutoCap', { playerId, maxBid, rank });
     }
 
@@ -2215,11 +2205,10 @@
       csvContent += "Player ID,Player Name,Team,FP/G,Max Bid ($),Priority Rank (1-300)\n";
 
       localData.players.forEach(p => {
-        const currentCap = (myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
-        const currentRank = (myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
+        const currentCap = (!isSpectator && myCaps[p.id] !== undefined && myCaps[p.id] !== null) ? myCaps[p.id] : '';
+        const currentRank = (!isSpectator && myRanks[p.id] !== undefined && myRanks[p.id] !== null) ? myRanks[p.id] : '';
         const cleanName = (p.name || '').replace(/[,"]/g, '').trim();
         const cleanTeam = (p.nbaTeam || '').replace(/[,"]/g, '').trim();
-        
         const cleanId = String(p.id).replace(/["=]/g, '').trim();
         const excelSafeId = `="` + cleanId + `"`;
 
@@ -2229,13 +2218,14 @@
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `draft-caps-${myTeam.name.toLowerCase().replace(/\s+/g, '-')}.csv`);
+      link.setAttribute("download", `draft-caps-${myTeam ? myTeam.name.toLowerCase().replace(/\s+/g, '-') : 'league'}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
 
     function handleCapsCsvUpload(event) {
+      if (isSpectator) return;
       const file = event.target.files[0];
       if (!file) return;
 
@@ -2282,7 +2272,7 @@
       teamListEl.innerHTML = localData.teams.map(t => {
         const isFull = t.roster.length >= maxRosterSize;
         const isTurn = localData.draftState.isDraftStarted && (t.id === localData.draftState.nominatingTeamId) && !localData.draftState.isDraftCompleted;
-        const isMe = myTeam && t.id === myTeam.id;
+        const isMe = !isSpectator && myTeam && t.id === myTeam.id;
         const pct = Math.max(0, Math.min(100, (t.budget / startB) * 100));
 
         return `
@@ -2366,7 +2356,6 @@
       const hasInjury = p.news && (p.news.tag === 'OUT' || p.news.tag === 'INJURY');
       const teamColors = NBA_TEAM_COLORS[p.nbaTeam?.toUpperCase()] || { p: '#0284c7', s: '#38bdf8', name: p.nbaTeam };
 
-      // Apply Loud Franchise Color Themes to Central Auction Card
       paneAuction.style.background = `radial-gradient(circle at 50% 0%, ${teamColors.p}33 0%, #121c2e 85%)`;
       paneAuction.style.borderColor = teamColors.p;
       paneAuction.style.boxShadow = `0 0 35px ${teamColors.p}26, inset 0 0 20px ${teamColors.p}1a`;
@@ -2396,6 +2385,7 @@
     }
 
     function validateCustomBidInput() {
+      if (isSpectator) return;
       const state = localData.draftState;
       if (!state.nominatedPlayer) return;
 
@@ -2447,7 +2437,7 @@
 
       const me = localData.teams.find(t => t.id === myTeam?.id);
       const myBudget = me ? me.budget : 0;
-      const isLeading = myTeam && state.highBidder?.id === myTeam.id;
+      const isLeading = !isSpectator && myTeam && state.highBidder?.id === myTeam.id;
 
       if (isLeading) {
         highBidderBanner.className = 'leader-you';
@@ -2461,20 +2451,24 @@
       }
 
       currentBidDisplay.textContent = `$${state.currentBid}`;
-      userMaxAllowedBid.textContent = `$${myBudget}`;
+      userMaxAllowedBid.textContent = isSpectator ? '$0 (Spectator)' : `$${myBudget}`;
 
       btnInc1.textContent = `+$1 ($${state.currentBid + 1})`;
       btnInc3.textContent = `+$3 ($${state.currentBid + 3})`;
       btnInc5.textContent = `+$5 ($${state.currentBid + 5})`;
 
-      const canBid = !state.isPaused && myBudget > state.currentBid && !isLeading && !state.isDraftCompleted;
-      btnInc1.disabled = !canBid || (myBudget < state.currentBid + 1);
-      btnInc3.disabled = !canBid || (myBudget < state.currentBid + 3);
-      btnInc5.disabled = !canBid || (myBudget < state.currentBid + 5);
+      if (isSpectator) {
+        disableBidButtons(true);
+      } else {
+        const canBid = !state.isPaused && myBudget > state.currentBid && !isLeading && !state.isDraftCompleted;
+        btnInc1.disabled = !canBid || (myBudget < state.currentBid + 1);
+        btnInc3.disabled = !canBid || (myBudget < state.currentBid + 3);
+        btnInc5.disabled = !canBid || (myBudget < state.currentBid + 5);
 
-      customBidInput.min = state.currentBid + 1;
-      customBidInput.max = myBudget;
-      validateCustomBidInput();
+        customBidInput.min = state.currentBid + 1;
+        customBidInput.max = myBudget;
+        validateCustomBidInput();
+      }
 
       const fraction = Math.max(0, state.timerSeconds / timerConfig.beginningBidTime);
       timerRingBar.style.strokeDashoffset = RING_CIRCUMFERENCE * (1 - fraction);
@@ -2492,7 +2486,7 @@
     function renderDraftBoard() {
       boardColumnsEl.innerHTML = localData.teams.map((t, idx) => {
         const openSpots = maxRosterSize - t.roster.length;
-        const isMe = myTeam && t.id === myTeam.id;
+        const isMe = !isSpectator && myTeam && t.id === myTeam.id;
         return `
           <div class="board-col ${idx === 0 ? 'mobile-active-board-col' : ''}" data-team-id="${t.id}" style="${isMe ? 'border: 1px solid #38bdf8;' : ''}">
             <div class="board-col-header">
@@ -2525,7 +2519,7 @@
 
     let bidCooldownActive = false;
     function bidIncrement(increment) {
-      if (bidCooldownActive) return;
+      if (isSpectator || bidCooldownActive) return;
       bidCooldownActive = true;
       setTimeout(() => { bidCooldownActive = false; }, 350);
 
@@ -2534,7 +2528,7 @@
     }
 
     function bidCustom() {
-      if (bidCooldownActive) return;
+      if (isSpectator || bidCooldownActive) return;
       const val = parseInt(customBidInput.value, 10);
       if (isNaN(val)) return;
 
@@ -2571,6 +2565,9 @@
       document.getElementById('pillST').textContent = p.fullStats?.ST ?? (p.stats?.stl ?? '-');
       document.getElementById('pillBLK').textContent = p.fullStats?.BLK ?? (p.stats?.blk ?? '-');
       document.getElementById('pill3PT').textContent = p.fullStats?.['3PTM'] ?? (p.stats?.threes ?? '-');
+
+      const queueBtn = document.getElementById('floatCardAddToQueueBtn');
+      if (queueBtn) queueBtn.style.display = isSpectator ? 'none' : 'block';
 
       const tbody = document.getElementById('floatCardHistoryBody');
       const tfoot = document.getElementById('floatCardHistoryFoot');
@@ -2649,6 +2646,7 @@
     }
 
     function openCommishModal() {
+      if (isSpectator || !myTeam?.isCommish) return;
       document.getElementById('inputNomTime').value = timerConfig.nominationTime;
       document.getElementById('inputBidTime').value = timerConfig.beginningBidTime;
       document.getElementById('inputResetTime').value = timerConfig.additionalBidTime;
@@ -2731,7 +2729,6 @@
       }
     }
 
-    // Dynamic Self-Updating Overrides Dropdown Populator
     function populateOverrideDropdowns() {
       if (!overrideTeamSelect || !transferPlayerSelect || !transferNewTeamSelect) return;
 
@@ -2783,14 +2780,6 @@
       if (confirm("Release this player back to the available pool and refund the team's purchase?")) {
         socket.emit('adminReleasePlayerToPool', { playerId });
       }
-    }
-
-    function toggleMJSoundtrack() {
-      isMJSoundtrackActive = !isMJSoundtrackActive;
-      const btn = document.getElementById('mjAudioCommishBtn');
-      btn.textContent = isMJSoundtrackActive ? 'MJ Noises: ACTIVE (ON)' : 'MJ Noises: OFF';
-      btn.className = isMJSoundtrackActive ? 'btn btn-warning' : 'btn btn-secondary';
-      socket.emit('adminToggleMJSoundtrack', { active: isMJSoundtrackActive });
     }
 
     function exportDraftResultsCSV() {
@@ -2862,4 +2851,4 @@
     }
   </script>
 </body>
-</html> 
+</html>

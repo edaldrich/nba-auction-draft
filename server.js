@@ -639,7 +639,22 @@ function initProdMode() {
 
 io.on('connection', (socket) => {
   draftState.onDeckTeamId = getOnDeckNominatorId(draftState.nominatingTeamId);
-
+// View-Only Spectator Registration
+  socket.on('authSpectator', () => {
+    socket.emit('authSuccess', {
+      isSpectator: true,
+      myTeam: null,
+      myCaps: {},
+      myRanks: {},
+      myQueue: [],
+      timerConfig,
+      teams: getPublicTeams(),
+      players: getPublicPlayers(),
+      allLeagueTeams: prodTeams.map(t => ({ id: t.id, name: t.name })),
+      draftState,
+      maxRosterSize
+    });
+  });
   socket.on('authTeam', ({ passcode }) => {
     const cleanPass = (passcode || '').trim();
     const team = teams.find(t => t.passcode === cleanPass);

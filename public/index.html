@@ -165,7 +165,8 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 500px minmax(360px, 500px) 310px;
+      /* Left (Players): 540px | Center (Action): minmax(440px, 560px) | Right (Teams): 310px */
+      grid-template-columns: 540px minmax(440px, 560px) 310px;
       justify-content: center;
       gap: 1rem;
       max-width: 1680px;
@@ -359,10 +360,13 @@
     #playerListContainer { max-height: 52vh; overflow-y: auto; padding-right: 0.2rem; }
     
     /* Loud, High-Contrast Player Rows & Positional Badges */
-    .player-row {
+    .player-row strong {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       padding: 0.55rem 0.7rem;
       border-radius: 6px;
       margin-bottom: 0.35rem;
@@ -1091,8 +1095,62 @@
     </div>
 
     <div id="warRoomView" class="grid">
-      <div id="paneAuction" class="card card-auction-center">
+      <!-- 1. LEFT COLUMN: Players Pool & Queue -->
+      <div id="panePlayers" class="card card-players">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+          <h3 style="margin: 0; color: #38bdf8; font-size: 1.05rem;">My Nomination Queue (<span id="queueCountBadge">0</span>)</h3>
+          <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="toggleCapMode()">
+            Set My Caps
+          </button>
+        </div>
         
+        <div id="nominationQueuePanel" style="background: #080d1a; border: 1px solid #0284c7; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.35rem;">
+            <span>Drag to reorder • Top player auto-nominates</span>
+          </div>
+          <div id="queueListContainer" style="max-height: 125px; overflow-y: auto;"></div>
+        </div>
+
+        <div id="capToolbar" class="cap-controls-bar" style="display: none;">
+          <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="downloadCapsTemplate()">
+            📥 Download Template
+          </button>
+          <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="document.getElementById('capsCsvFileInput').click()">
+            📤 Import CSV
+          </button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+          <h4 style="margin: 0; color: #e2e8f0; font-size: 0.95rem;">Player Pool</h4>
+          <small style="color: #94a3b8; font-size: 0.72rem;">(Double-click for stats)</small>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.35rem; margin-bottom: 0.35rem;">
+          <select id="statusFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
+            <option value="available">Available</option>
+            <option value="all">All Players</option>
+            <option value="drafted">Drafted</option>
+          </select>
+          <select id="teamFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
+            <option value="ALL">All NBA</option>
+          </select>
+          <select id="poolSortOrder" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
+            <option value="fppg">Sort: FP/G</option>
+            <option value="fpts">Sort: FPts</option>
+            <option value="cap">Sort: My Cap</option>
+            <option value="priority">Sort: Priority</option>
+          </select>
+        </div>
+
+        <input type="text" id="playerSearch" class="selector" placeholder="Search player name..." oninput="debouncedRenderPlayers()" />
+
+        <div id="playerListContainer">
+          <div id="playerList"></div>
+        </div>
+      </div>
+
+      <!-- 2. CENTER COLUMN: Live Auction Block -->
+      <div id="paneAuction" class="card card-auction-center">
         <div id="highBidderBanner" class="leader-other">No High Bidder</div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; background: #080d1a; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #1e2c44;">
@@ -1152,59 +1210,7 @@
         <div id="logBox"></div>
       </div>
 
-      <div id="panePlayers" class="card card-players">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-          <h3 style="margin: 0; color: #38bdf8; font-size: 1.05rem;">My Nomination Queue (<span id="queueCountBadge">0</span>)</h3>
-          <button id="toggleCapModeBtn" class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="toggleCapMode()">
-            Set My Caps
-          </button>
-        </div>
-        
-        <div id="nominationQueuePanel" style="background: #080d1a; border: 1px solid #0284c7; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.75rem;">
-          <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.35rem;">
-            <span>Drag to reorder • Top player auto-nominates</span>
-          </div>
-          <div id="queueListContainer" style="max-height: 125px; overflow-y: auto;"></div>
-        </div>
-
-        <div id="capToolbar" class="cap-controls-bar" style="display: none;">
-          <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="downloadCapsTemplate()">
-            📥 Download Template
-          </button>
-          <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.45rem;" onclick="document.getElementById('capsCsvFileInput').click()">
-            📤 Import CSV
-          </button>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-          <h4 style="margin: 0; color: #e2e8f0; font-size: 0.95rem;">Player Pool</h4>
-          <small style="color: #94a3b8; font-size: 0.72rem;">(Double-click for stats)</small>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.35rem; margin-bottom: 0.35rem;">
-          <select id="statusFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
-            <option value="available">Available</option>
-            <option value="all">All Players</option>
-            <option value="drafted">Drafted</option>
-          </select>
-          <select id="teamFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
-            <option value="ALL">All NBA</option>
-          </select>
-          <select id="poolSortOrder" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
-            <option value="fppg">Sort: FP/G</option>
-            <option value="fpts">Sort: FPts</option>
-            <option value="cap">Sort: My Cap</option>
-            <option value="priority">Sort: Priority</option>
-          </select>
-        </div>
-
-        <input type="text" id="playerSearch" class="selector" placeholder="Search player name..." oninput="debouncedRenderPlayers()" />
-
-        <div id="playerListContainer">
-          <div id="playerList"></div>
-        </div>
-      </div>
-
+      <!-- 3. RIGHT COLUMN: Teams & Budgets -->
       <div id="paneTeams" class="card card-teams">
         <h3>Teams & Budgets</h3>
         <div id="teamList"></div>

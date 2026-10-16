@@ -1736,10 +1736,16 @@
       if (!draftState.isDemoMode && draftState.nominatedPlayer) {
         const nomName = (draftState.nominatedPlayer.name || '').toLowerCase();
         if (nomName.includes('giannis')) {
-          triggerEasterEgg('🪦', 'REST IN PEACE', 'Pour one out... Giannis has entered the chat.');
+          triggerEasterEgg('🪦', 'REST IN PEACE', 'Pour one out... ');
         }
         if (nomName.includes('trae young')) {
           triggerEasterEgg('🏆', 'ANNUAL AWARD WINNER', 'Awarded: Ugliest Person Alive 🏆');
+        }
+        if (nomName.includes('austin reaves')) {
+          triggerEasterEgg('🍋', 'LUNGO DUNGO', 'The Original Lemon Daddy');
+        }
+        if (nomName.includes('kawhi leonard')) {
+          triggerEasterEgg('🌳', 'ASPIRATIONAL', 'Tree man gets paid');
         }
       }
     });

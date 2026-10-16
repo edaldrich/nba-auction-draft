@@ -1374,6 +1374,7 @@
     const playerSearch = document.getElementById('playerSearch');
     const statusFilter = document.getElementById('statusFilter');
     const teamFilter = document.getElementById('teamFilter');
+    const poolSortOrder = document.getElementById('poolSortOrder');
     const totalPoolDisplay = document.getElementById('totalPoolDisplay');
     const currentNomDisplay = document.getElementById('currentNomDisplay');
     const onDeckNomDisplay = document.getElementById('onDeckNomDisplay');
@@ -1955,8 +1956,6 @@
       if (currentTab === 'board') renderDraftBoard();
       if (myTeam?.isCommish) updateCommishModalUI();
     }
-
-    const poolSortOrder = document.getElementById('poolSortOrder');
     
     function getPositionInfo(posStr) {
       if (!posStr) return { cls: '', badge: '', text: 'UTIL' };

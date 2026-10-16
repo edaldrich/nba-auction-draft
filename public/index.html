@@ -165,8 +165,9 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 410px 1fr 310px;
-      gap: 0.9rem;
+      grid-template-columns: 500px minmax(360px, 500px) 310px;
+      justify-content: center;
+      gap: 1rem;
       max-width: 1680px;
       margin: 0 auto;
     }
@@ -1180,14 +1181,20 @@
           <small style="color: #94a3b8; font-size: 0.72rem;">(Double-click for stats)</small>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.3rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.35rem; margin-bottom: 0.35rem;">
           <select id="statusFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
-            <option value="available">Available Only</option>
+            <option value="available">Available</option>
             <option value="all">All Players</option>
-            <option value="drafted">Drafted Only</option>
+            <option value="drafted">Drafted</option>
           </select>
           <select id="teamFilter" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
-            <option value="ALL">All NBA Teams</option>
+            <option value="ALL">All NBA</option>
+          </select>
+          <select id="poolSortOrder" class="selector" style="margin-bottom: 0;" onchange="renderPlayers()">
+            <option value="fppg">Sort: FP/G</option>
+            <option value="fpts">Sort: FPts</option>
+            <option value="cap">Sort: My Cap</option>
+            <option value="priority">Sort: Priority</option>
           </select>
         </div>
 
@@ -1949,15 +1956,37 @@
       if (myTeam?.isCommish) updateCommishModalUI();
     }
 
+    const poolSortOrder = document.getElementById('poolSortOrder');
+    
     function getPositionInfo(posStr) {
       if (!posStr) return { cls: '', badge: '', text: 'UTIL' };
-      const tokens = posStr.toUpperCase().split(/[,/ ]+/);
-      for (let t of tokens) {
-        if (t === 'PG' || t === 'SG') return { cls: 'pos-guard', badge: 'badge-g', text: t };
-        if (t === 'SF' || t === 'PF') return { cls: 'pos-forward', badge: 'badge-f', text: t };
-        if (t === 'C') return { cls: 'pos-center', badge: 'badge-c', text: 'C' };
+      const fullText = posStr.trim();
+      const tokens = fullText.toUpperCase().split(/[,/ ]+/);
+      const primary = tokens[0] || '';
+
+      let cls = '';
+      let badge = '';
+
+      if (['PG', 'SG', 'G'].includes(primary)) {
+        cls = 'pos-guard';
+        badge = 'badge-g';
+      } else if (['SF', 'PF', 'F'].includes(primary)) {
+        cls = 'pos-forward';
+        badge = 'badge-f';
+      } else if (primary === 'C') {
+        cls = 'pos-center';
+        badge = 'badge-c';
+      } else {
+        // Fallback check secondary tokens if primary is non-standard
+        for (let t of tokens) {
+          if (['PG', 'SG', 'G'].includes(t)) { cls = 'pos-guard'; badge = 'badge-g'; break; }
+          if (['SF', 'PF', 'F'].includes(t)) { cls = 'pos-forward'; badge = 'badge-f'; break; }
+          if (t === 'C') { cls = 'pos-center'; badge = 'badge-c'; break; }
+        }
       }
-      return { cls: '', badge: '', text: posStr };
+
+      // Keep primary position color theme, but display the entire eligibility list (e.g., "PG, SG, G")
+      return { cls, badge, text: fullText };
     }
 
     let draggedQueueIndex = null;
@@ -2094,9 +2123,10 @@
       const query = cleanNormalize(playerSearch.value);
       const filter = statusFilter.value;
       const teamSelected = teamFilter.value;
+      const sortMode = poolSortOrder ? poolSortOrder.value : 'fppg';
       const onBlockPlayerId = localData.draftState?.nominatedPlayer?.id;
 
-      const filtered = localData.players.filter(p => {
+      let filtered = localData.players.filter(p => {
         if (query && p._searchKey && !p._searchKey.includes(query)) return false;
         if (teamSelected !== 'ALL' && (p.nbaTeam || '').toUpperCase() !== teamSelected) return false;
 
@@ -2107,6 +2137,40 @@
         }
         if (filter === 'drafted') return p.status === 'drafted';
         return true;
+      });
+
+      // User-specific sorting with tiebreakers
+      filtered.sort((a, b) => {
+        const capA = (!isSpectator && myCaps[a.id] !== undefined && myCaps[a.id] !== null && myCaps[a.id] !== '') ? parseFloat(myCaps[a.id]) : -1;
+        const capB = (!isSpectator && myCaps[b.id] !== undefined && myCaps[b.id] !== null && myCaps[b.id] !== '') ? parseFloat(myCaps[b.id]) : -1;
+
+        // Rank tiebreaker: lower number is better (#1 before #2). Unranked treated as 9999
+        const rankA = (!isSpectator && myRanks[a.id] !== undefined && myRanks[a.id] !== null && myRanks[a.id] !== '') ? parseFloat(myRanks[a.id]) : 9999;
+        const rankB = (!isSpectator && myRanks[b.id] !== undefined && myRanks[b.id] !== null && myRanks[b.id] !== '') ? parseFloat(myRanks[b.id]) : 9999;
+
+        if (sortMode === 'cap') {
+          // 1. Auction Cap (descending)
+          if (capB !== capA) return capB - capA;
+          // 2. Tiebreaker 1: Priority Rank (ascending: 1 beats 2)
+          if (rankA !== rankB) return rankA - rankB;
+          // 3. Tiebreaker 2: FPts (descending)
+          return (b.fpts || 0) - (a.fpts || 0);
+        } else if (sortMode === 'priority') {
+          // 1. Priority Rank (ascending: 1 beats 2)
+          if (rankA !== rankB) return rankA - rankB;
+          // 2. Tiebreaker 1: Auction Cap (descending)
+          if (capB !== capA) return capB - capA;
+          // 3. Tiebreaker 2: FPts (descending)
+          return (b.fpts || 0) - (a.fpts || 0);
+        } else if (sortMode === 'fpts') {
+          // 1. Total FPts (descending)
+          if ((b.fpts || 0) !== (a.fpts || 0)) return (b.fpts || 0) - (a.fpts || 0);
+          return (b.fppg || 0) - (a.fppg || 0);
+        } else {
+          // Default: FP/G (descending)
+          if ((b.fppg || 0) !== (a.fppg || 0)) return (b.fppg || 0) - (a.fppg || 0);
+          return (b.fpts || 0) - (a.fpts || 0);
+        }
       });
 
       const visibleSlice = filtered.slice(0, 130);

@@ -360,13 +360,10 @@
     #playerListContainer { max-height: 52vh; overflow-y: auto; padding-right: 0.2rem; }
     
     /* Loud, High-Contrast Player Rows & Positional Badges */
-    .player-row strong {
+    .player-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       padding: 0.55rem 0.7rem;
       border-radius: 6px;
       margin-bottom: 0.35rem;
@@ -378,6 +375,12 @@
       transition: background 0.15s, transform 0.1s;
     }
     .player-row:hover { background: #111a30; transform: translateX(2px); }
+
+    .player-row strong {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     .pos-guard {
       border-left-color: #00b4d8 !important;
